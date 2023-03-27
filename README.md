@@ -1,2 +1,2 @@
 # react-xrpl
-React bindings for xrpl.js
+A set of hooks and components for creating applications using xrpl.js in React
