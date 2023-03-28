@@ -1,7 +1,7 @@
 {
 	"name": "@nice-xrpl/react-xrpl",
 	"private": false,
-	"version": "0.0.17",
+	"version": "0.0.26",
 	"type": "module",
 	"publishConfig": {
 		"access": "public"
@@ -12,7 +12,7 @@
 		"preview": "vite preview"
 	},
 	"files": [
-		"dist"
+		"dist/**"
 	],
 	"main": "./dist/index.umd.cjs",
 	"module": "./dist/index.js",

@@ -5,18 +5,28 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "sourceMap": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "react-xrpl": ["./src/react-xrpl/index"],
+      "react-xrpl/api": ["./src/react-xrpl/api/index"],
+      "react-xrpl/api/transactions": ["./src/react-xrpl/api/transactions/index"],
+      "react-xrpl/api/requests": ["./src/react-xrpl/api/requests/index"],
+      "react-xrpl/hooks": ["./src/react-xrpl/hooks/index"],
+      "react-xrpl/hooks/transactions": ["./src/react-xrpl/hooks/transactions/index"],
+      "react-xrpl/hooks/requests": ["./src/react-xrpl/hooks/requests/index"],
+    }
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
