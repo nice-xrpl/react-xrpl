@@ -13,7 +13,7 @@ export function useMintToken() {
 	const walletRef = useRef(wallet);
 	walletRef.current = wallet;
 
-	const create = useCallback(async (url: string, transferFee: number, {flags, taxon}: {
+	const create = useCallback(async (url: string, transferFee: number = 0, {flags, taxon}: {
 		flags?: number
 		taxon?: number
 	} = {}): Promise<TxResponse> => {

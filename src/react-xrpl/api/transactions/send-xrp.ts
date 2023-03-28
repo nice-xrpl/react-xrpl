@@ -4,7 +4,11 @@ export async function sendXRP(client: xrplClient, wallet: xrplWallet, destinatio
 	await client.connect();
 
 	if (!isValidAddress(destinationAddress)) {
-		return Promise.reject('Invalid address');
+		return Promise.reject('Invalid destination address');
+	}
+
+	if (wallet.address === destinationAddress) {
+		return Promise.reject('Source and destination addresses are the same')
 	}
 	
 	const tx = await client.submitAndWait({
