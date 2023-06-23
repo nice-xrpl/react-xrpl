@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useSendCurrency } from "react-xrpl";
+import { useState } from 'react';
+import { useSendCurrency } from 'react-xrpl';
 
 export function SendCurrency() {
     const sendCurrency = useSendCurrency();

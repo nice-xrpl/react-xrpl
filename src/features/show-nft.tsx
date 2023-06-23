@@ -1,4 +1,4 @@
-import { useTokens } from "react-xrpl";
+import { useTokens } from 'react-xrpl';
 
 export function ShowNFT() {
     const tokens = useTokens();

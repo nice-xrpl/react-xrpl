@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useBurnToken, useGetTokens } from "react-xrpl";
+import { useState } from 'react';
+import { useBurnToken, useGetTokens } from 'react-xrpl';
 
 export function BurnNFT() {
     const burnToken = useBurnToken();

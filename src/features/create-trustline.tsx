@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useCreateTrustline } from "react-xrpl";
+import { useState } from 'react';
+import { useCreateTrustline } from 'react-xrpl';
 
 export function CreateTrustline() {
     const createTrustline = useCreateTrustline();

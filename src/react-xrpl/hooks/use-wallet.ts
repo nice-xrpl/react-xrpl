@@ -1,13 +1,13 @@
-import { useContext } from "react";
-import { WalletContext } from "../wallet-provider";
+import { useContext } from 'react';
+import { WalletContext } from '../wallet-provider';
 import { Wallet as xrplWallet } from 'xrpl';
 
 export function useWallet(): xrplWallet {
-	const wallet = useContext(WalletContext);
-	
-	if (!wallet) {
-		throw new Error('Wallet context not found!');
-	}
+    const wallet = useContext(WalletContext);
 
-	return wallet;
+    if (!wallet) {
+        throw new Error('Wallet context not found!');
+    }
+
+    return wallet;
 }

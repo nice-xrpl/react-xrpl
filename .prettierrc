@@ -20,4 +20,4 @@
 	"embeddedLanguageFormatting": "auto",
 	"vueIndentScriptAndStyle": false,
 	"parser": "typescript"
-  }
+}

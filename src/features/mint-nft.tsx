@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useGetTokens, useMintToken } from "react-xrpl";
+import { useState } from 'react';
+import { useGetTokens, useMintToken } from 'react-xrpl';
 
 export function MintNFT() {
     const mintToken = useMintToken();

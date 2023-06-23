@@ -1,9 +1,8 @@
 import { CreateNewWallet } from './features/create-new-wallet';
 import { LoadWalletFromSeed } from './features/load-wallet-from-seed';
 import { LoadWalletFromAddress } from './features/load-wallet-from-address';
-import { useIsConnected } from './react-xrpl/hooks/use-is-connected';
-import { XRPLClient } from './react-xrpl/client';
 import './app.css';
+import { useIsConnected, XRPLClient } from 'react-xrpl';
 
 function MainApp() {
     const isConnected = useIsConnected();

@@ -1,23 +1,32 @@
-import { Client as xrplClient, Wallet as xrplWallet, AccountSetAsfFlags, Transaction } from 'xrpl';
+import {
+    Client as xrplClient,
+    Wallet as xrplWallet,
+    AccountSetAsfFlags,
+    Transaction,
+} from 'xrpl';
 
-export async function allowRippling(client: xrplClient, wallet: xrplWallet, rippling: boolean) {
-	await client.connect();
-	
-	let tx: Transaction = {
-		TransactionType: 'AccountSet',
-		Account: wallet.address
-	};
+export async function allowRippling(
+    client: xrplClient,
+    wallet: xrplWallet,
+    rippling: boolean
+) {
+    await client.connect();
 
-	if (rippling) {
-		tx.SetFlag = AccountSetAsfFlags.asfDefaultRipple
-	} else {
-		tx.ClearFlag = AccountSetAsfFlags.asfDefaultRipple
-	}
+    let tx: Transaction = {
+        TransactionType: 'AccountSet',
+        Account: wallet.address,
+    };
 
-	const result = await client.submitAndWait(tx, {
-		autofill: true,
-		wallet
-	});
+    if (rippling) {
+        tx.SetFlag = AccountSetAsfFlags.asfDefaultRipple;
+    } else {
+        tx.ClearFlag = AccountSetAsfFlags.asfDefaultRipple;
+    }
 
-	return result;
+    const result = await client.submitAndWait(tx, {
+        autofill: true,
+        wallet,
+    });
+
+    return result;
 }

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Wallet } from "react-xrpl";
-import { WalletUI } from "./wallet-ui";
+import { useState } from 'react';
+import { Wallet } from 'react-xrpl';
+import { WalletUI } from './wallet-ui';
 
 export function LoadWalletFromSeed({ seed: inputSeed }: { seed: string }) {
     const [seed, setSeed] = useState(inputSeed);

@@ -3,50 +3,49 @@ type StoreListener = () => void;
 type Fn<T> = (prevState: T) => T;
 
 export type Store<T> = {
-	getState: () => T;
-	setState: (value: T | Fn<T>) => void;
-	subscribe: (listener: StoreListener) => () => void;
+    getState: () => T;
+    setState: (value: T | Fn<T>) => void;
+    subscribe: (listener: StoreListener) => () => void;
 };
 
 function isFunction(fn: unknown): fn is Function {
-	return (typeof fn === 'function');
+    return typeof fn === 'function';
 }
 
 export function createStore<T>(initialValue: T): Store<T> {
-	let state: T = initialValue;
+    let state: T = initialValue;
 
-	const getState = () => state;
+    const getState = () => state;
 
-	const listeners = new Set<StoreListener>();
+    const listeners = new Set<StoreListener>();
 
-	const setState = (value: T | Fn<T>) => {
-		let nextState = state;
+    const setState = (value: T | Fn<T>) => {
+        let nextState = state;
 
-		if (isFunction(value)) {
-			nextState = value(state);
-		} else {
-			nextState = value;
-		}
+        if (isFunction(value)) {
+            nextState = value(state);
+        } else {
+            nextState = value;
+        }
 
-		if (nextState !== state) {
-			state = nextState;
-			
-			for (const listener of listeners) {
-				listener();
-			}
-		}
-	}
+        if (nextState !== state) {
+            state = nextState;
 
-	const subscribe = (listener: StoreListener) => {
-		listeners.add(listener);
+            for (const listener of listeners) {
+                listener();
+            }
+        }
+    };
 
-		return () => listeners.delete(listener);
-	};
+    const subscribe = (listener: StoreListener) => {
+        listeners.add(listener);
 
-	return {
-		getState,
-		setState,
-		subscribe,
-	};
+        return () => listeners.delete(listener);
+    };
+
+    return {
+        getState,
+        setState,
+        subscribe,
+    };
 }
-

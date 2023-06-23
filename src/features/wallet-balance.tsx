@@ -1,4 +1,4 @@
-import { useBalance } from "react-xrpl";
+import { useBalance } from 'react-xrpl';
 
 export function WalletBalance() {
     const balance = useBalance();

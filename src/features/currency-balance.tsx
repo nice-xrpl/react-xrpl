@@ -1,4 +1,4 @@
-import { useCurrencyBalance } from "react-xrpl";
+import { useCurrencyBalance } from 'react-xrpl';
 
 export function CurrencyBalance() {
     const currencies = useCurrencyBalance();

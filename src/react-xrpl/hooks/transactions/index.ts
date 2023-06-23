@@ -5,5 +5,5 @@ export * from './use-create-buy-offer';
 export * from './use-create-sell-offer';
 export * from './use-create-trustline';
 export * from './use-mint-token';
-export * from './use-send-currency'
+export * from './use-send-currency';
 export * from './use-send-xrp';

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useSendXRP } from "react-xrpl";
+import { useState } from 'react';
+import { useSendXRP } from 'react-xrpl';
 
 export function SendXRP() {
     const sendXRP = useSendXRP();

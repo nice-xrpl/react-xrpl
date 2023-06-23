@@ -1,7 +1,7 @@
-import { useWalletAddress } from "react-xrpl";
-import { WalletBalance } from "./wallet-balance";
-import { CurrencyBalance } from "./currency-balance";
-import { ShowNFT } from "./show-nft";
+import { useWalletAddress } from 'react-xrpl';
+import { WalletBalance } from './wallet-balance';
+import { CurrencyBalance } from './currency-balance';
+import { ShowNFT } from './show-nft';
 
 export function ReadOnlyWalletUI() {
     const address = useWalletAddress();

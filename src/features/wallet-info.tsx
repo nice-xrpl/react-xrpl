@@ -1,4 +1,4 @@
-import { useWallet } from "react-xrpl";
+import { useWallet } from 'react-xrpl';
 
 export function WalletInfo() {
     const wallet = useWallet();

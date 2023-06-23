@@ -1,8 +1,12 @@
-import { useState } from "react";
-import { WalletAddress } from "react-xrpl";
-import { ReadOnlyWalletUI } from "./read-only-wallet-ui";
+import { useState } from 'react';
+import { WalletAddress } from 'react-xrpl';
+import { ReadOnlyWalletUI } from './read-only-wallet-ui';
 
-export function LoadWalletFromAddress({ address: inputAddress }: { address: string }) {
+export function LoadWalletFromAddress({
+    address: inputAddress,
+}: {
+    address: string;
+}) {
     const [address, setAddress] = useState(inputAddress);
     const [input, setInput] = useState('');
 
