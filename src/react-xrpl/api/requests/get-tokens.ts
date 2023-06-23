@@ -1,4 +1,4 @@
-import { Client as xrplClient, convertHexToString, Wallet as xrplWallet } from 'xrpl';
+import { Client as xrplClient, convertHexToString } from 'xrpl';
 import { Token } from '../wallet-types';
 
 export async function getTokens(client: xrplClient, address: string) {

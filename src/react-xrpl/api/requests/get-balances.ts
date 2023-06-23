@@ -1,4 +1,4 @@
-import { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
+import { Client as xrplClient } from 'xrpl';
 
 export async function getBalances(client: xrplClient, address: string) {
 	await client.connect();
