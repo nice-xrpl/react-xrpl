@@ -1,10 +1,10 @@
 import { useCallback, useRef } from 'react';
 import { TxResponse } from 'xrpl';
-import { acceptOffer } from '../../api/transactions';
+import { acceptBrokeredOffer } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
-export function useAcceptOffer() {
+export function useAcceptBrokeredOffer() {
     const client = useXRPLClient();
     const clientRef = useRef(client);
     clientRef.current = client;
@@ -14,11 +14,17 @@ export function useAcceptOffer() {
     walletRef.current = wallet;
 
     const send = useCallback(
-        async (tokenOfferId: string): Promise<TxResponse> => {
-            const result = await acceptOffer(
+        async (
+            tokenBuyOfferId: string,
+            tokenSellOfferId: string,
+            fee: string
+        ): Promise<TxResponse> => {
+            const result = await acceptBrokeredOffer(
                 clientRef.current,
                 walletRef.current,
-                tokenOfferId
+                tokenBuyOfferId,
+                tokenSellOfferId,
+                fee
             );
 
             return result;

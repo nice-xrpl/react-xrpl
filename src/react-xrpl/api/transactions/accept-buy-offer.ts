@@ -1,6 +1,6 @@
 import { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
 
-export async function acceptOffer(
+export async function acceptBuyOffer(
     client: xrplClient,
     wallet: xrplWallet,
     tokenOfferId: string
@@ -11,7 +11,7 @@ export async function acceptOffer(
         {
             TransactionType: 'NFTokenAcceptOffer',
             Account: wallet.address,
-            NFTokenSellOffer: tokenOfferId,
+            NFTokenBuyOffer: tokenOfferId,
         },
         {
             autofill: true,
