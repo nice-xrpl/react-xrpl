@@ -1,7 +1,12 @@
+import { AcceptBuyOffer } from './accept-buy-nft';
+import { AcceptSellOffer } from './accept-sell-nft';
 import { BurnNFT } from './burn-nft';
+import { BuyNFT } from './buy-nft';
 import { CreateTrustline } from './create-trustline';
 import { CurrencyBalance } from './currency-balance';
 import { MintNFT } from './mint-nft';
+import Offers from './offers';
+import { SellNFT } from './sell-nft';
 import { SendCurrency } from './send-currency';
 import { SendXRP } from './send-xrp';
 import { ShowNFT } from './show-nft';
@@ -26,6 +31,11 @@ export function WalletUI() {
             <MintNFT />
             <BurnNFT />
             <ShowNFT />
+            <BuyNFT />
+            <SellNFT />
+            <Offers />
+            <AcceptBuyOffer />
+            <AcceptSellOffer />
         </div>
     );
 }

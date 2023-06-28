@@ -23,6 +23,9 @@ function MainApp() {
                     address={'rBCHWcsWPgXfrNoASakKiZx5dbynHibezb'}
                 />
             </div>
+            <div>
+                <LoadWalletFromSeed seed={'sEdTxZceWFkoZpB9pYkTGrHJgrFbycD'} />
+            </div>
         </div>
     );
 }
