@@ -12,11 +12,11 @@ export async function createSellOffer(
     {
         expiration,
         flags = 1,
-        targetAddress,
+        destination,
     }: {
         expiration?: Date;
         flags?: number;
-        targetAddress?: string;
+        destination?: string;
     }
 ) {
     await client.connect();
@@ -31,7 +31,7 @@ export async function createSellOffer(
             Expiration: expiration
                 ? isoTimeToRippleTime(expiration)
                 : undefined,
-            Destination: targetAddress ? targetAddress : undefined,
+            Destination: destination ? destination : undefined,
         },
         {
             autofill: true,

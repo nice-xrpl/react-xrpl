@@ -19,12 +19,12 @@ export function useCreateSellOffer() {
             amount: string,
             {
                 expiration,
-                targetAddress,
+                destination,
                 flags,
             }: {
                 expiration?: Date | undefined;
                 flags?: number | undefined;
-                targetAddress?: string | undefined;
+                destination?: string | undefined;
             }
         ): Promise<TxResponse> => {
             const result = await createSellOffer(
@@ -34,7 +34,7 @@ export function useCreateSellOffer() {
                 amount,
                 {
                     expiration,
-                    targetAddress,
+                    destination,
                     flags,
                 }
             );

@@ -7,15 +7,17 @@ import {
 export async function createBuyOffer(
     client: xrplClient,
     wallet: xrplWallet,
+    owner: string,
     tokenId: string,
     amount: string,
     {
         expiration,
-        targetAddress,
+        flags,
+        destination,
     }: {
         expiration?: Date;
         flags?: number;
-        targetAddress?: string;
+        destination?: string;
     }
 ) {
     await client.connect();
@@ -25,11 +27,13 @@ export async function createBuyOffer(
             TransactionType: 'NFTokenCreateOffer',
             Account: wallet.address,
             NFTokenID: tokenId,
+            Flags: flags,
             Amount: amount,
             Expiration: expiration
                 ? isoTimeToRippleTime(expiration)
                 : undefined,
-            Destination: targetAddress ? targetAddress : undefined,
+            Destination: destination ? destination : undefined,
+            Owner: owner,
         },
         {
             autofill: true,

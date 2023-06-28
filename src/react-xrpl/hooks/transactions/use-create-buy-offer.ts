@@ -15,24 +15,26 @@ export function useCreateBuyOffer() {
 
     const send = useCallback(
         async (
+            owner: string,
             tokenId: string,
             amount: string,
             {
                 expiration,
-                targetAddress,
+                destination,
             }: {
                 expiration?: Date | undefined;
-                targetAddress?: string | undefined;
-            }
+                destination?: string | undefined;
+            } = {}
         ): Promise<TxResponse> => {
             const result = await createBuyOffer(
                 clientRef.current,
                 walletRef.current,
+                owner,
                 tokenId,
                 amount,
                 {
                     expiration,
-                    targetAddress,
+                    destination,
                 }
             );
 
