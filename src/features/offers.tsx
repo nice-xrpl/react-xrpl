@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Offer, useGetBuyOffers, useGetSellOffers } from 'react-xrpl';
+import { Offer } from 'react-xrpl';
 
 type OffersProps = {
     buyOffers: Offer[];

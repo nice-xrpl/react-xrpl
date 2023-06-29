@@ -9,6 +9,7 @@ import {
 export function SellNFT() {
     const createSellOffer = useCreateSellOffer();
     const [tokenId, setTokenId] = useState('');
+    const [destination, setDestination] = useState('');
     const [owner, setOwner] = useState('');
     const [amount, setAmount] = useState('');
     const [sending, setSending] = useState(false);
@@ -25,7 +26,12 @@ export function SellNFT() {
                 value={amount}
                 onChange={(e) => setAmount(e.currentTarget.value)}
             />{' '}
-            -{' '}
+            ( only for address{' '}
+            <input
+                value={destination}
+                onChange={(e) => setDestination(e.currentTarget.value)}
+            />{' '}
+            ) -{' '}
             {sending ? (
                 'Waiting for response...'
             ) : (
@@ -33,10 +39,18 @@ export function SellNFT() {
                     onClick={async () => {
                         setSending(true);
                         try {
+                            let options: { destination?: string } = {
+                                destination: undefined,
+                            };
+
+                            if (destination) {
+                                options.destination = destination;
+                            }
+
                             const result = await createSellOffer(
                                 tokenId,
                                 amount,
-                                {}
+                                options
                             );
 
                             console.log('UI: ', result);
