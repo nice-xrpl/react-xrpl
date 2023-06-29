@@ -87,6 +87,17 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
                 accounts.push(account);
             }
         }
+
+        if (isDeletedNode(node)) {
+            if (node.DeletedNode.LedgerEntryType === 'NFTokenPage') {
+                const ledgerIndex = node.DeletedNode.LedgerIndex;
+                const account = encodeAccountID(
+                    Buffer.from(ledgerIndex.substring(0, 40), 'hex')
+                );
+
+                accounts.push(account);
+            }
+        }
     }
 
     return accounts;
@@ -288,6 +299,7 @@ export class WalletEmitter extends EventEmitter {
                 tx.meta?.AffectedNodes || []
             );
 
+            console.log(accounts);
             if (accounts.indexOf(this._address) !== -1) {
                 if (tx.transaction.NFTokenSellOffer) {
                     console.log(this._address, ' accepted a sell offer: ', tx);

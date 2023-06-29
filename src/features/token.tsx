@@ -39,7 +39,7 @@ export function Token({ id, uri }: TokenProps) {
                     setBuyLoading(true);
 
                     try {
-                        const buyOffers = await getBuyOffers(id);
+                        await getBuyOffers(id);
                     } catch (e) {
                         console.log(e);
                     } finally {
@@ -47,7 +47,7 @@ export function Token({ id, uri }: TokenProps) {
                     }
 
                     try {
-                        const sellOffers = await getSellOffers(id);
+                        await getSellOffers(id);
                     } catch (e) {
                         console.log(e);
                     } finally {
