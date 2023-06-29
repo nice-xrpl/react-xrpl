@@ -28,7 +28,7 @@ export type WalletEventHandlers = {
 };
 
 function getBalance(account: string, nodes: Node[]) {
-    let balance = '0';
+    let balance = '';
 
     for (const node of nodes) {
         if (
@@ -37,7 +37,6 @@ function getBalance(account: string, nodes: Node[]) {
         ) {
             if (
                 node.CreatedNode.NewFields.Balance &&
-                node.CreatedNode.NewFields.Account &&
                 node.CreatedNode.NewFields.Account === account
             ) {
                 balance = node.CreatedNode.NewFields.Balance as string;
@@ -93,7 +92,7 @@ export class WalletEmitter extends EventEmitter {
 
         const response = await this._client.request({
             command: 'unsubscribe',
-            // TODO: either accounts OR streams has to be specified.  each one gives independant events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
+            // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
             accounts: [this._address],
             // streams: ['transactions']
         });
@@ -103,6 +102,9 @@ export class WalletEmitter extends EventEmitter {
 
     // TODO: use meta and AffectedNodes to check final balances on payments/tokens/currencies?
     private onTransaction = (tx: TransactionStream) => {
+        console.group(this._address);
+        console.log(tx);
+
         if (tx.transaction.TransactionType === 'NFTokenMint') {
             if (tx.transaction.Account === this._address) {
                 console.log(this._address, ' minted a token: ', tx);
@@ -114,11 +116,14 @@ export class WalletEmitter extends EventEmitter {
                     this._address,
                     tx.meta?.AffectedNodes ?? []
                 );
-                this.emit(
-                    WalletEvent.BalanceChange,
-                    balance,
-                    dropsToXrp(balance)
-                );
+
+                if (balance) {
+                    this.emit(
+                        WalletEvent.BalanceChange,
+                        balance,
+                        dropsToXrp(balance)
+                    );
+                }
             }
         }
 
@@ -131,11 +136,14 @@ export class WalletEmitter extends EventEmitter {
                     this._address,
                     tx.meta?.AffectedNodes ?? []
                 );
-                this.emit(
-                    WalletEvent.BalanceChange,
-                    balance,
-                    dropsToXrp(balance)
-                );
+
+                if (balance) {
+                    this.emit(
+                        WalletEvent.BalanceChange,
+                        balance,
+                        dropsToXrp(balance)
+                    );
+                }
             }
         }
 
@@ -147,11 +155,14 @@ export class WalletEmitter extends EventEmitter {
                     this._address,
                     tx.meta?.AffectedNodes ?? []
                 );
-                this.emit(
-                    WalletEvent.BalanceChange,
-                    balance,
-                    dropsToXrp(balance)
-                );
+
+                if (balance) {
+                    this.emit(
+                        WalletEvent.BalanceChange,
+                        balance,
+                        dropsToXrp(balance)
+                    );
+                }
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
                     this.emit(WalletEvent.CurrencyChange);
@@ -165,17 +176,22 @@ export class WalletEmitter extends EventEmitter {
                     this._address,
                     tx.meta?.AffectedNodes ?? []
                 );
-                this.emit(
-                    WalletEvent.BalanceChange,
-                    balance,
-                    dropsToXrp(balance)
-                );
+
+                if (balance) {
+                    this.emit(
+                        WalletEvent.BalanceChange,
+                        balance,
+                        dropsToXrp(balance)
+                    );
+                }
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
                     this.emit(WalletEvent.CurrencyChange);
                 }
             }
         }
+
+        console.groupEnd();
     };
 }
 
