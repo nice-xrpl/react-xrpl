@@ -15,7 +15,7 @@ export default function Offers(
     return (
         <div>
             <div>Buy Offers</div>
-            {buyOffers.length ? (
+            {buyOffers?.length ? (
                 <>
                     {buyOffers.map((offer) => {
                         return (
@@ -30,7 +30,7 @@ export default function Offers(
                 <div>No buy offers</div>
             )}
             <div>Sell Offers</div>
-            {sellOffers.length ? (
+            {sellOffers?.length ? (
                 <>
                     {sellOffers.map((offer) => {
                         return (

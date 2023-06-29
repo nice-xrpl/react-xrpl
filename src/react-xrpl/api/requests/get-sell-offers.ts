@@ -17,7 +17,7 @@ export async function getSellOffers(client: xrplClient, tokenId: string) {
                 typeof offer.amount === 'string'
                     ? offer.amount
                     : offer.amount.value,
-            id: offer.nft_offer_index,
+            index: offer.nft_offer_index,
             owner: offer.owner,
             expiration: offer.expiration,
             destination: offer.destination,

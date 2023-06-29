@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ClientStoreContext } from '../client-provider';
+import { ClientStoreContext } from '../client-store-provider';
 
 export function useClientStores() {
     const stores = useContext(ClientStoreContext);

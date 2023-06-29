@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Wallet as xrplWallet } from 'xrpl';
-import { WalletProvider, WalletStores } from './wallet-provider';
+import { WalletProvider } from './wallet-provider';
 import { createWalletFromSeed } from './api';
 import { WalletAddress } from './wallet-address';
 import { useXRPLClient } from './hooks';
 import { createWalletStore } from './create-wallet-store';
+import { WalletStores } from './wallet-store-provider';
 
 type WalletProps = {
     seed: string;
@@ -28,6 +29,8 @@ export function Wallet({ seed, fallback = <></>, children }: WalletProps) {
             walletStore.balance.setState(created.balance);
             walletStore.currencies.setState(created.currencies);
             walletStore.tokens.setState(created.tokens);
+            walletStore.buyOffers.setState(created.buyOffers);
+            walletStore.sellOffers.setState(created.sellOffers);
         });
     }, [seed]);
 

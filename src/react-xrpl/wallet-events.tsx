@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { createWalletEventEmitter, Currency, WalletEvent } from './api';
-import { getBalances, getTokens } from './api/requests';
+import {
+    getBalances,
+    getBuyOffers,
+    getSellOffers,
+    getTokens,
+} from './api/requests';
 import { useWalletAddress, useWalletStores, useXRPLClient } from './hooks';
 
 export function WalletEvents() {
@@ -11,6 +16,8 @@ export function WalletEvents() {
         balance: balanceStore,
         currencies: currenciesStore,
         tokens: tokensStore,
+        buyOffers: buyOffersStore,
+        sellOffers: sellOffersStore,
     } = useWalletStores();
 
     useEffect(() => {
@@ -46,11 +53,56 @@ export function WalletEvents() {
         events.on(WalletEvent.TokenBurn, tokensListener);
 
         const balanceChangeListener = (drops: string, xrp: number) => {
-            console.log(WalletEvent.BalanceChange, drops, xrp);
+            // console.log(WalletEvent.BalanceChange, drops, xrp);
             balanceStore.setState(xrp);
         };
 
         events.on(WalletEvent.BalanceChange, balanceChangeListener);
+
+        const createBuyOfferListener = (
+            index: string,
+            tokenId: string,
+            amount: string
+        ) => {
+            getBuyOffers(client, tokenId)
+                .then((buyOffers) => {
+                    buyOffersStore.setState((state) => {
+                        return {
+                            ...state,
+                            [tokenId]: buyOffers,
+                        };
+                    });
+                })
+                .catch((err) => {});
+        };
+
+        const createSellOfferListener = (
+            index: string,
+            tokenId: string,
+            amount: string
+        ) => {
+            getSellOffers(client, tokenId)
+                .then((sellOffers) => {
+                    sellOffersStore.setState((state) => {
+                        return {
+                            ...state,
+                            [tokenId]: sellOffers,
+                        };
+                    });
+                })
+                .catch((err) => {});
+        };
+
+        const acceptOfferListener = (index: string, tokenId: string) => {
+            tokensListener();
+            createBuyOfferListener(index, tokenId, '0');
+            createSellOfferListener(index, tokenId, '0');
+        };
+
+        events.on(WalletEvent.CreateBuyOffer, createBuyOfferListener);
+        events.on(WalletEvent.CreateSellOffer, createSellOfferListener);
+        events.on(WalletEvent.AcceptBuyOffer, acceptOfferListener);
+        events.on(WalletEvent.AcceptSellOffer, acceptOfferListener);
 
         events.start();
 
@@ -61,6 +113,12 @@ export function WalletEvents() {
             events.off(WalletEvent.TokenBurn, tokensListener);
 
             events.off(WalletEvent.BalanceChange, balanceChangeListener);
+
+            events.off(WalletEvent.CreateBuyOffer, createBuyOfferListener);
+            events.off(WalletEvent.CreateSellOffer, createSellOfferListener);
+
+            events.off(WalletEvent.AcceptBuyOffer, acceptOfferListener);
+            events.off(WalletEvent.AcceptSellOffer, acceptOfferListener);
 
             events.stop();
         };

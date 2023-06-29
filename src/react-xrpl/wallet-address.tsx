@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { WalletStoreProvider, WalletStores } from './wallet-provider';
 import { WalletEvents } from './wallet-events';
 import { WalletAddressProvider } from './wallet-address-provider';
 import { useXRPLClient } from './hooks';
 import { getInitialWalletState } from './api';
 import { createWalletStore } from './create-wallet-store';
+import { WalletStoreProvider, WalletStores } from './wallet-store-provider';
 
 type WalletAddressProps = {
     address: string;
@@ -30,6 +30,8 @@ export function WalletAddress({
             walletStore.balance.setState(state.balance);
             walletStore.currencies.setState(state.currencies);
             walletStore.tokens.setState(state.tokens);
+            walletStore.buyOffers.setState(state.buyOffers);
+            walletStore.sellOffers.setState(state.sellOffers);
 
             setReady(true);
         });

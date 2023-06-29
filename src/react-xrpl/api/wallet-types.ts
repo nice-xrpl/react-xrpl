@@ -15,7 +15,7 @@ export type Token = {
 };
 
 export type Offer = {
-    id: string;
+    index: string;
     amount: string;
     owner: string;
     expiration?: number;
@@ -27,8 +27,8 @@ export type WalletInitialState = {
     balance: number;
     currencies: Currency[];
     tokens: Token[];
-    sellOffers: Offer[];
-    buyOffers: Offer[];
+    sellOffers: Record<string, Offer[]>;
+    buyOffers: Record<string, Offer[]>;
 };
 
 export type XRPLWalletInitialState = WalletInitialState & {
