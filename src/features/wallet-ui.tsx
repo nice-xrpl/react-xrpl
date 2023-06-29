@@ -5,7 +5,7 @@ import { BuyNFT } from './buy-nft';
 import { CreateTrustline } from './create-trustline';
 import { CurrencyBalance } from './currency-balance';
 import { MintNFT } from './mint-nft';
-import Offers from './offers';
+import OffersById from './offers-by-id';
 import { SellNFT } from './sell-nft';
 import { SendCurrency } from './send-currency';
 import { SendXRP } from './send-xrp';
@@ -33,7 +33,7 @@ export function WalletUI() {
             <ShowNFT />
             <BuyNFT />
             <SellNFT />
-            <Offers />
+            <OffersById />
             <AcceptBuyOffer />
             <AcceptSellOffer />
         </div>

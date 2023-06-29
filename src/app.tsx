@@ -18,11 +18,11 @@ function MainApp() {
             <div>
                 <LoadWalletFromSeed seed={'sEdT2SsT7dadAscvgf9DL83evmaH8yT'} />
             </div>
-            <div>
+            {/* <div>
                 <LoadWalletFromAddress
                     address={'rBCHWcsWPgXfrNoASakKiZx5dbynHibezb'}
                 />
-            </div>
+            </div> */}
             <div>
                 <LoadWalletFromSeed seed={'sEdTxZceWFkoZpB9pYkTGrHJgrFbycD'} />
             </div>
