@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Client as xrplClient } from 'xrpl';
 import { Networks } from './constants';
-import {
-    ClientStoreProvider,
-    ClientStores,
-    XRPLClientProvider,
-} from './client-provider';
+import { XRPLClientProvider } from './client-provider';
 import { createStore } from './stores/create-store';
+import { ClientStores } from './client-types';
+import { ClientStoreProvider } from './client-store-provider';
 
 export function XRPLClient({
     children,
