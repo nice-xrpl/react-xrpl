@@ -1,0 +1,86 @@
+{
+	"engine_result": "tesSUCCESS",
+	"engine_result_code": 0,
+	"engine_result_message": "The transaction was applied. Only final in a validated ledger.",
+	"ledger_hash": "19A36CC022E9E5F4E8C5F143B1FC77AB97301DFF21B7C5779E117F43308111F4",
+	"ledger_index": 39052113,
+	"meta": {
+		"AffectedNodes": [
+			{
+				"ModifiedNode": {
+					"FinalFields": {
+						"Account": "rfhEP79F6FBqhLfM2VDNKGMvvfwWBTi9mh",
+						"Balance": "961999054",
+						"BurnedNFTokens": 13,
+						"Flags": 8388608,
+						"MintedNFTokens": 16,
+						"OwnerCount": 4,
+						"Sequence": 35797180
+					},
+					"LedgerEntryType": "AccountRoot",
+					"LedgerIndex": "4D5C29B7CF8CF75BCC1AC08AF42AA300828AE7F9FFAEF74BD9B8656A488E265A",
+					"PreviousFields": {
+						"Balance": "961999066",
+						"OwnerCount": 3,
+						"Sequence": 35797179
+					},
+					"PreviousTxnID": "3080FD8ADFEF5AE2A512A39C7E3F547E42A246C2E1417A60E1F2075765207500",
+					"PreviousTxnLgrSeq": 39051923
+				}
+			},
+			{
+				"ModifiedNode": {
+					"FinalFields": {
+						"Flags": 0,
+						"Owner": "rfhEP79F6FBqhLfM2VDNKGMvvfwWBTi9mh",
+						"RootIndex": "6D83920291A3DF745227E0F5D4B45F3652774B3270C7F2B283D56584D73F4DD4"
+					},
+					"LedgerEntryType": "DirectoryNode",
+					"LedgerIndex": "6D83920291A3DF745227E0F5D4B45F3652774B3270C7F2B283D56584D73F4DD4"
+				}
+			},
+			{
+				"CreatedNode": {
+					"LedgerEntryType": "NFTokenOffer",
+					"LedgerIndex": "B277B87D04F898171BC3F6346839B5EEB1F1F5CE0DBE53D0CE8B6B6B3DAD0819",
+					"NewFields": {
+						"Amount": "30",
+						"NFTokenID": "00080001E2CFB60D845EE7C073A2AC5184728E0E237CD55444B17C9E00000003",
+						"Owner": "rfhEP79F6FBqhLfM2VDNKGMvvfwWBTi9mh"
+					}
+				}
+			},
+			{
+				"CreatedNode": {
+					"LedgerEntryType": "DirectoryNode",
+					"LedgerIndex": "DD18836A16C86B83D97072FD6C59D417F7060FF5EFA1A08CD373095816286963",
+					"NewFields": {
+						"Flags": 1,
+						"NFTokenID": "00080001E2CFB60D845EE7C073A2AC5184728E0E237CD55444B17C9E00000003",
+						"RootIndex": "DD18836A16C86B83D97072FD6C59D417F7060FF5EFA1A08CD373095816286963"
+					}
+				}
+			}
+		],
+		"TransactionIndex": 0,
+		"TransactionResult": "tesSUCCESS"
+	},
+	"status": "closed",
+	"transaction": {
+		"Account": "rfhEP79F6FBqhLfM2VDNKGMvvfwWBTi9mh",
+		"Amount": "30",
+		"Fee": "12",
+		"Flags": 0,
+		"LastLedgerSequence": 39052131,
+		"NFTokenID": "00080001E2CFB60D845EE7C073A2AC5184728E0E237CD55444B17C9E00000003",
+		"Owner": "rMgGY41naqxn6ARtR8B79XgvnvdGeXWW8m",
+		"Sequence": 35797179,
+		"SigningPubKey": "EDAB34358B617F85C7E4C8444F00E4D0CC76E59C4DAEA864F72620DA311C3559A9",
+		"TransactionType": "NFTokenCreateOffer",
+		"TxnSignature": "201DE526DA51CB85B92D070E83B3C1861BDB1EC1E278E9240FABE1458BC70F2101A9E57A445D8C723F74F1FADEA9482CC633F5E7ED6902D1297517476F7AFA00",
+		"date": 741323002,
+		"hash": "72756F316C28152935966BC282572D216419A41540F39D19255C1DE86D370D57"
+	},
+	"type": "transaction",
+	"validated": true
+}
