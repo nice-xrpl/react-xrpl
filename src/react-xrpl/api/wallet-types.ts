@@ -22,13 +22,17 @@ export type Offer = {
     destination?: string;
 };
 
+export type OfferStore = {
+    [key in string]?: Offer[];
+};
+
 export type WalletInitialState = {
     // wallet: xrplWallet;
     balance: number;
     currencies: Currency[];
     tokens: Token[];
-    sellOffers: Record<string, Offer[]>;
-    buyOffers: Record<string, Offer[]>;
+    sellOffers: OfferStore;
+    buyOffers: OfferStore;
 };
 
 export type XRPLWalletInitialState = WalletInitialState & {

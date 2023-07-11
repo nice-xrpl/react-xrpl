@@ -1,8 +1,8 @@
 import { Offer } from 'react-xrpl';
 
 type OffersProps = {
-    buyOffers: Offer[];
-    sellOffers: Offer[];
+    buyOffers?: Offer[];
+    sellOffers?: Offer[];
 };
 
 export default function Offers(

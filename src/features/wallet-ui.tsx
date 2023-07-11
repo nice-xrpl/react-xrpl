@@ -1,3 +1,4 @@
+import { AcceptBrokerOffer } from './accept-brokered-offer';
 import { AcceptBuyOffer } from './accept-buy-nft';
 import { AcceptSellOffer } from './accept-sell-nft';
 import { BurnNFT } from './burn-nft';
@@ -36,6 +37,7 @@ export function WalletUI() {
             <OffersById />
             <AcceptBuyOffer />
             <AcceptSellOffer />
+            <AcceptBrokerOffer />
         </div>
     );
 }

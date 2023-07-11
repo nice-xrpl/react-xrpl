@@ -67,6 +67,11 @@ export function WalletEvents() {
             getBuyOffers(client, tokenId)
                 .then((buyOffers) => {
                     buyOffersStore.setState((state) => {
+                        console.log(
+                            'updating buy offers store: ',
+                            { ...state },
+                            [...buyOffers]
+                        );
                         return {
                             ...state,
                             [tokenId]: buyOffers,
@@ -84,6 +89,11 @@ export function WalletEvents() {
             getSellOffers(client, tokenId)
                 .then((sellOffers) => {
                     sellOffersStore.setState((state) => {
+                        console.log(
+                            'updating buy offers store: ',
+                            { ...state },
+                            [...sellOffers]
+                        );
                         return {
                             ...state,
                             [tokenId]: sellOffers,
@@ -94,6 +104,8 @@ export function WalletEvents() {
         };
 
         const acceptOfferListener = (index: string, tokenId: string) => {
+            console.log('accept offer triggered: ', index, tokenId);
+
             tokensListener();
             createBuyOfferListener(index, tokenId, '0');
             createSellOfferListener(index, tokenId, '0');

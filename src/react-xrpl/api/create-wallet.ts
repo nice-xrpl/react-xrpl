@@ -2,7 +2,7 @@ import { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
 import { getTokens } from './requests/get-tokens';
 import {
     Currency,
-    Offer,
+    OfferStore,
     WalletInitialState,
     XRPLWalletInitialState,
 } from './wallet-types';
@@ -68,8 +68,8 @@ export async function getInitialWalletState(
 
     const initialTokens = await getTokens(client, address);
 
-    let initialBuyOffers: Record<string, Offer[]> = {};
-    let initialSellOffers: Record<string, Offer[]> = {};
+    let initialBuyOffers: OfferStore = {};
+    let initialSellOffers: OfferStore = {};
 
     for (const token of initialTokens) {
         initialBuyOffers[token.id] = [];

@@ -62,6 +62,21 @@ function findLedgerIndexForAcceptedOffer(nodes: Node[]) {
     return '';
 }
 
+function findNFTokenIDForOffer(offerIndex: string, nodes: Node[]) {
+    for (const node of nodes) {
+        if (isDeletedNode(node)) {
+            if (
+                node.DeletedNode.LedgerEntryType === 'NFTokenOffer' &&
+                node.DeletedNode.LedgerIndex === offerIndex
+            ) {
+                return node.DeletedNode.FinalFields.NFTokenID;
+            }
+        }
+    }
+
+    return '';
+}
+
 function extractAccountsFromNFTokenPage(nodes: Node[]) {
     let accounts = [];
 
@@ -299,6 +314,13 @@ export class WalletEmitter extends EventEmitter {
                 tx.meta?.AffectedNodes || []
             );
 
+            // broker account will be in tx.transaction.Account but not in token page
+            // check just in case
+            if (accounts.indexOf(tx.transaction.Account) === -1) {
+                // add broker account to accounts
+                accounts.push(tx.transaction.Account);
+            }
+
             console.log(accounts);
             if (accounts.indexOf(this._address) !== -1) {
                 if (tx.transaction.NFTokenSellOffer) {
@@ -307,9 +329,15 @@ export class WalletEmitter extends EventEmitter {
                         tx.meta?.AffectedNodes || []
                     );
 
+                    const tokenId = findNFTokenIDForOffer(
+                        tx.transaction.NFTokenSellOffer,
+                        tx.meta?.AffectedNodes ?? []
+                    );
+
                     this.emit(
                         WalletEvent.AcceptSellOffer,
-                        tx.transaction.NFTokenSellOffer
+                        tx.transaction.NFTokenSellOffer,
+                        tokenId
                     );
                 }
 
@@ -319,9 +347,15 @@ export class WalletEmitter extends EventEmitter {
                         tx.meta?.AffectedNodes || []
                     );
 
+                    const tokenId = findNFTokenIDForOffer(
+                        tx.transaction.NFTokenBuyOffer,
+                        tx.meta?.AffectedNodes ?? []
+                    );
+
                     this.emit(
                         WalletEvent.AcceptBuyOffer,
-                        tx.transaction.NFTokenBuyOffer
+                        tx.transaction.NFTokenBuyOffer,
+                        tokenId
                     );
                 }
             }
