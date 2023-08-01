@@ -1,8 +1,9 @@
 {
 	"name": "@nice-xrpl/react-xrpl",
 	"private": false,
-	"version": "0.0.28",
+	"version": "0.0.29",
 	"type": "module",
+	"license": "ISC",
 	"publishConfig": {
 		"access": "public"
 	},
