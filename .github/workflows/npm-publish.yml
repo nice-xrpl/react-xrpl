@@ -41,6 +41,6 @@ jobs:
 
       # Step 6: Publish the package to NPM
       - name: Publish to NPM
-        run: pnpm publish
+        run: echo "y" | pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
