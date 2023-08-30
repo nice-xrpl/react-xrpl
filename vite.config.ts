@@ -11,7 +11,8 @@ export default defineConfig({
         tsconfigPaths(),
         nodePolyfills(),
         dts({
-            include: ['src/'],
+            include: ['src/react-xrpl'],
+            rollupTypes: true,
         }),
         react(),
     ],
