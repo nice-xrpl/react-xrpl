@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { WalletAddressContext } from '../wallet-address-provider';
+import { WalletAddressContext } from '../wallet-address-context';
 
 export function useWalletAddress() {
     const address = useContext(WalletAddressContext);
