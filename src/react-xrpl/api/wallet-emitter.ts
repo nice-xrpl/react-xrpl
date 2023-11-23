@@ -242,7 +242,7 @@ export class WalletEmitter extends EventEmitter {
 
         const response = await this._client.request({
             command: 'subscribe',
-            // TODO: either accounts OR streams has to be specified.  each one gives independant events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
+            // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
             accounts: [this._address],
             // streams: ['transactions']
         });
