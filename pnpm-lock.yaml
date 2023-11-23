@@ -27,8 +27,8 @@ dependencies:
     specifier: ^3.2.0
     version: 3.2.0
   xrpl:
-    specifier: ^2.8.1
-    version: 2.8.1
+    specifier: ^2.13.0
+    version: 2.13.0
 
 devDependencies:
   '@changesets/cli':
@@ -591,8 +591,8 @@ packages:
     resolution: {integrity: sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==}
     dev: true
 
-  /@noble/hashes@1.3.1:
-    resolution: {integrity: sha512-EbqwksQwz9xDRGfDST86whPBgM65E0OH/pCgqW0GBVzO22bNE+NuIbeTb714+IfSjU3aRk47EUvXIb5bTsenKA==}
+  /@noble/hashes@1.3.2:
+    resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
     engines: {node: '>= 16'}
     dev: false
 
@@ -794,6 +794,12 @@ packages:
     resolution: {integrity: sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==}
     dev: true
 
+  /@types/brorand@1.0.33:
+    resolution: {integrity: sha512-KmNsWYtzKXpmxjecvYWUEGK5biJB/1kpHRObHZD8eme1tz/TvbESbZeNAHPRNd5qyCJiHk2ztbNzKbPC6TuPFg==}
+    dependencies:
+      '@types/node': 18.14.2
+    dev: false
+
   /@types/chai-subset@1.3.3:
     resolution: {integrity: sha512-frBecisrNGz+F4T6bcc+NLeolfiojh5FxW2klu669+8BARtyQv2C/GkNW6FUodVe4BroGMP/wER/YDGc7rEllw==}
     dependencies:
@@ -828,7 +834,6 @@ packages:
 
   /@types/node@18.14.2:
     resolution: {integrity: sha512-1uEQxww3DaghA0RxqHx0O0ppVlo43pJhepY51OxuQIKHpjbnYLA7vcdwioNPzIqmC2u3I/dmylcqjlh0e7AyUA==}
-    dev: true
 
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -1116,8 +1121,8 @@ packages:
     engines: {node: '>=0.6'}
     dev: false
 
-  /bignumber.js@9.1.1:
-    resolution: {integrity: sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig==}
+  /bignumber.js@9.1.2:
+    resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
     dev: false
 
   /bindings@1.5.0:
@@ -1142,7 +1147,7 @@ packages:
   /bip39@3.1.0:
     resolution: {integrity: sha512-c9kiwdk45Do5GL0vJMe7tS95VjCii65mYAH7DfWl3uW8AVzXKQVUm64i3hzVybBDMp9r7j9iNxR85+ul8MdN/A==}
     dependencies:
-      '@noble/hashes': 1.3.1
+      '@noble/hashes': 1.3.2
     dev: false
 
   /bn.js@4.12.0:
@@ -2458,8 +2463,8 @@ packages:
     resolution: {integrity: sha512-ckmWDJjphvd/FvZawgygcUeQCxzvohjFO5RxTjj4eq8kw359gFF3E1brjfI+viLMxss5JrHTDRHZvu2/tuy0Qg==}
     dev: true
 
-  /nan@2.17.0:
-    resolution: {integrity: sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==}
+  /nan@2.18.0:
+    resolution: {integrity: sha512-W7tfG7vMOGtD30sHoZSSc/JVYiyDPEyQVso/Zz+/uQd0B0L46gtC+pHha5FFMRpil6fm/AoEcRWyOVi4+E/f8w==}
     dev: false
 
   /nanoid@3.3.6:
@@ -2911,16 +2916,16 @@ packages:
       hash-base: 3.1.0
       inherits: 2.0.4
 
-  /ripple-address-codec@4.3.0:
-    resolution: {integrity: sha512-Tvd81i7hpDmNqHvkj6iYlj8Tv3I1Romw5gfjni9eacewJvGV2xe+p2y0FAw39z72qfciRMhQyHvpnviBcWVBNw==}
+  /ripple-address-codec@4.3.1:
+    resolution: {integrity: sha512-Qa3+9wKVvpL/xYtT6+wANsn0A1QcC5CT6IMZbRJZ/1lGt7gmwIfsrCuz1X0+LCEO7zgb+3UT1I1dc0k/5dwKQQ==}
     engines: {node: '>= 10'}
     dependencies:
       base-x: 3.0.9
       create-hash: 1.2.0
     dev: false
 
-  /ripple-binary-codec@1.6.0:
-    resolution: {integrity: sha512-fa0aMSbh1VOGEHIWCF/VuIvoMoQ/1HLJoBxm+oPNPIDyZJG1uRpLYph1pcvAlDuMutHM3ZHMzWjJpe3AaiMIUA==}
+  /ripple-binary-codec@1.10.0:
+    resolution: {integrity: sha512-qWXxubgXBV3h5NTaaLiusZ1FhPqSy+bCYHHarfZ3bMmO2alRa1Ox61jvX1Zyozok8PcF3gs3bKwZci4RTlA07w==}
     engines: {node: '>= 10'}
     dependencies:
       assert: 2.0.0
@@ -2928,18 +2933,18 @@ packages:
       buffer: 6.0.3
       create-hash: 1.2.0
       decimal.js: 10.4.3
-      ripple-address-codec: 4.3.0
+      ripple-address-codec: 4.3.1
     dev: false
 
-  /ripple-keypairs@1.3.0:
-    resolution: {integrity: sha512-LzM3Up9Pwz3dYqnczzNptimN3AxtjeGbDGeiOzREzbkslKiZcJ615b/ghBN4H23SC6W1GAL95juEzzimDi4THw==}
+  /ripple-keypairs@1.3.1:
+    resolution: {integrity: sha512-dmPlraWKJciFJxHcoubDahGnoIalG5e/BtV6HNDUs7wLXmtnLMHt6w4ed9R8MTL2zNrVPiIdI/HCtMMo0Tm7JQ==}
     engines: {node: '>= 10'}
     dependencies:
       bn.js: 5.2.1
       brorand: 1.1.0
       elliptic: 6.5.4
       hash.js: 1.1.7
-      ripple-address-codec: 4.3.0
+      ripple-address-codec: 4.3.1
     dev: false
 
   /rollup@3.25.1:
@@ -3235,7 +3240,7 @@ packages:
       bn.js: 4.12.0
       create-hmac: 1.1.7
       elliptic: 6.5.4
-      nan: 2.17.0
+      nan: 2.18.0
     dev: false
 
   /tinybench@2.5.0:
@@ -3701,8 +3706,8 @@ packages:
       strip-ansi: 6.0.1
     dev: true
 
-  /ws@8.13.0:
-    resolution: {integrity: sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==}
+  /ws@8.14.2:
+    resolution: {integrity: sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -3714,19 +3719,28 @@ packages:
         optional: true
     dev: false
 
-  /xrpl@2.8.1:
-    resolution: {integrity: sha512-P6SwGpA3QDusaqjElo6HbNvMI+voTQbkSknbqwZCTG6cpwsvrYbKWqS/Kl2hoqvhhe8L9d8tdCdm4YXcGy/j8g==}
+  /xrpl-secret-numbers@0.3.4:
+    resolution: {integrity: sha512-B3m0OLRsmNLQpN/BUR15+LC4yejM/pdneoWgijfBYbgjVVnpyCF5+Ur7zbAs4nCAlBUZYXnxp+o/rSNZkke9jQ==}
+    dependencies:
+      '@types/brorand': 1.0.33
+      brorand: 1.1.0
+      ripple-keypairs: 1.3.1
+    dev: false
+
+  /xrpl@2.13.0:
+    resolution: {integrity: sha512-jIu9PuG3g+2NZQT8oGmOL3LFkH6Pp+OHS1FNbozEJkajuHAuoCEe2vVddjD8ME81kgV+xRFnXJ+EUbmQDdh/Xg==}
     engines: {node: '>=10.13.0'}
     dependencies:
-      bignumber.js: 9.1.1
+      bignumber.js: 9.1.2
       bip32: 2.0.6
       bip39: 3.1.0
       https-proxy-agent: 5.0.1
       lodash: 4.17.21
-      ripple-address-codec: 4.3.0
-      ripple-binary-codec: 1.6.0
-      ripple-keypairs: 1.3.0
-      ws: 8.13.0
+      ripple-address-codec: 4.3.1
+      ripple-binary-codec: 1.10.0
+      ripple-keypairs: 1.3.1
+      ws: 8.14.2
+      xrpl-secret-numbers: 0.3.4
     transitivePeerDependencies:
       - bufferutil
       - supports-color

@@ -33,7 +33,7 @@
 		"process": "^0.11.10",
 		"stream-browserify": "^3.0.0",
 		"stream-http": "^3.2.0",
-		"xrpl": "^2.8.1"
+		"xrpl": "^2.13.0"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.26.0",
