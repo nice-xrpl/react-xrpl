@@ -1,6 +1,5 @@
 import React, { createContext } from 'react';
-
-export const WalletAddressContext = createContext<string>(null!);
+import { WalletAddressContext } from './wallet-address-context';
 
 type WalletProviderProps = {
     address: string;
