@@ -26,6 +26,32 @@ export type OfferStore = {
     [key in string]?: Offer[];
 };
 
+const TransactionTypes = {
+    PaymentSent: 'PaymentSent',
+    PaymentReceived: 'PaymentReceived',
+} as const;
+
+export type TransactionType =
+    (typeof TransactionTypes)[keyof typeof TransactionTypes];
+
+export type TransactionLogEntry =
+    | {
+          type: 'PaymentSent';
+          address: string;
+          timestamp: number;
+          payload: {
+              amount: number;
+          };
+      }
+    | {
+          type: 'PaymentReceived';
+          address: string;
+          timestamp: number;
+          payload: {
+              amount: number;
+          };
+      };
+
 export type WalletInitialState = {
     // wallet: xrplWallet;
     balance: number;
