@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { Client as xrplClient } from 'xrpl';
-import { XRPLClientContext } from '../client-provider';
+import { XRPLClientContext } from '../client-context';
 
 export function useXRPLClient(): xrplClient {
     const client = useContext(XRPLClientContext);

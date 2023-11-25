@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Client as xrplClient } from 'xrpl';
 import { Networks } from './constants';
-import { XRPLClientProvider } from './client-provider';
+import { XRPLClientContext } from './client-context';
 import { createStore } from './stores/create-store';
 import { ClientStores } from './client-types';
-import { ClientStoreProvider } from './client-store-provider';
+import { ClientStoreContext } from './client-store-context';
+import { WalletStoreManager } from './stores/wallet-store-manager';
 
 export function XRPLClient({
     children,
@@ -48,10 +49,10 @@ export function XRPLClient({
     }, [client]);
 
     return (
-        <XRPLClientProvider client={client}>
-            <ClientStoreProvider state={clientStore}>
-                {children}
-            </ClientStoreProvider>
-        </XRPLClientProvider>
+        <XRPLClientContext.Provider value={client}>
+            <ClientStoreContext.Provider value={clientStore}>
+                <WalletStoreManager>{children}</WalletStoreManager>
+            </ClientStoreContext.Provider>
+        </XRPLClientContext.Provider>
     );
 }
