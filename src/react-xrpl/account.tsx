@@ -4,6 +4,8 @@ import { getInitialWalletState } from './api';
 import { createWalletStore } from './create-wallet-store';
 import { WalletStores } from './wallet-store-provider';
 import { WalletAddressContext } from './wallet-address-context';
+import { AccountEvents } from './account-events';
+import { useWalletStoreManager } from './stores/use-wallet-store-manager';
 
 type AccountProps = {
     address: string;
@@ -15,25 +17,34 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
     const client = useXRPLClient();
     const [ready, setReady] = useState(false);
 
-    const [walletStore] = useState<WalletStores>(() => {
-        return createWalletStore();
-    });
+    const walletStoreManager = useWalletStoreManager();
 
     useEffect(() => {
+        const stores = walletStoreManager.getStoresForAddress(address);
+
         getInitialWalletState(client, address).then((state) => {
             console.log(address, state);
-            walletStore.balance.setState(state.balance);
-            walletStore.currencies.setState(state.currencies);
-            walletStore.tokens.setState(state.tokens);
-            walletStore.buyOffers.setState(state.buyOffers);
-            walletStore.sellOffers.setState(state.sellOffers);
+
+            stores.balance.setState(state.balance);
+            stores.currencies.setState(state.currencies);
+            stores.tokens.setState(state.tokens);
+            stores.buyOffers.setState(state.buyOffers);
+            stores.sellOffers.setState(state.sellOffers);
 
             setReady(true);
         });
+
+        return () => {
+            stores.release();
+        };
     }, [address]);
+
+    // enable account events
+    // update store
 
     return ready ? (
         <WalletAddressContext.Provider value={address}>
+            <AccountEvents />
             {children}
         </WalletAddressContext.Provider>
     ) : (

@@ -49,12 +49,12 @@ export async function getInitialWalletState(
 
     const balances = await client.getBalances(address);
 
-    let initialBalance = 0;
+    let initialBalance = '';
     let initialCurrencies: Currency[] = [];
 
     for (const balance of balances) {
         if (balance.currency === 'XRP') {
-            initialBalance = parseFloat(balance.value) ?? 0;
+            initialBalance = balance.value;
         }
 
         if (balance.issuer) {

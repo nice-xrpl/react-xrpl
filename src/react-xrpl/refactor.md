@@ -67,3 +67,17 @@ UPDATES
 1. condense storemanager stores - don't really need to be in multiple files, too much boilerplate
 2. refactor and move wallet emitter to client level
 3. complete use-transaction-log to use wallet emitter events
+
+
+
+network emitter
+- xrpl client level - listens on transaction on xrpl client
+- account
+	- add address
+	- starts events for this address, add refcount (client request sub)
+	- starts emitting events
+	- future calls to add address for same address increase refcount
+	- remove address - remove ref count, unsub on 0 count
+
+- network-events context - enable listeners at global level
+- account-events context - enable account listeners to balance changes

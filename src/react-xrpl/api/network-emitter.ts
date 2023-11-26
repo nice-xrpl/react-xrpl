@@ -275,6 +275,7 @@ export class NetworkEmitter {
     public async stop() {
         console.log('stopping transaction stream...');
         this._client.off('transaction', this.onTransaction);
+        // this._addressEvents.clear();
     }
 
     // addAddress starts emitting events based on blockchain transactions for address
@@ -496,6 +497,10 @@ export class NetworkEmitter {
 
         console.groupEnd();
     };
+
+    public getEmitter(address: string): EventEmitter<EventMap> | undefined {
+        return this._addressEvents.get(address)?.emitter;
+    }
 }
 
 export function createNetworkEmitter(client: xrplClient) {

@@ -54,7 +54,7 @@ export type TransactionLogEntry =
 
 export type WalletInitialState = {
     // wallet: xrplWallet;
-    balance: number;
+    balance: string;
     currencies: Currency[];
     tokens: Token[];
     sellOffers: OfferStore;
