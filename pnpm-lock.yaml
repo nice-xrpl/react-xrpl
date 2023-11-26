@@ -26,6 +26,9 @@ dependencies:
   stream-http:
     specifier: ^3.2.0
     version: 3.2.0
+  tseep:
+    specifier: ^1.1.3
+    version: 1.1.3
   xrpl:
     specifier: ^2.13.0
     version: 2.13.0
@@ -3293,6 +3296,10 @@ packages:
     dependencies:
       typescript: 5.1.3
     dev: true
+
+  /tseep@1.1.3:
+    resolution: {integrity: sha512-deBIcIlXUMlr3xaN0UEochqjU/zXGaZGPqHPd1rxo4w6DklBdRM6WQQtsk7bekIF+qY6QTeen3nE6OA7BxL9rg==}
+    dev: false
 
   /tty-browserify@0.0.1:
     resolution: {integrity: sha512-C3TaO7K81YvjCgQH9Q1S3R3P3BtN3RIM8n+OvX4il1K1zgE8ZhI0op7kClgkxtutIE8hQrcrHBXvIheqKUUCxw==}
