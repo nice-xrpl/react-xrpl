@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { WalletAddressProvider } from './wallet-address-provider';
 import { useXRPLClient } from './hooks';
 import { getInitialWalletState } from './api';
 import { createWalletStore } from './create-wallet-store';
 import { WalletStores } from './wallet-store-provider';
+import { WalletAddressContext } from './wallet-address-context';
 
 type AccountProps = {
     address: string;
@@ -33,9 +33,9 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
     }, [address]);
 
     return ready ? (
-        <WalletAddressProvider address={address}>
+        <WalletAddressContext.Provider value={address}>
             {children}
-        </WalletAddressProvider>
+        </WalletAddressContext.Provider>
     ) : (
         fallback
     );
