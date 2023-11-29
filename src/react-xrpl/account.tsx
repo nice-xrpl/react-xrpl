@@ -24,18 +24,23 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
     }, [address]);
 
     useEffect(() => {
-        getInitialWalletState(client, address).then((state) => {
-            console.log(address, state);
+        getInitialWalletState(client, address)
+            .then((state) => {
+                console.log(address, state);
 
-            stores.balance.setState(state.balance);
-            stores.currencies.setState(state.currencies);
-            stores.tokens.setState(state.tokens);
-            stores.buyOffers.setState(state.buyOffers);
-            stores.sellOffers.setState(state.sellOffers);
-            stores.transactionLog.setState(state.transactions);
+                stores.balance.setState(state.balance);
+                stores.currencies.setState(state.currencies);
+                stores.tokens.setState(state.tokens);
+                stores.buyOffers.setState(state.buyOffers);
+                stores.sellOffers.setState(state.sellOffers);
+                stores.transactionLog.setState(state.transactions);
 
-            setReady(true);
-        });
+                setReady(true);
+            })
+            .catch((error) => {
+                console.log(error);
+                setReady(true);
+            });
     }, [address, stores]);
 
     useEffect(() => {
