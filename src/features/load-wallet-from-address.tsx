@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { WalletAddress } from 'react-xrpl';
 import { ReadOnlyWalletUI } from './read-only-wallet-ui';
+import { Account } from 'react-xrpl';
 
 export function LoadWalletFromAddress({
     address: inputAddress,
@@ -11,10 +11,10 @@ export function LoadWalletFromAddress({
     const [input, setInput] = useState('');
 
     return address ? (
-        <WalletAddress address={address}>
+        <Account address={address}>
             <div>A requests only wallet from an address</div>
             <ReadOnlyWalletUI />
-        </WalletAddress>
+        </Account>
     ) : (
         <div>
             Enter a seed:{' '}

@@ -1,4 +1,4 @@
-import { useTransactionLog, useWallet } from 'react-xrpl';
+import { useTransactionLog } from 'react-xrpl';
 
 export function TransactionLog() {
     const log = useTransactionLog();
