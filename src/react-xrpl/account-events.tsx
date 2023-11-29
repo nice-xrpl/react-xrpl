@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useWalletAddress, useXRPLClient } from './hooks';
 import { Currency } from './api';
 import { useNetworkEmitter } from './hooks/use-network-emitter';
-import { useWalletStoreManager } from './stores/use-wallet-store-manager';
 import {
     getBalances,
     getBuyOffers,

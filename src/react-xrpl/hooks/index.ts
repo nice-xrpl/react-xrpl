@@ -1,3 +1,4 @@
+export * from './use-account-store';
 export * from './use-client-stores';
 export * from './use-create-wallet';
 export * from './use-create-and-fund-wallet';
