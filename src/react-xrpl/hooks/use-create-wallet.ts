@@ -8,7 +8,7 @@ export function useCreateWallet() {
     const clientRef = useRef(client);
     clientRef.current = client;
 
-    const create = useCallback((seed: string): Wallet => {
+    const create = useCallback((seed?: string): Wallet => {
         return createWallet(clientRef.current, seed);
     }, []);
 
