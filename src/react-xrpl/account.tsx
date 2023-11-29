@@ -23,6 +23,7 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
         return walletStoreManager.getStoresForAddress(address);
     }, [address]);
 
+    // TODO: Handle case where a wallet will have valid credentials, but the account will not exist.
     useEffect(() => {
         getInitialWalletState(client, address)
             .then((state) => {
