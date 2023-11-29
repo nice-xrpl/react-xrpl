@@ -12,6 +12,7 @@ type AccountProps = {
     children?: React.ReactNode;
 };
 
+// TODO: support suspense
 export function Account({ address, fallback = <></>, children }: AccountProps) {
     const client = useXRPLClient();
     const [ready, setReady] = useState(false);

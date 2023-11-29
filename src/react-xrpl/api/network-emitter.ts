@@ -8,6 +8,7 @@ import {
     NFTokenMint,
     ResponseOnlyTxInfo,
     Amount,
+    IssuedCurrencyAmount,
 } from 'xrpl';
 import { EventEmitter } from 'tseep';
 import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
@@ -18,21 +19,6 @@ import {
     Node,
 } from 'xrpl/dist/npm/models/transactions/metadata';
 import { Buffer } from 'buffer';
-
-export const WalletEvent = {
-    BalanceChange: 'balance-change',
-    CurrencyChange: 'currency-change',
-    TokenMint: 'token-mint',
-    TokenBurn: 'token-burn',
-    CreateBuyOffer: 'create-buy-offer',
-    CreateSellOffer: 'create-sell-offer',
-    CancelBuyOffer: 'cancel-buy-offer',
-    CancelSellOffer: 'cancel-sell-offer',
-    AcceptBuyOffer: 'accept-buy-offer',
-    AcceptSellOffer: 'accept-sell-offer',
-    TransferToken: 'transfer-token',
-    RefreshTokens: 'refresh-tokens',
-} as const;
 
 function findLedgerIndexForCreatedOffer(nodes: Node[]) {
     for (const node of nodes) {
@@ -114,9 +100,48 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
     return accounts;
 }
 
+export const WalletEvent = {
+    BalanceChange: 'balance-change',
+    PaymentSent: 'payment-sent',
+    PaymentRecieved: 'payment-recieved',
+    CurrencyChange: 'currency-change',
+    CurrencySent: 'currency-sent',
+    CurrencyRecieved: 'currency-recieved',
+    TokenMint: 'token-mint',
+    TokenBurn: 'token-burn',
+    CreateBuyOffer: 'create-buy-offer',
+    CreateSellOffer: 'create-sell-offer',
+    CancelBuyOffer: 'cancel-buy-offer',
+    CancelSellOffer: 'cancel-sell-offer',
+    AcceptBuyOffer: 'accept-buy-offer',
+    AcceptSellOffer: 'accept-sell-offer',
+    TransferToken: 'transfer-token',
+    RefreshTokens: 'refresh-tokens',
+} as const;
+
 type EventMap = {
     [WalletEvent.BalanceChange]: (balance: string, xrp: string) => void;
+    [WalletEvent.PaymentSent]: (
+        to: string,
+        xrp: string,
+        timestamp: number
+    ) => void;
+    [WalletEvent.PaymentRecieved]: (
+        from: string,
+        xrp: string,
+        timestamp: number
+    ) => void;
     [WalletEvent.CurrencyChange]: () => void;
+    [WalletEvent.CurrencySent]: (
+        to: string,
+        amount: IssuedCurrencyAmount,
+        timestamp: number
+    ) => void;
+    [WalletEvent.CurrencyRecieved]: (
+        from: string,
+        amount: IssuedCurrencyAmount,
+        timestamp: number
+    ) => void;
     [WalletEvent.TokenMint]: (token?: string) => void;
     [WalletEvent.TokenBurn]: (token?: string) => void;
     [WalletEvent.CreateBuyOffer]: (
@@ -259,11 +284,13 @@ function processNodes(
 export class NetworkEmitter {
     private _client: xrplClient;
     private _addressEvents: Map<string, AddressEvents>;
+    private _globalEvents: EventEmitter<EventMap>;
 
     constructor(client: xrplClient) {
         console.log('constructing new network emitter...');
 
         this._addressEvents = new Map<string, AddressEvents>();
+        this._globalEvents = new EventEmitter<EventMap>();
         this._client = client;
     }
 
@@ -382,6 +409,19 @@ export class NetworkEmitter {
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
                     destinationEvents.emitter.emit(WalletEvent.CurrencyChange);
+                    destinationEvents.emitter.emit(
+                        WalletEvent.CurrencyRecieved,
+                        tx.transaction.Account,
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0
+                    );
+                } else {
+                    destinationEvents.emitter.emit(
+                        WalletEvent.PaymentRecieved,
+                        tx.transaction.Account,
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0
+                    );
                 }
             }
 
@@ -390,6 +430,19 @@ export class NetworkEmitter {
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
                     sourceEvents.emitter.emit(WalletEvent.CurrencyChange);
+                    sourceEvents.emitter.emit(
+                        WalletEvent.CurrencySent,
+                        tx.transaction.Destination,
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0
+                    );
+                } else {
+                    sourceEvents.emitter.emit(
+                        WalletEvent.PaymentSent,
+                        tx.transaction.Destination,
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0
+                    );
                 }
             }
         }

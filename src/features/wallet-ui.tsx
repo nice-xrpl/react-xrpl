@@ -11,6 +11,7 @@ import { SellNFT } from './sell-nft';
 import { SendCurrency } from './send-currency';
 import { SendXRP } from './send-xrp';
 import { ShowNFT } from './show-nft';
+import { TransactionLog } from './transaction-log';
 import { WalletBalance } from './wallet-balance';
 import { WalletInfo } from './wallet-info';
 
@@ -38,6 +39,7 @@ export function WalletUI() {
             <AcceptBuyOffer />
             <AcceptSellOffer />
             <AcceptBrokerOffer />
+            <TransactionLog />
         </div>
     );
 }

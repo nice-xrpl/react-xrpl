@@ -1,4 +1,4 @@
-import { Wallet as xrplWallet } from 'xrpl';
+import { Amount, IssuedCurrencyAmount, Wallet as xrplWallet } from 'xrpl';
 
 export type Currency = {
     issuer: string;
@@ -37,18 +37,34 @@ export type TransactionType =
 export type TransactionLogEntry =
     | {
           type: 'PaymentSent';
-          address: string;
+          to: string;
           timestamp: number;
           payload: {
-              amount: number;
+              amount: string;
           };
       }
     | {
           type: 'PaymentReceived';
-          address: string;
+          from: string;
           timestamp: number;
           payload: {
-              amount: number;
+              amount: string;
+          };
+      }
+    | {
+          type: 'CurrencySent';
+          to: string;
+          timestamp: number;
+          payload: {
+              amount: IssuedCurrencyAmount;
+          };
+      }
+    | {
+          type: 'CurrencyReceived';
+          from: string;
+          timestamp: number;
+          payload: {
+              amount: IssuedCurrencyAmount;
           };
       };
 
@@ -59,8 +75,5 @@ export type WalletInitialState = {
     tokens: Token[];
     sellOffers: OfferStore;
     buyOffers: OfferStore;
-};
-
-export type XRPLWalletInitialState = WalletInitialState & {
-    wallet: xrplWallet;
+    transactions: TransactionLogEntry[];
 };

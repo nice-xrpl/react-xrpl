@@ -3,9 +3,11 @@ import { getTokens } from './requests/get-tokens';
 import {
     Currency,
     OfferStore,
+    TransactionLogEntry,
     WalletInitialState,
-    XRPLWalletInitialState,
 } from './wallet-types';
+import { getTransactions } from './requests/get-transactions';
+import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
 
 export function createWallet(client: xrplClient, seed?: string) {
     if (seed) {
@@ -88,11 +90,68 @@ export async function getInitialWalletState(
         initialSellOffers[token.id] = [];
     }
 
+    const response = await getTransactions(client, address, 10);
+    let initialTransactions: TransactionLogEntry[] = [];
+
+    for (const transaction of response.result.transactions) {
+        let tx = transaction.tx;
+
+        if (tx?.TransactionType === 'Payment') {
+            if (isIssuedCurrency(tx.Amount)) {
+                // amount is currency, not xrp
+                if (tx.Destination === address) {
+                    initialTransactions.push({
+                        type: 'CurrencyReceived',
+                        from: tx.Account,
+                        payload: {
+                            amount: tx.Amount,
+                        },
+                        timestamp: tx.date ?? 0,
+                    });
+                }
+
+                if (tx.Account === address) {
+                    initialTransactions.push({
+                        type: 'CurrencySent',
+                        to: tx.Destination,
+                        payload: {
+                            amount: tx.Amount,
+                        },
+                        timestamp: tx.date ?? 0,
+                    });
+                }
+            } else {
+                if (tx.Destination === address) {
+                    initialTransactions.push({
+                        type: 'PaymentReceived',
+                        from: tx.Account,
+                        payload: {
+                            amount: tx.Amount,
+                        },
+                        timestamp: tx.date ?? 0,
+                    });
+                }
+
+                if (tx.Account === address) {
+                    initialTransactions.push({
+                        type: 'PaymentSent',
+                        to: tx.Destination,
+                        payload: {
+                            amount: tx.Amount,
+                        },
+                        timestamp: tx.date ?? 0,
+                    });
+                }
+            }
+        }
+    }
+
     return {
         balance: initialBalance,
         currencies: initialCurrencies,
         tokens: initialTokens,
         buyOffers: {},
         sellOffers: {},
+        transactions: initialTransactions,
     };
 }

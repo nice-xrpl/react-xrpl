@@ -1,34 +1,144 @@
+import { useContext, useEffect, useMemo } from 'react';
+import { useStore } from '../stores/use-store';
+import { WalletAddressContext } from '../wallet-address-context';
+import { useWalletStoreManager } from '../stores/use-wallet-store-manager';
 import { useNetworkEmitter } from './use-network-emitter';
-import { useWalletAddress } from './use-wallet-address';
+import { TransactionLogEntry } from '../api/wallet-types';
+import { IssuedCurrencyAmount } from 'xrpl';
 
-function useTransactionLogInternal(accounts: string[]) {}
+function useTransactionLogInternal(account: string, limit: number = 10) {
+    const walletManager = useWalletStoreManager();
 
-export function useTransactionLog(accounts?: string | string[]) {
-    const address = useWalletAddress();
+    const store = walletManager.transactionLog.getStore(account);
     const networkEmitter = useNetworkEmitter();
 
-    if (address && !accounts) {
-        // useTransactionLog()
-        return useTransactionLogInternal([address]);
-    }
+    useEffect(() => {
+        networkEmitter.addAddress(account);
+        const emitter = networkEmitter.getEmitter(account);
 
-    if (!address && typeof accounts === 'string') {
-        // useTransactionLog(account)
-        return useTransactionLogInternal([accounts]);
-    }
+        const onPaymentSent = (to: string, xrp: string, timestamp: number) => {
+            store.setState((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'PaymentSent',
+                    payload: {
+                        amount: xrp,
+                    },
+                    timestamp,
+                    to,
+                };
+                let next = [entry, ...prev];
 
-    if (
-        !address &&
-        typeof accounts !== 'string' &&
-        accounts &&
-        accounts.length >= 0
-    ) {
-        // useTransactionLog([accounts])
-        return useTransactionLogInternal(accounts);
-    }
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
 
-    // TODO: handle useTransactionLog(account/accounts) in a wallet. what is the behavior? throw error for now
-    throw new Error(
-        'Attempted to call useTransactionLog with an account within the scope of a wallet!  Use useTransactionLog without any arguments or use it outside the scope of wallet.'
-    );
+        const onPaymentRecieved = (
+            from: string,
+            xrp: string,
+            timestamp: number
+        ) => {
+            store.setState((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'PaymentReceived',
+                    payload: {
+                        amount: xrp,
+                    },
+                    timestamp,
+                    from,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
+        const onCurrencySent = (
+            to: string,
+            amount: IssuedCurrencyAmount,
+            timestamp: number
+        ) => {
+            store.setState((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'CurrencySent',
+                    payload: {
+                        amount,
+                    },
+                    timestamp,
+                    to,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
+        const onCurrencyRecieved = (
+            from: string,
+            amount: IssuedCurrencyAmount,
+            timestamp: number
+        ) => {
+            store.setState((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'CurrencyReceived',
+                    payload: {
+                        amount,
+                    },
+                    timestamp,
+                    from,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
+        emitter?.on('payment-sent', onPaymentSent);
+        emitter?.on('payment-recieved', onPaymentRecieved);
+        emitter?.on('currency-sent', onCurrencySent);
+        emitter?.on('currency-recieved', onCurrencyRecieved);
+
+        return () => {
+            emitter?.off('payment-sent', onPaymentSent);
+            emitter?.off('payment-recieved', onPaymentRecieved);
+            emitter?.off('currency-sent', onCurrencySent);
+            emitter?.off('currency-recieved', onCurrencyRecieved);
+
+            networkEmitter.removeAddress(account);
+            walletManager.transactionLog.releaseStore(account);
+        };
+    }, [account]);
+
+    return useStore(store);
+}
+
+export function useTransactionLog(account?: string, limit?: number) {
+    const address = useContext(WalletAddressContext);
+
+    const accountsInternal = useMemo(() => {
+        if (address && !account) {
+            // useTransactionLog()
+            return address;
+        }
+
+        if (typeof account === 'string') {
+            // useTransactionLog(account)
+            return account;
+        }
+
+        return '';
+    }, [address]);
+
+    return useTransactionLogInternal(accountsInternal, limit);
 }

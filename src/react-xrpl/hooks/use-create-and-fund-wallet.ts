@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
 import { createAndFundWallet } from '../api';
-import { XRPLWalletInitialState } from '../api/wallet-types';
 import { useXRPLClient } from '.';
 import { Wallet } from 'xrpl';
 
