@@ -1,6 +1,6 @@
 export * from './use-client-stores';
-export * from './use-create-wallet-from-seed';
 export * from './use-create-wallet';
+export * from './use-create-and-fund-wallet';
 export * from './use-is-connected';
 export * from './use-network-emitter';
 export * from './use-transaction-log';

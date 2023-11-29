@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Wallet, useCreateWallet } from 'react-xrpl';
+import { Wallet, useCreateAndFundWallet } from 'react-xrpl';
 import { WalletUI } from './wallet-ui';
 
 export function CreateNewWallet() {
     const [seed, setSeed] = useState('');
     const [sending, setSending] = useState(false);
 
-    const createWallet = useCreateWallet();
+    const createAndFundWallet = useCreateAndFundWallet();
 
     return !seed ? (
         <div>
@@ -14,13 +14,13 @@ export function CreateNewWallet() {
                 <button
                     onClick={async () => {
                         setSending(true);
-                        const wallet = await createWallet('1048');
+                        const wallet = await createAndFundWallet('1048');
 
                         setSending(false);
 
-                        if (wallet.wallet.seed) {
+                        if (wallet.seed) {
                             console.log('created wallet: ', wallet);
-                            setSeed(wallet.wallet.seed);
+                            setSeed(wallet.seed);
                         }
                     }}
                 >

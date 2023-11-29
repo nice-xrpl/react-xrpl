@@ -7,39 +7,51 @@ import {
     XRPLWalletInitialState,
 } from './wallet-types';
 
-export async function createWallet(
+export function createWallet(client: xrplClient, seed?: string) {
+    if (seed) {
+        return xrplWallet.fromSeed(seed);
+    }
+
+    return xrplWallet.generate();
+}
+
+export async function createAndFundWallet(
     client: xrplClient,
     amount: string = '1024'
-): Promise<XRPLWalletInitialState> {
+): Promise<xrplWallet> {
     await client.connect();
 
     const { wallet } = await client.fundWallet(null, {
         amount,
     });
 
-    const intialState = await getInitialWalletState(client, wallet.address);
+    // const intialState = await getInitialWalletState(client, wallet.address);
 
-    return {
-        wallet,
-        ...intialState,
-    };
+    // return {
+    //     wallet,
+    //     ...intialState,
+    // };
+
+    return wallet;
 }
 
-export async function createWalletFromSeed(
-    client: xrplClient,
-    seed: string
-): Promise<XRPLWalletInitialState> {
-    await client.connect();
+// export async function createWalletFromSeed(
+//     client: xrplClient,
+//     seed: string
+// ): Promise<xrplWallet> {
+//     await client.connect();
 
-    const wallet = xrplWallet.fromSeed(seed);
+//     const wallet = xrplWallet.fromSeed(seed);
 
-    const intialState = await getInitialWalletState(client, wallet.address);
+//     // const intialState = await getInitialWalletState(client, wallet.address);
 
-    return {
-        wallet,
-        ...intialState,
-    };
-}
+//     // return {
+//     //     wallet,
+//     //     ...intialState,
+//     // };
+
+//     return wallet;
+// }
 
 export async function getInitialWalletState(
     client: xrplClient,
