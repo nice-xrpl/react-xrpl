@@ -1,31 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Wallet as xrplWallet } from 'xrpl';
-import { WalletProvider } from './wallet-provider';
-import { createWalletFromSeed } from './api';
-import { useXRPLClient } from './hooks';
 import { Account } from './account';
+import { WalletContext } from './wallet-context';
 
 type WalletProps = {
-    seed: string;
+    seed?: string;
     fallback?: React.ReactElement;
     children?: React.ReactNode;
 };
 
 export function Wallet({ seed, fallback = <></>, children }: WalletProps) {
-    const client = useXRPLClient();
-    const [wallet, setWallet] = useState<xrplWallet>();
+    const wallet = useMemo(() => {
+        if (seed) {
+            return xrplWallet.fromSeed(seed);
+        }
 
-    useEffect(() => {
-        createWalletFromSeed(client, seed).then((created) => {
-            // console.log('created wallet...');
-            setWallet(created.wallet);
-        });
+        return xrplWallet.generate();
     }, [seed]);
 
     return wallet ? (
-        <WalletProvider wallet={wallet}>
+        <WalletContext.Provider value={wallet}>
             <Account address={wallet.address}>{children}</Account>
-        </WalletProvider>
+        </WalletContext.Provider>
     ) : (
         fallback
     );

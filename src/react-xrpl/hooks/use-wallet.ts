@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { WalletContext } from '../wallet-provider';
+import { WalletContext } from '../wallet-context';
 import { Wallet as xrplWallet } from 'xrpl';
 
 export function useWallet(): xrplWallet {

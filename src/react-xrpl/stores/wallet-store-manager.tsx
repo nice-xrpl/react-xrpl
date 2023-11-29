@@ -70,12 +70,12 @@ export class WalletStoreManager {
 export function WalletStoreManagerProvider({
     children,
 }: WalletStoreManagerProps) {
-    const [managers] = useState<WalletStoreManager>(() => {
+    const [manager] = useState<WalletStoreManager>(() => {
         return new WalletStoreManager();
     });
 
     return (
-        <WalletStoreManagerContext.Provider value={managers}>
+        <WalletStoreManagerContext.Provider value={manager}>
             {children}
         </WalletStoreManagerContext.Provider>
     );

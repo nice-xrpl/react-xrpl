@@ -1,8 +1,8 @@
 import { useStore } from '../../stores/use-store';
-import { useWalletStores } from '../use-wallet-stores';
+import { useAccountStore } from '../use-account-store';
 
 export function useTokens() {
-    const { tokens: tokenStore } = useWalletStores();
+    const { tokens: tokenStore } = useAccountStore();
 
     return useStore(tokenStore);
 }

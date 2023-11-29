@@ -1,8 +1,8 @@
 import { useStore } from '../../stores/use-store';
-import { useWalletStores } from '../use-wallet-stores';
+import { useAccountStore } from '../use-account-store';
 
 export function useBuyOffers(tokenId: string) {
-    const { buyOffers } = useWalletStores();
+    const { buyOffers } = useAccountStore();
 
     return useStore(buyOffers)[tokenId];
 }

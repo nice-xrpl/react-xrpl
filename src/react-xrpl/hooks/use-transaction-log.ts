@@ -1,9 +1,11 @@
+import { useNetworkEmitter } from './use-network-emitter';
 import { useWalletAddress } from './use-wallet-address';
 
 function useTransactionLogInternal(accounts: string[]) {}
 
 export function useTransactionLog(accounts?: string | string[]) {
     const address = useWalletAddress();
+    const networkEmitter = useNetworkEmitter();
 
     if (address && !accounts) {
         // useTransactionLog()

@@ -1,8 +1,8 @@
 import { useStore } from '../../stores/use-store';
-import { useWalletStores } from '../use-wallet-stores';
+import { useAccountStore } from '../use-account-store';
 
 export function useBalance() {
-    const { balance: balanceStore } = useWalletStores();
+    const { balance: balanceStore } = useAccountStore();
 
     return useStore(balanceStore);
 }

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useXRPLClient } from './hooks';
 import { getInitialWalletState } from './api';
-import { createWalletStore } from './create-wallet-store';
-import { WalletStores } from './wallet-store-provider';
 import { WalletAddressContext } from './wallet-address-context';
 import { AccountEvents } from './account-events';
 import { useWalletStoreManager } from './stores/use-wallet-store-manager';
+import { AccountStoresContext } from './account-stores-context';
 
 type AccountProps = {
     address: string;
@@ -19,9 +18,11 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
 
     const walletStoreManager = useWalletStoreManager();
 
-    useEffect(() => {
-        const stores = walletStoreManager.getStoresForAddress(address);
+    const stores = useMemo(() => {
+        return walletStoreManager.getStoresForAddress(address);
+    }, [address]);
 
+    useEffect(() => {
         getInitialWalletState(client, address).then((state) => {
             console.log(address, state);
 
@@ -33,19 +34,23 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
 
             setReady(true);
         });
+    }, [address, stores]);
 
+    useEffect(() => {
         return () => {
             stores.release();
         };
-    }, [address]);
+    }, [stores]);
 
     // enable account events
     // update store
 
     return ready ? (
         <WalletAddressContext.Provider value={address}>
-            <AccountEvents />
-            {children}
+            <AccountStoresContext.Provider value={stores}>
+                <AccountEvents />
+                {children}
+            </AccountStoresContext.Provider>
         </WalletAddressContext.Provider>
     ) : (
         fallback

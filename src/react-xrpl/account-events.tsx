@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useWalletAddress, useXRPLClient } from './hooks';
-import { Currency, getInitialWalletState } from './api';
-import { createWalletStore } from './create-wallet-store';
-import { WalletStores } from './wallet-store-provider';
-import { WalletAddressContext } from './wallet-address-context';
+import { Currency } from './api';
 import { useNetworkEmitter } from './hooks/use-network-emitter';
 import { useWalletStoreManager } from './stores/use-wallet-store-manager';
 import {
@@ -14,6 +11,7 @@ import {
 } from './api/requests';
 import { WalletEvent } from './api/network-emitter';
 import { Amount } from 'xrpl';
+import { useAccountStore } from './hooks/use-account-store';
 
 export function AccountEvents() {
     const client = useXRPLClient();
@@ -23,10 +21,9 @@ export function AccountEvents() {
     // update store
 
     const networkEmitter = useNetworkEmitter();
-    const walletStoreManager = useWalletStoreManager();
+    const stores = useAccountStore();
 
     useEffect(() => {
-        const stores = walletStoreManager.getStoresForAddress(address);
         networkEmitter.addAddress(address);
 
         const events = networkEmitter.getEmitter(address);
@@ -139,9 +136,8 @@ export function AccountEvents() {
             events?.off(WalletEvent.AcceptSellOffer, acceptOfferListener);
 
             networkEmitter.removeAddress(address);
-            stores.release();
         };
-    }, [address]);
+    }, [address, stores]);
 
     return null;
 }
