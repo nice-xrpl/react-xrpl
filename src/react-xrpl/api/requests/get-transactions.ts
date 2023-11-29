@@ -12,5 +12,7 @@ export async function getTransactions(
         limit,
     });
 
+    console.log('ACCOUNT TX: ', response);
+
     return response;
 }

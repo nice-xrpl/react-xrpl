@@ -32,6 +32,7 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
             stores.tokens.setState(state.tokens);
             stores.buyOffers.setState(state.buyOffers);
             stores.sellOffers.setState(state.sellOffers);
+            stores.transactionLog.setState(state.transactions);
 
             setReady(true);
         });

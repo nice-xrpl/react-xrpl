@@ -97,6 +97,8 @@ export async function getInitialWalletState(
         let tx = transaction.tx;
 
         if (tx?.TransactionType === 'Payment') {
+            // console.log('parsing tx: ', tx);
+
             if (isIssuedCurrency(tx.Amount)) {
                 // amount is currency, not xrp
                 if (tx.Destination === address) {
