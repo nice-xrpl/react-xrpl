@@ -23,7 +23,7 @@ Any components that make use of any provided hooks/components need to be wrapped
 		);
 	}
 
-You can now start using the various hooks and components present in the library!  General purpose hooks, such as useIsConnected may be used within the scope of XRPLClient.  However, any request hooks require an Account component to be present and any transaction hooks require a Wallet component to be present.  
+You can now start using the various hooks and components present in the library!  General purpose hooks, such as useIsConnected may be used within the scope of XRPLClient.  However, any request hooks require an Account component to be present and any transaction hooks require a Wallet component to be present.  Account provides reactive usage of all request hooks.
 
 Here is a simple example using Account:
 
@@ -47,7 +47,7 @@ Here is a simple example using Account:
 		);
 	}
 
-Wallet accepts a seed or secret, or will generate a new seed from entropy.  Wallets provide credentials and are the only way to use transaction hooks (such as sending xrp).  On testnet, the useFundWallet hook may be used to seed xpr from a faucet.  A Wallet includes an Account component, so it is not neccessary to use it again.
+Wallet accepts a seed or secret, or will generate a new seed from entropy.  Wallets provide credentials and are the only way to use transaction hooks (such as sending xrp).  On testnet, the useFundWallet hook may be used to seed xpr from a faucet.  You can also use the Account component inside a Wallet in order to use request hooks.  If used inside a Wallet, you do not need to provide an address to Account.  Keep in mind that an Account must be valid for the account component to work - if the account has not been funded, then Account will throw an error that needs to be caught by an ErrorBoundary.
 
 	import { Wallet } from '@nice-xrpl/react-xrpl'
 
@@ -56,7 +56,9 @@ Wallet accepts a seed or secret, or will generate a new seed from entropy.  Wall
 
 		return (
 			<Wallet address={mySeed}>
-				<SendXRP />
+				<Account>
+					<SendXRP />
+				</Account>
 			</Wallet>
 		);
 	}
