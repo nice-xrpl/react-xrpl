@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Wallet } from 'react-xrpl';
+import { Account, Wallet } from 'react-xrpl';
 import { WalletUI } from './wallet-ui';
 
 export function LoadWalletFromSeed({ seed: inputSeed }: { seed: string }) {
@@ -9,7 +9,9 @@ export function LoadWalletFromSeed({ seed: inputSeed }: { seed: string }) {
     return seed ? (
         <Wallet seed={seed}>
             <div>A wallet from a seed</div>
-            <WalletUI />
+            <Account>
+                <WalletUI />
+            </Account>
         </Wallet>
     ) : (
         <div>

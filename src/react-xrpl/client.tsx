@@ -29,6 +29,7 @@ export function XRPLClient({
     });
 
     useEffect(() => {
+        console.log('connecting...');
         client.connect();
 
         const onConnected = () => {
@@ -45,6 +46,9 @@ export function XRPLClient({
         client.on('disconnected', onDisconnected);
 
         return () => {
+            console.log('disconnecting...');
+            clientStore.connected.setState(false);
+
             client.off('connected', onConnected);
             client.off('disconnected', onDisconnected);
 

@@ -1,21 +1,27 @@
 import { useEffect, useMemo } from 'react';
 import { createNetworkEmitter } from './api/network-emitter';
-import { useXRPLClient } from './hooks';
+import { useIsConnected, useXRPLClient } from './hooks';
 import { NetworkEmitterContext } from './network-emitter-context';
 
 export function NetworkEmitter({ children }: { children: React.ReactNode }) {
     const client = useXRPLClient();
+    const isConnected = useIsConnected();
+
     const networkEmitter = useMemo(() => {
         return createNetworkEmitter(client);
     }, [client]);
 
     useEffect(() => {
-        networkEmitter.start();
+        if (isConnected) {
+            networkEmitter.start();
+        }
 
         return () => {
-            networkEmitter.stop();
+            if (isConnected) {
+                networkEmitter.stop();
+            }
         };
-    }, [networkEmitter]);
+    }, [networkEmitter, isConnected]);
 
     return (
         <NetworkEmitterContext.Provider value={networkEmitter}>

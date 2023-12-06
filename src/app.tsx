@@ -2,10 +2,12 @@ import { CreateNewWallet } from './features/create-new-wallet';
 import { LoadWalletFromSeed } from './features/load-wallet-from-seed';
 import { LoadWalletFromAddress } from './features/load-wallet-from-address';
 import './app.css';
-import { useIsConnected, XRPLClient } from 'react-xrpl';
+import { useIsConnected, useTransactionLog, XRPLClient } from 'react-xrpl';
+import { TransactionLog } from './features/transaction-log';
 
 function MainApp() {
     const isConnected = useIsConnected();
+    // const log = useTransactionLog('r4kpAq7NYMdKq2WX28htLGrSxuPownzjPG');
 
     return (
         <div className="App">
@@ -14,6 +16,13 @@ function MainApp() {
             </div>
             <div>
                 <CreateNewWallet />
+            </div>
+            <div>
+                <div>
+                    Sample Log:
+                    <TransactionLog account="r4kpAq7NYMdKq2WX28htLGrSxuPownzjPG" />
+                </div>
+                <LoadWalletFromSeed seed={'sEdVdkpAdtRJu2MRq5qb6Z7Vf5oNn5t'} />
             </div>
             <div>
                 <LoadWalletFromSeed seed={'sEdT2SsT7dadAscvgf9DL83evmaH8yT'} />

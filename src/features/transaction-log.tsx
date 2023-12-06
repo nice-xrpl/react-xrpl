@@ -4,7 +4,7 @@ function processEntry(entry: TransactionLogEntry) {
     if (entry.type === 'PaymentReceived') {
         return (
             <div key={entry.timestamp}>
-                {entry.type} - {entry.payload.amount} from {entry.from}
+                {entry.type}: Recieved {entry.payload.amount} from {entry.from}
             </div>
         );
     }
@@ -12,14 +12,14 @@ function processEntry(entry: TransactionLogEntry) {
     if (entry.type === 'PaymentSent') {
         return (
             <div key={entry.timestamp}>
-                {entry.type} - {entry.payload.amount} to {entry.to}
+                {entry.type}: Sent {entry.payload.amount} to {entry.to}
             </div>
         );
     }
 }
 
-export function TransactionLog() {
-    const log = useTransactionLog();
+export function TransactionLog({ account }: { account?: string }) {
+    const log = useTransactionLog(account);
 
     return (
         <div>

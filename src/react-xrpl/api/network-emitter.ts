@@ -557,7 +557,5 @@ export class NetworkEmitter {
 }
 
 export function createNetworkEmitter(client: xrplClient) {
-    const networkEmitter = new NetworkEmitter(client);
-
-    return networkEmitter;
+    return new NetworkEmitter(client);
 }

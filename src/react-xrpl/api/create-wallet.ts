@@ -6,7 +6,10 @@ import {
     TransactionLogEntry,
     WalletInitialState,
 } from './wallet-types';
-import { getTransactions } from './requests/get-transactions';
+import {
+    getTransactions,
+    processTransactions,
+} from './requests/get-transactions';
 import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
 
 export function createWallet(client: xrplClient, seed?: string) {
@@ -91,62 +94,7 @@ export async function getInitialWalletState(
     }
 
     const response = await getTransactions(client, address, 10);
-    let initialTransactions: TransactionLogEntry[] = [];
-
-    for (const transaction of response.result.transactions) {
-        let tx = transaction.tx;
-
-        if (tx?.TransactionType === 'Payment') {
-            // console.log('parsing tx: ', tx);
-
-            if (isIssuedCurrency(tx.Amount)) {
-                // amount is currency, not xrp
-                if (tx.Destination === address) {
-                    initialTransactions.push({
-                        type: 'CurrencyReceived',
-                        from: tx.Account,
-                        payload: {
-                            amount: tx.Amount,
-                        },
-                        timestamp: tx.date ?? 0,
-                    });
-                }
-
-                if (tx.Account === address) {
-                    initialTransactions.push({
-                        type: 'CurrencySent',
-                        to: tx.Destination,
-                        payload: {
-                            amount: tx.Amount,
-                        },
-                        timestamp: tx.date ?? 0,
-                    });
-                }
-            } else {
-                if (tx.Destination === address) {
-                    initialTransactions.push({
-                        type: 'PaymentReceived',
-                        from: tx.Account,
-                        payload: {
-                            amount: tx.Amount,
-                        },
-                        timestamp: tx.date ?? 0,
-                    });
-                }
-
-                if (tx.Account === address) {
-                    initialTransactions.push({
-                        type: 'PaymentSent',
-                        to: tx.Destination,
-                        payload: {
-                            amount: tx.Amount,
-                        },
-                        timestamp: tx.date ?? 0,
-                    });
-                }
-            }
-        }
-    }
+    let initialTransactions = processTransactions(response, address);
 
     return {
         balance: initialBalance,
