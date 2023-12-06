@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Wallet as xrplWallet } from 'xrpl';
 import { Account } from './account';
 import { WalletContext } from './wallet-context';
+import { WalletAddressContext } from './wallet-address-context';
 
 type WalletProps = {
     seed?: string;
@@ -20,7 +21,9 @@ export function Wallet({ seed, fallback = <></>, children }: WalletProps) {
 
     return wallet ? (
         <WalletContext.Provider value={wallet}>
-            <Account address={wallet.address}>{children}</Account>
+            <WalletAddressContext.Provider value={wallet.address}>
+                {children}
+            </WalletAddressContext.Provider>
         </WalletContext.Provider>
     ) : (
         fallback
