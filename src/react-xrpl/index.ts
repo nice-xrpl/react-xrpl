@@ -13,4 +13,4 @@ export * from './api/transactions';
 
 export * from './utils';
 
-export { Client } from 'xrpl';
+export { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
