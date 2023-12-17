@@ -12,3 +12,5 @@ export * from './api/requests';
 export * from './api/transactions';
 
 export * from './utils';
+
+export { Client } from 'xrpl';

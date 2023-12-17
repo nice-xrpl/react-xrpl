@@ -1,18 +1,12 @@
 import { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
 import { getTokens } from './requests/get-tokens';
-import {
-    Currency,
-    OfferStore,
-    TransactionLogEntry,
-    WalletInitialState,
-} from './wallet-types';
+import { Currency, OfferStore, WalletInitialState } from './wallet-types';
 import {
     getTransactions,
     processTransactions,
 } from './requests/get-transactions';
-import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
 
-export function createWallet(client: xrplClient, seed?: string) {
+export function createWallet(seed?: string) {
     if (seed) {
         return xrplWallet.fromSeed(seed);
     }
