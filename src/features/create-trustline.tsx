@@ -7,6 +7,7 @@ export function CreateTrustline() {
     const [destinationAddress, setDestinationAddress] = useState('');
     const [amount, setAmount] = useState(48);
     const [sending, setSending] = useState(false);
+    const [currency, setCurrency] = useState('USD');
 
     return (
         <div>
@@ -22,7 +23,12 @@ export function CreateTrustline() {
                 onChange={(e) => setAmount(parseInt(e.currentTarget.value, 10))}
                 type="number"
             />{' '}
-            USD -{' '}
+            <input
+                value={currency}
+                onChange={(e) => setCurrency(e.currentTarget.value)}
+                type="text"
+            />{' '}
+            -{' '}
             {sending ? (
                 'Waiting for response...'
             ) : (
@@ -31,7 +37,7 @@ export function CreateTrustline() {
                         setSending(true);
                         const result = await createTrustline(
                             destinationAddress,
-                            'USD',
+                            currency,
                             `${amount}`
                         );
                         setSending(false);
