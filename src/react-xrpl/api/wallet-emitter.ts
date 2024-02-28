@@ -1,12 +1,10 @@
 import {
     Client as xrplClient,
     TransactionStream,
-    Wallet as xrplWallet,
     dropsToXrp,
     getNFTokenID,
     encodeAccountID,
 } from 'xrpl';
-import { EventEmitter } from 'events';
 import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
 import {
     isCreatedNode,
@@ -14,7 +12,7 @@ import {
     isModifiedNode,
     Node,
 } from 'xrpl/dist/npm/models/transactions/metadata';
-import { Buffer } from 'buffer';
+import { EventEmitter } from 'tseep';
 
 export const WalletEvent = {
     BalanceChange: 'balance-change',

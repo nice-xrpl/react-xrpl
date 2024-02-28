@@ -1,12 +1,11 @@
 import {
-    Client as xrplClient,
-    TransactionStream,
-    Wallet as xrplWallet,
-    dropsToXrp,
-    getNFTokenID,
-    encodeAccountID,
     Amount,
     IssuedCurrencyAmount,
+    TransactionStream,
+    dropsToXrp,
+    encodeAccountID,
+    getNFTokenID,
+    Client as xrplClient,
 } from 'xrpl';
 import { EventEmitter } from 'tseep';
 import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
@@ -16,7 +15,6 @@ import {
     isModifiedNode,
     Node,
 } from 'xrpl/dist/npm/models/transactions/metadata';
-import { Buffer } from 'buffer';
 
 function findLedgerIndexForCreatedOffer(nodes: Node[]) {
     for (const node of nodes) {
@@ -118,7 +116,7 @@ export const WalletEvent = {
 } as const;
 
 type EventMap = {
-    [WalletEvent.BalanceChange]: (balance: string, xrp: string) => void;
+    [WalletEvent.BalanceChange]: (balance: string, xrp: number) => void;
     [WalletEvent.PaymentSent]: (
         to: string,
         xrp: string,

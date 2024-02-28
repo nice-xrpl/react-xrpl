@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'path';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
+// import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import dts from 'vite-plugin-dts';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -9,7 +9,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
     plugins: [
         tsconfigPaths(),
-        nodePolyfills(),
+        // nodePolyfills(),
         dts({
             include: ['src/react-xrpl'],
             rollupTypes: true,
@@ -44,14 +44,14 @@ export default defineConfig({
             plugins: [],
         },
     },
-    resolve: {
-        alias: {
-            events: 'events',
-            crypto: 'crypto-browserify',
-            stream: 'stream-browserify',
-            http: 'stream-http',
-            https: 'https-browserify',
-            ws: 'xrpl/dist/npm/client/WSWrapper',
-        },
-    },
+    // resolve: {
+    //     alias: {
+    //         events: 'events',
+    //         crypto: 'crypto-browserify',
+    //         stream: 'stream-browserify',
+    //         http: 'stream-http',
+    //         https: 'https-browserify',
+    //         ws: 'xrpl/dist/npm/client/WSWrapper',
+    //     },
+    // },
 });
