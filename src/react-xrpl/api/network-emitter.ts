@@ -16,6 +16,21 @@ import {
     Node,
 } from 'xrpl/dist/npm/models/transactions/metadata';
 
+function hexToUInt8Array(hexString: string) {
+    if (hexString.length % 2 !== 0) {
+        throw new Error('Hex string must have an even number of characters');
+    }
+
+    var bytes = new Uint8Array(hexString.length / 2);
+
+    for (var i = 0; i < bytes.length; i++) {
+        var byte = hexString.charAt(i * 2) + hexString.charAt(i * 2 + 1);
+        bytes[i] = parseInt(byte, 16);
+    }
+
+    return bytes;
+}
+
 function findLedgerIndexForCreatedOffer(nodes: Node[]) {
     for (const node of nodes) {
         if (isCreatedNode(node)) {
@@ -63,7 +78,7 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
             if (node.ModifiedNode.LedgerEntryType === 'NFTokenPage') {
                 const ledgerIndex = node.ModifiedNode.LedgerIndex;
                 const account = encodeAccountID(
-                    Buffer.from(ledgerIndex.substring(0, 40), 'hex')
+                    hexToUInt8Array(ledgerIndex.substring(0, 40))
                 );
 
                 accounts.push(account);
@@ -74,7 +89,7 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
             if (node.CreatedNode.LedgerEntryType === 'NFTokenPage') {
                 const ledgerIndex = node.CreatedNode.LedgerIndex;
                 const account = encodeAccountID(
-                    Buffer.from(ledgerIndex.substring(0, 40), 'hex')
+                    hexToUInt8Array(ledgerIndex.substring(0, 40))
                 );
 
                 accounts.push(account);
@@ -85,7 +100,7 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
             if (node.DeletedNode.LedgerEntryType === 'NFTokenPage') {
                 const ledgerIndex = node.DeletedNode.LedgerIndex;
                 const account = encodeAccountID(
-                    Buffer.from(ledgerIndex.substring(0, 40), 'hex')
+                    hexToUInt8Array(ledgerIndex.substring(0, 40))
                 );
 
                 accounts.push(account);
