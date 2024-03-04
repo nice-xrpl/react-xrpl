@@ -111,7 +111,7 @@ function extractAccountsFromNFTokenPage(nodes: Node[]) {
     return accounts;
 }
 
-export const WalletEvent = {
+export const WalletEvents = {
     BalanceChange: 'balance-change',
     PaymentSent: 'payment-sent',
     PaymentRecieved: 'payment-recieved',
@@ -131,47 +131,52 @@ export const WalletEvent = {
 } as const;
 
 type EventMap = {
-    [WalletEvent.BalanceChange]: (balance: string, xrp: number) => void;
-    [WalletEvent.PaymentSent]: (
+    [WalletEvents.BalanceChange]: (balance: string, xrp: number) => void;
+    [WalletEvents.PaymentSent]: (
         to: string,
         xrp: string,
         timestamp: number
     ) => void;
-    [WalletEvent.PaymentRecieved]: (
+    [WalletEvents.PaymentRecieved]: (
         from: string,
         xrp: string,
         timestamp: number
     ) => void;
-    [WalletEvent.CurrencyChange]: () => void;
-    [WalletEvent.CurrencySent]: (
+    [WalletEvents.CurrencyChange]: () => void;
+    [WalletEvents.CurrencySent]: (
         to: string,
         amount: IssuedCurrencyAmount,
         timestamp: number
     ) => void;
-    [WalletEvent.CurrencyRecieved]: (
+    [WalletEvents.CurrencyRecieved]: (
         from: string,
         amount: IssuedCurrencyAmount,
         timestamp: number
     ) => void;
-    [WalletEvent.TokenMint]: (token?: string) => void;
-    [WalletEvent.TokenBurn]: (token?: string) => void;
-    [WalletEvent.CreateBuyOffer]: (
+    [WalletEvents.TokenMint]: (token?: string) => void;
+    [WalletEvents.TokenBurn]: (token?: string) => void;
+    [WalletEvents.CreateBuyOffer]: (
         ledgerIndex: string,
         token: string,
         amount: Amount
     ) => void;
-    [WalletEvent.CreateSellOffer]: (
+    [WalletEvents.CreateSellOffer]: (
         ledgerIndex: string,
         token: string,
         amount: Amount
     ) => void;
-    [WalletEvent.CancelBuyOffer]: () => void;
-    [WalletEvent.CancelSellOffer]: () => void;
-    [WalletEvent.AcceptBuyOffer]: (buyOfferId: string, token: string) => void;
-    [WalletEvent.AcceptSellOffer]: (sellOfferId: string, token: string) => void;
-    [WalletEvent.TransferToken]: () => void;
-    [WalletEvent.RefreshTokens]: () => void;
+    [WalletEvents.CancelBuyOffer]: () => void;
+    [WalletEvents.CancelSellOffer]: () => void;
+    [WalletEvents.AcceptBuyOffer]: (buyOfferId: string, token: string) => void;
+    [WalletEvents.AcceptSellOffer]: (
+        sellOfferId: string,
+        token: string
+    ) => void;
+    [WalletEvents.TransferToken]: () => void;
+    [WalletEvents.RefreshTokens]: () => void;
 };
+
+export type WalletEvent = keyof EventMap;
 
 type AddressEvents = {
     emitter: EventEmitter<EventMap>;
@@ -199,7 +204,7 @@ function processNodes(
                             .Balance as string;
 
                         events.emitter.emit(
-                            WalletEvent.BalanceChange,
+                            WalletEvents.BalanceChange,
                             balance,
                             dropsToXrp(balance)
                         );
@@ -237,7 +242,7 @@ function processNodes(
                             .Balance as string;
 
                         events.emitter.emit(
-                            WalletEvent.BalanceChange,
+                            WalletEvents.BalanceChange,
                             balance,
                             dropsToXrp(balance)
                         );
@@ -296,6 +301,7 @@ export class NetworkEmitter {
     private _client: xrplClient;
     private _addressEvents: Map<string, AddressEvents>;
     private _globalEvents: EventEmitter<EventMap>;
+    private _eventsEnabled: boolean = false;
 
     constructor(client: xrplClient) {
         console.log('constructing new network emitter...');
@@ -306,18 +312,26 @@ export class NetworkEmitter {
     }
 
     public async start() {
-        console.log('starting transaction stream...');
-        this._client.on('transaction', this.onTransaction);
+        if (!this._eventsEnabled) {
+            console.log('starting transaction stream...');
+            this._client.on('transaction', this.onTransaction);
+
+            this._eventsEnabled = true;
+        }
     }
 
     public async stop() {
-        console.log('stopping transaction stream...');
-        this._client.off('transaction', this.onTransaction);
-        // this._addressEvents.clear();
+        if (this._eventsEnabled) {
+            console.log('stopping transaction stream...');
+            this._client.off('transaction', this.onTransaction);
+
+            this._eventsEnabled = false;
+            // this._addressEvents.clear();
+        }
     }
 
     // addAddress starts emitting events based on blockchain transactions for address
-    public async addAddress(address: string) {
+    private async addAddress(address: string) {
         let events = this._addressEvents.get(address);
 
         if (events) {
@@ -341,7 +355,7 @@ export class NetworkEmitter {
         });
     }
 
-    public async removeAddress(address: string) {
+    private async removeAddress(address: string) {
         let events = this._addressEvents.get(address);
 
         if (events) {
@@ -381,7 +395,7 @@ export class NetworkEmitter {
 
                 if (tx.meta) {
                     events.emitter.emit(
-                        WalletEvent.TokenMint,
+                        WalletEvents.TokenMint,
                         getNFTokenID(tx.meta)
                     );
                 }
@@ -396,7 +410,7 @@ export class NetworkEmitter {
 
                 if (tx.meta) {
                     events.emitter.emit(
-                        WalletEvent.TokenBurn,
+                        WalletEvents.TokenBurn,
                         tx.transaction.NFTokenID
                     );
                 }
@@ -419,16 +433,16 @@ export class NetworkEmitter {
                 );
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
-                    destinationEvents.emitter.emit(WalletEvent.CurrencyChange);
+                    destinationEvents.emitter.emit(WalletEvents.CurrencyChange);
                     destinationEvents.emitter.emit(
-                        WalletEvent.CurrencyRecieved,
+                        WalletEvents.CurrencyRecieved,
                         tx.transaction.Account,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0
                     );
                 } else {
                     destinationEvents.emitter.emit(
-                        WalletEvent.PaymentRecieved,
+                        WalletEvents.PaymentRecieved,
                         tx.transaction.Account,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0
@@ -440,16 +454,16 @@ export class NetworkEmitter {
                 console.log(tx.transaction.Account, ' sent payment: ', tx);
 
                 if (isIssuedCurrency(tx.transaction.Amount)) {
-                    sourceEvents.emitter.emit(WalletEvent.CurrencyChange);
+                    sourceEvents.emitter.emit(WalletEvents.CurrencyChange);
                     sourceEvents.emitter.emit(
-                        WalletEvent.CurrencySent,
+                        WalletEvents.CurrencySent,
                         tx.transaction.Destination,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0
                     );
                 } else {
                     sourceEvents.emitter.emit(
-                        WalletEvent.PaymentSent,
+                        WalletEvents.PaymentSent,
                         tx.transaction.Destination,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0
@@ -488,7 +502,7 @@ export class NetworkEmitter {
                         );
 
                         events.emitter.emit(
-                            WalletEvent.AcceptSellOffer,
+                            WalletEvents.AcceptSellOffer,
                             tx.transaction.NFTokenSellOffer,
                             tokenId
                         );
@@ -506,7 +520,7 @@ export class NetworkEmitter {
                         );
 
                         events.emitter.emit(
-                            WalletEvent.AcceptBuyOffer,
+                            WalletEvents.AcceptBuyOffer,
                             tx.transaction.NFTokenBuyOffer,
                             tokenId
                         );
@@ -531,7 +545,7 @@ export class NetworkEmitter {
                         tx.meta?.AffectedNodes || []
                     );
                     sellerEvents.emitter.emit(
-                        WalletEvent.CreateSellOffer,
+                        WalletEvents.CreateSellOffer,
                         ledgerIndex,
                         tx.transaction.NFTokenID,
                         tx.transaction.Amount
@@ -546,7 +560,7 @@ export class NetworkEmitter {
                         tx.meta?.AffectedNodes || []
                     );
                     buyerEvents.emitter.emit(
-                        WalletEvent.CreateBuyOffer,
+                        WalletEvents.CreateBuyOffer,
                         ledgerIndex,
                         tx.transaction.NFTokenID,
                         tx.transaction.Amount
@@ -562,8 +576,26 @@ export class NetworkEmitter {
         console.groupEnd();
     };
 
-    public getEmitter(address: string): EventEmitter<EventMap> | undefined {
-        return this._addressEvents.get(address)?.emitter;
+    public on<T extends WalletEvent>(
+        address: string,
+        event: T,
+        callback: EventMap[T]
+    ) {
+        this.addAddress(address);
+        this._addressEvents.get(address)?.emitter.on(event, callback);
+
+        return () => {
+            this.off(address, event, callback);
+        };
+    }
+
+    public off<T extends WalletEvent>(
+        address: string,
+        event: T,
+        callback: EventMap[T]
+    ) {
+        this.removeAddress(address);
+        this._addressEvents.get(address)?.emitter.off(event, callback);
     }
 }
 

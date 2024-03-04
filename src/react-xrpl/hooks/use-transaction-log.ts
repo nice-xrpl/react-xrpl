@@ -6,7 +6,7 @@ import { useNetworkEmitter } from './use-network-emitter';
 import { TransactionLogEntry } from '../api/wallet-types';
 import { IssuedCurrencyAmount } from 'xrpl';
 import { useXRPLClient } from './use-xrpl-client';
-import { WalletEvent } from '../api/network-emitter';
+import { WalletEvents } from '../api/network-emitter';
 import {
     getTransactions,
     processTransactions,
@@ -16,14 +16,11 @@ import { useIsConnected } from './use-is-connected';
 // TODO: for now, storing transaction log in hook rather than in store.  refactor/rethink this if it makes sense (upside is that every use of useTransactionLog can have a different limit of transactions).
 
 function useTransactionLogInternal(account: string, limit: number = 10) {
-    const walletManager = useWalletStoreManager();
     const client = useXRPLClient();
     const isConnected = useIsConnected();
 
-    // const store = walletManager.transactionLog.getStore(account);
     const networkEmitter = useNetworkEmitter();
 
-    // const storeLog = useStore(store);
     const [log, setLog] = useState<TransactionLogEntry[]>(() => {
         return [];
     });
@@ -131,30 +128,38 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             });
         };
 
-        const emitter = networkEmitter.getEmitter(account);
-
-        if (isConnected) {
-            networkEmitter.addAddress(account);
-
-            emitter?.on(WalletEvent.PaymentSent, onPaymentSent);
-            emitter?.on(WalletEvent.PaymentRecieved, onPaymentRecieved);
-            emitter?.on(WalletEvent.CurrencySent, onCurrencySent);
-            emitter?.on(WalletEvent.CurrencyRecieved, onCurrencyRecieved);
+        if (!isConnected) {
+            return;
         }
 
+        const onPaymentSentOff = networkEmitter.on(
+            account,
+            WalletEvents.PaymentSent,
+            onPaymentSent
+        );
+        const onPaymentRecievedOff = networkEmitter.on(
+            account,
+            WalletEvents.PaymentRecieved,
+            onPaymentRecieved
+        );
+        const onCurrencySentOff = networkEmitter.on(
+            account,
+            WalletEvents.CurrencySent,
+            onCurrencySent
+        );
+        const onCurrencyRecievedOff = networkEmitter.on(
+            account,
+            WalletEvents.CurrencyRecieved,
+            onCurrencyRecieved
+        );
+
         return () => {
-            emitter?.off(WalletEvent.PaymentSent, onPaymentSent);
-            emitter?.off(WalletEvent.PaymentRecieved, onPaymentRecieved);
-            emitter?.off(WalletEvent.CurrencySent, onCurrencySent);
-            emitter?.off(WalletEvent.CurrencyRecieved, onCurrencyRecieved);
-
-            walletManager.transactionLog.releaseStore(account);
-
-            if (isConnected) {
-                networkEmitter.removeAddress(account);
-            }
+            onPaymentSentOff();
+            onPaymentRecievedOff();
+            onCurrencySentOff();
+            onCurrencyRecievedOff();
         };
-    }, [account]);
+    }, [account, isConnected]);
 
     return log;
 }

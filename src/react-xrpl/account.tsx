@@ -5,7 +5,6 @@ import { WalletAddressContext } from './wallet-address-context';
 import { AccountEvents } from './account-events';
 import { useWalletStoreManager } from './stores/use-wallet-store-manager';
 import { AccountStoresContext } from './account-stores-context';
-import { Wallet } from './wallet';
 
 type AccountProps = {
     address?: string;

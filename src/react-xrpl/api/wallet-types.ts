@@ -1,4 +1,4 @@
-import { Amount, IssuedCurrencyAmount, Wallet as xrplWallet } from 'xrpl';
+import { IssuedCurrencyAmount } from 'xrpl';
 
 export type Currency = {
     issuer: string;
@@ -25,14 +25,6 @@ export type Offer = {
 export type OfferStore = {
     [key in string]?: Offer[];
 };
-
-const TransactionTypes = {
-    PaymentSent: 'PaymentSent',
-    PaymentReceived: 'PaymentReceived',
-} as const;
-
-export type TransactionType =
-    (typeof TransactionTypes)[keyof typeof TransactionTypes];
 
 export type TransactionLogEntry =
     | {
@@ -67,6 +59,8 @@ export type TransactionLogEntry =
               amount: IssuedCurrencyAmount;
           };
       };
+
+export type TransactionType = TransactionLogEntry['type'];
 
 export type WalletInitialState = {
     // wallet: xrplWallet;

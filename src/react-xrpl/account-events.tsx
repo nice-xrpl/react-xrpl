@@ -8,7 +8,7 @@ import {
     getSellOffers,
     getTokens,
 } from './api/requests';
-import { WalletEvent } from './api/network-emitter';
+import { WalletEvents } from './api/network-emitter';
 import { Amount } from 'xrpl';
 import { useAccountStore } from './hooks/use-account-store';
 
@@ -23,10 +23,6 @@ export function AccountEvents() {
     const stores = useAccountStore();
 
     useEffect(() => {
-        networkEmitter.addAddress(address);
-
-        const events = networkEmitter.getEmitter(address);
-
         const currenciesListener = () => {
             getBalances(client, address).then((balances) => {
                 let currencies: Currency[] = [];
@@ -45,7 +41,11 @@ export function AccountEvents() {
             });
         };
 
-        events?.on(WalletEvent.CurrencyChange, currenciesListener);
+        const currencyChangeOff = networkEmitter.on(
+            address,
+            WalletEvents.CurrencyChange,
+            currenciesListener
+        );
 
         const tokensListener = () => {
             getTokens(client, address).then((tokens) => {
@@ -53,15 +53,27 @@ export function AccountEvents() {
             });
         };
 
-        events?.on(WalletEvent.TokenMint, tokensListener);
-        events?.on(WalletEvent.TokenBurn, tokensListener);
+        const tokenMintOff = networkEmitter.on(
+            address,
+            WalletEvents.TokenMint,
+            tokensListener
+        );
+        const tokenBurnOff = networkEmitter.on(
+            address,
+            WalletEvents.TokenBurn,
+            tokensListener
+        );
 
         const balanceChangeListener = (drops: string, xrp: number) => {
             // console.log(WalletEvent.BalanceChange, drops, xrp);
             stores.balance.setState(`${xrp}`);
         };
 
-        events?.on(WalletEvent.BalanceChange, balanceChangeListener);
+        const balanceChangeOff = networkEmitter.on(
+            address,
+            WalletEvents.BalanceChange,
+            balanceChangeListener
+        );
 
         const createBuyOfferListener = (
             index: string,
@@ -115,26 +127,36 @@ export function AccountEvents() {
             createSellOfferListener(index, tokenId, '0');
         };
 
-        events?.on(WalletEvent.CreateBuyOffer, createBuyOfferListener);
-        events?.on(WalletEvent.CreateSellOffer, createSellOfferListener);
-        events?.on(WalletEvent.AcceptBuyOffer, acceptOfferListener);
-        events?.on(WalletEvent.AcceptSellOffer, acceptOfferListener);
+        const createBuyOfferOff = networkEmitter.on(
+            address,
+            WalletEvents.CreateBuyOffer,
+            createBuyOfferListener
+        );
+        const createSellOfferOff = networkEmitter.on(
+            address,
+            WalletEvents.CreateSellOffer,
+            createSellOfferListener
+        );
+        const acceptBuyOfferOff = networkEmitter.on(
+            address,
+            WalletEvents.AcceptBuyOffer,
+            acceptOfferListener
+        );
+        const acceptSellOfferOff = networkEmitter.on(
+            address,
+            WalletEvents.AcceptSellOffer,
+            acceptOfferListener
+        );
 
         return () => {
-            events?.off(WalletEvent.CurrencyChange, currenciesListener);
-
-            events?.off(WalletEvent.TokenMint, tokensListener);
-            events?.off(WalletEvent.TokenBurn, tokensListener);
-
-            events?.off(WalletEvent.BalanceChange, balanceChangeListener);
-
-            events?.off(WalletEvent.CreateBuyOffer, createBuyOfferListener);
-            events?.off(WalletEvent.CreateSellOffer, createSellOfferListener);
-
-            events?.off(WalletEvent.AcceptBuyOffer, acceptOfferListener);
-            events?.off(WalletEvent.AcceptSellOffer, acceptOfferListener);
-
-            networkEmitter.removeAddress(address);
+            currencyChangeOff();
+            tokenMintOff();
+            tokenBurnOff();
+            balanceChangeOff();
+            createBuyOfferOff();
+            createSellOfferOff();
+            acceptBuyOfferOff();
+            acceptSellOfferOff();
         };
     }, [address, stores]);
 
