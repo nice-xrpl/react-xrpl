@@ -10,6 +10,7 @@ type WalletProps = {
     children?: React.ReactNode;
 };
 
+// TODO: use suspense
 export function Wallet({ seed, fallback = <></>, children }: WalletProps) {
     const wallet = useMemo(() => {
         if (seed) {

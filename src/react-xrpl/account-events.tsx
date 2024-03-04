@@ -58,7 +58,7 @@ export function AccountEvents() {
 
         const balanceChangeListener = (drops: string, xrp: number) => {
             // console.log(WalletEvent.BalanceChange, drops, xrp);
-            stores.balance.setState(xrp);
+            stores.balance.setState(`${xrp}`);
         };
 
         events?.on(WalletEvent.BalanceChange, balanceChangeListener);
