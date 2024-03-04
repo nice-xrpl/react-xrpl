@@ -20,23 +20,14 @@ function MainApp() {
             <div>
                 <div>
                     Sample Log:
-                    <TransactionLog account="r4kpAq7NYMdKq2WX28htLGrSxuPownzjPG" />
+                    <TransactionLog
+                        account={'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp'}
+                    />
                 </div>
-                <LoadWalletFromSeed seed={'sEdVdkpAdtRJu2MRq5qb6Z7Vf5oNn5t'} />
+                <LoadWalletFromSeed seed={'sEd7cUM9hqM6Ly6uvG7FU9YguzsTwg7'} />
             </div>
             <div>
-                <LoadWalletFromSeed seed={'sEdT2SsT7dadAscvgf9DL83evmaH8yT'} />
-            </div>
-            {/* <div>
-                <LoadWalletFromAddress
-                    address={'rBCHWcsWPgXfrNoASakKiZx5dbynHibezb'}
-                />
-            </div> */}
-            <div>
-                <LoadWalletFromSeed seed={'sEdTxZceWFkoZpB9pYkTGrHJgrFbycD'} />
-            </div>
-            <div>
-                <LoadWalletFromSeed seed={'sEdSRnqJ7d3HCyM3BTt4rAmod4cUUGQ'} />
+                <LoadWalletFromSeed seed={'sEdVExhLMoRWkVArve9Hr9TMpNdjnEq'} />
             </div>
         </div>
     );
