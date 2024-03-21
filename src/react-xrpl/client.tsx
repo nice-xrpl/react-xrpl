@@ -5,10 +5,7 @@ import { XRPLClientContext } from './client-context';
 import { createStore } from './stores/create-store';
 import { ClientStores } from './client-types';
 import { ClientStoreContext } from './client-store-context';
-import {
-    WalletStoreManager,
-    WalletStoreManagerProvider,
-} from './stores/wallet-store-manager';
+import { WalletStoreManagerProvider } from './stores/wallet-store-manager';
 import { NetworkEmitter } from './network-emitter';
 
 export function XRPLClient({
@@ -59,9 +56,11 @@ export function XRPLClient({
     return (
         <XRPLClientContext.Provider value={client}>
             <ClientStoreContext.Provider value={clientStore}>
-                <WalletStoreManagerProvider>
-                    <NetworkEmitter>{children}</NetworkEmitter>
-                </WalletStoreManagerProvider>
+                <NetworkEmitter>
+                    <WalletStoreManagerProvider>
+                        {children}
+                    </WalletStoreManagerProvider>
+                </NetworkEmitter>
             </ClientStoreContext.Provider>
         </XRPLClientContext.Provider>
     );

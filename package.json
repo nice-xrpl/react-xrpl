@@ -26,6 +26,7 @@
 		}
 	},
 	"dependencies": {
+		"suspend-react": "^0.1.3",
 		"tseep": "^1.1.3",
 		"xrpl": "^3.0.0"
 	},
