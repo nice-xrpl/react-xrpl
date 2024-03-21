@@ -1,6 +1,12 @@
 import { createContext } from 'react';
-import { WalletStoreManager } from './wallet-store-manager';
+import { StoreManager } from './store-manager';
+import { Currency, OfferStore, Token } from '../api/wallet-types';
+import { BalanceStoreManager } from './account-stores/balance-store';
 
-export const WalletStoreManagerContext = createContext<WalletStoreManager>(
-    null!
-);
+export const WalletStoreManagerContext = createContext<{
+    balance: BalanceStoreManager;
+    buyOffers: StoreManager<OfferStore>;
+    sellOffers: StoreManager<OfferStore>;
+    currencies: StoreManager<Currency[]>;
+    tokens: StoreManager<Token[]>;
+}>(null!);

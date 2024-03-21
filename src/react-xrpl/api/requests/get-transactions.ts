@@ -106,6 +106,7 @@ export function processTransactions(
                             amount: tx.Amount,
                         },
                         timestamp: tx.date ?? 0,
+                        account: tx.Destination,
                     });
                 }
 
@@ -117,6 +118,7 @@ export function processTransactions(
                             amount: tx.Amount,
                         },
                         timestamp: tx.date ?? 0,
+                        account: tx.Account,
                     });
                 }
             } else {
@@ -128,6 +130,7 @@ export function processTransactions(
                             amount: tx.Amount,
                         },
                         timestamp: tx.date ?? 0,
+                        account: tx.Destination,
                     });
                 }
 
@@ -139,6 +142,7 @@ export function processTransactions(
                             amount: tx.Amount,
                         },
                         timestamp: tx.date ?? 0,
+                        account: tx.Account,
                     });
                 }
             }

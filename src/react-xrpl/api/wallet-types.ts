@@ -30,6 +30,7 @@ export type TransactionLogEntry =
     | {
           type: 'PaymentSent';
           to: string;
+          account: string;
           timestamp: number;
           payload: {
               amount: string;
@@ -38,6 +39,7 @@ export type TransactionLogEntry =
     | {
           type: 'PaymentReceived';
           from: string;
+          account: string;
           timestamp: number;
           payload: {
               amount: string;
@@ -46,6 +48,7 @@ export type TransactionLogEntry =
     | {
           type: 'CurrencySent';
           to: string;
+          account: string;
           timestamp: number;
           payload: {
               amount: IssuedCurrencyAmount;
@@ -54,6 +57,7 @@ export type TransactionLogEntry =
     | {
           type: 'CurrencyReceived';
           from: string;
+          account: string;
           timestamp: number;
           payload: {
               amount: IssuedCurrencyAmount;
@@ -95,5 +99,4 @@ export type WalletInitialState = {
     tokens: Token[];
     sellOffers: OfferStore;
     buyOffers: OfferStore;
-    transactions: TransactionLogEntry[];
 };

@@ -1,12 +1,9 @@
-import { useContext } from 'react';
-import { AccountStoresContext } from '../account-stores-context';
+import { useWalletStoreManager } from '../stores/use-wallet-store-manager';
+import { useAddress } from './requests/use-address';
 
-export function useAccountStore() {
-    const stores = useContext(AccountStoresContext);
+export function useAccountStore(address?: string) {
+    const internalAddress = useAddress(address);
+    const storeManager = useWalletStoreManager();
 
-    // if (!stores) {
-    //     throw new Error('Account store context not found!');
-    // }
-
-    return stores;
+    const store = storeManager;
 }

@@ -5,6 +5,7 @@ import {
     getTransactions,
     processTransactions,
 } from './requests/get-transactions';
+import { getBalances } from './requests';
 
 export function createWallet(seed?: string) {
     if (seed) {
@@ -24,59 +25,17 @@ export async function createAndFundWallet(
         amount,
     });
 
-    // const intialState = await getInitialWalletState(client, wallet.address);
-
-    // return {
-    //     wallet,
-    //     ...intialState,
-    // };
-
     return wallet;
 }
-
-// export async function createWalletFromSeed(
-//     client: xrplClient,
-//     seed: string
-// ): Promise<xrplWallet> {
-//     await client.connect();
-
-//     const wallet = xrplWallet.fromSeed(seed);
-
-//     // const intialState = await getInitialWalletState(client, wallet.address);
-
-//     // return {
-//     //     wallet,
-//     //     ...intialState,
-//     // };
-
-//     return wallet;
-// }
 
 export async function getInitialWalletState(
     client: xrplClient,
     address: string
 ): Promise<WalletInitialState> {
-    await client.connect();
-
-    const balances = await client.getBalances(address);
-
-    let initialBalance = '';
-    let initialCurrencies: Currency[] = [];
-
-    for (const balance of balances) {
-        if (balance.currency === 'XRP') {
-            initialBalance = balance.value;
-        }
-
-        if (balance.issuer) {
-            initialCurrencies.push({
-                currency: balance.currency,
-                issuer: balance.issuer,
-                value: parseFloat(balance.value) ?? 0,
-            });
-        }
-    }
-
+    const [initialBalance, initialCurrencies] = await getBalances(
+        client,
+        address
+    );
     const initialTokens = await getTokens(client, address);
 
     let initialBuyOffers: OfferStore = {};
@@ -87,15 +46,11 @@ export async function getInitialWalletState(
         initialSellOffers[token.id] = [];
     }
 
-    const response = await getTransactions(client, address, 10);
-    let initialTransactions = processTransactions(response, address);
-
     return {
         balance: initialBalance,
         currencies: initialCurrencies,
         tokens: initialTokens,
         buyOffers: {},
         sellOffers: {},
-        transactions: initialTransactions,
     };
 }

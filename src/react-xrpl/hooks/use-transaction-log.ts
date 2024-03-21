@@ -1,7 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { useStore } from '../stores/use-store';
 import { WalletAddressContext } from '../wallet-address-context';
-import { useWalletStoreManager } from '../stores/use-wallet-store-manager';
 import { useNetworkEmitter } from './use-network-emitter';
 import { TransactionLogEntry } from '../api/wallet-types';
 import { Amount, IssuedCurrencyAmount } from 'xrpl';
@@ -12,8 +10,6 @@ import {
     processTransactions,
 } from '../api/requests/get-transactions';
 import { useIsConnected } from './use-is-connected';
-
-// TODO: for now, storing transaction log in hook rather than in store.  refactor/rethink this if it makes sense (upside is that every use of useTransactionLog can have a different limit of transactions).
 
 function useTransactionLogInternal(account: string, limit: number = 10) {
     const client = useXRPLClient();
@@ -49,6 +45,7 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
                     },
                     timestamp,
                     to,
+                    account,
                 };
                 let next = [entry, ...prev];
 
@@ -72,6 +69,7 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
                     },
                     timestamp,
                     from,
+                    account,
                 };
                 let next = [entry, ...prev];
 
@@ -95,6 +93,7 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
                     },
                     timestamp,
                     to,
+                    account,
                 };
                 let next = [entry, ...prev];
 
@@ -118,6 +117,7 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
                     },
                     timestamp,
                     from,
+                    account,
                 };
                 let next = [entry, ...prev];
 

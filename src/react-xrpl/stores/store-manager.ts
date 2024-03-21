@@ -1,3 +1,4 @@
+import { NetworkEmitter } from '../api/network-emitter';
 import { Store, createStore } from './create-store';
 
 export class StoreManager<T> {
@@ -9,23 +10,23 @@ export class StoreManager<T> {
         this.initialValue = initialValue;
     }
 
-    getStore(address: string) {
+    getStore(address: string): [Store<T>, boolean] {
         let store = this.stores.get(address);
         let refCount = this.refCount.get(address);
 
         if (store && refCount) {
             this.refCount.set(address, refCount + 1);
-            return store;
+            return [store, false];
         }
 
         store = createStore(this.initialValue);
         this.stores.set(address, store);
         this.refCount.set(address, 1);
 
-        return store;
+        return [store, true];
     }
 
-    releaseStore(address: string) {
+    releaseStore(address: string): boolean {
         let refCount = this.refCount.get(address);
 
         if (refCount) {
@@ -35,14 +36,14 @@ export class StoreManager<T> {
                 this.stores.delete(address);
                 this.refCount.delete(address);
 
-                return;
+                return true;
             }
 
             this.refCount.set(address, refCount);
 
-            return;
+            return false;
         }
 
-        return;
+        return false;
     }
 }

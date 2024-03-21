@@ -15,8 +15,6 @@ type AccountProps = {
 // TODO: support suspense
 // TODO: require ErrorBoundary for error handling
 export function Account({ address, fallback = <></>, children }: AccountProps) {
-    const client = useXRPLClient();
-    const [ready, setReady] = useState(false);
     const contextAddress = useContext(WalletAddressContext);
 
     const internalAddress = useMemo(() => {
@@ -33,56 +31,11 @@ export function Account({ address, fallback = <></>, children }: AccountProps) {
         );
     }, [address]);
 
-    const walletStoreManager = useWalletStoreManager();
-
-    const stores = useMemo(() => {
-        return walletStoreManager.getStoresForAddress(internalAddress);
-    }, [internalAddress]);
-
-    // TODO: Handle case where a wallet will have valid credentials, but the account will not exist.
-    useEffect(() => {
-        getInitialWalletState(client, internalAddress)
-            .then((state) => {
-                console.log(internalAddress, state);
-
-                stores.balance.setState(state.balance);
-                stores.currencies.setState(state.currencies);
-                stores.tokens.setState(state.tokens);
-                stores.buyOffers.setState(state.buyOffers);
-                stores.sellOffers.setState(state.sellOffers);
-                stores.transactionLog.setState(state.transactions);
-
-                setReady(true);
-            })
-            .catch((error) => {
-                throw error;
-            });
-    }, [internalAddress, stores]);
-
-    useEffect(() => {
-        return () => {
-            stores.release();
-        };
-    }, [stores]);
-
-    // enable account events
-    // update store
-
-    return ready ? (
-        address ? (
-            <WalletAddressContext.Provider value={internalAddress}>
-                <AccountStoresContext.Provider value={stores}>
-                    <AccountEvents />
-                    {children}
-                </AccountStoresContext.Provider>
-            </WalletAddressContext.Provider>
-        ) : (
-            <AccountStoresContext.Provider value={stores}>
-                <AccountEvents />
-                {children}
-            </AccountStoresContext.Provider>
-        )
+    return address ? (
+        <WalletAddressContext.Provider value={internalAddress}>
+            {children}
+        </WalletAddressContext.Provider>
     ) : (
-        fallback
+        <>{children}</>
     );
 }
