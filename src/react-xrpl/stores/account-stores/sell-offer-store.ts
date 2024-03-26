@@ -1,53 +1,53 @@
-import { getBuyOffers } from '../../api/requests/get-buy-offers';
+import { getSellOffers } from '../../api/requests/get-sell-offers';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
 import { Store } from '../create-store';
 import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
-import { Token } from '../../api/wallet-types';
+import { OfferStore } from '../../api/wallet-types';
 
-export class TokenStore {
-    private tokenStore: StoreManager<Token[]>;
+export class SellOfferStoreManager {
+    private sellOfferStore: StoreManager<OfferStore>;
 
     private networkEmitter: NetworkEmitter;
-    private onCreateBuyOffer:
+    private onCreateSellOffer:
         | ((index: string, tokenId: string, amount: Amount) => void)
         | null;
     private onAcceptOffer: ((index: string, tokenId: string) => void) | null;
     private client: xrplClient;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        this.tokenStore = new StoreManager<Token[]>([]);
+        this.sellOfferStore = new StoreManager<OfferStore>({});
         this.networkEmitter = networkEmitter;
-        this.onCreateBuyOffer = null;
+        this.onCreateSellOffer = null;
         this.onAcceptOffer = null;
         this.client = client;
     }
 
     public async getStore(
         address: string
-    ): Promise<[Store<Token[]>, () => void]> {
+    ): Promise<[Store<OfferStore>, () => void]> {
         console.log('getting store for ', address);
-        const [offerStore, created] = this.tokenStore.getStore(address);
+        const [offerStore, created] = this.sellOfferStore.getStore(address);
 
         if (created) {
             console.log('added listener for ', address);
 
-            this.onCreateBuyOffer = (
+            this.onCreateSellOffer = (
                 index: string,
                 tokenId: string,
                 amount: Amount
             ) => {
-                getBuyOffers(this.client, tokenId)
-                    .then((buyOffers) => {
+                getSellOffers(this.client, tokenId)
+                    .then((sellOffers) => {
                         offerStore.setState((state) => {
                             console.log(
                                 'updating buy offers store: ',
                                 { ...state },
-                                [...buyOffers]
+                                [...sellOffers]
                             );
                             return {
                                 ...state,
-                                [tokenId]: buyOffers,
+                                [tokenId]: sellOffers,
                             };
                         });
                     })
@@ -56,14 +56,14 @@ export class TokenStore {
 
             this.networkEmitter.on(
                 address,
-                WalletEvents.CreateBuyOffer,
-                this.onCreateBuyOffer
+                WalletEvents.CreateSellOffer,
+                this.onCreateSellOffer
             );
 
             this.onAcceptOffer = (index: string, tokenId: string) => {
                 console.log('accept offer triggered: ', index, tokenId);
 
-                this.onCreateBuyOffer?.(index, tokenId, '0');
+                this.onCreateSellOffer?.(index, tokenId, '0');
             };
 
             this.networkEmitter.on(
@@ -76,16 +76,16 @@ export class TokenStore {
         return Promise.resolve([
             offerStore,
             () => {
-                const released = this.tokenStore.releaseStore(address);
+                const released = this.sellOfferStore.releaseStore(address);
                 console.log('released store for ', address);
 
-                if (released && this.onCreateBuyOffer && this.onAcceptOffer) {
+                if (released && this.onCreateSellOffer && this.onAcceptOffer) {
                     console.log('removed listener for ', address);
 
                     this.networkEmitter.off(
                         address,
-                        WalletEvents.CreateBuyOffer,
-                        this.onCreateBuyOffer
+                        WalletEvents.CreateSellOffer,
+                        this.onCreateSellOffer
                     );
 
                     this.networkEmitter.off(

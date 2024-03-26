@@ -3,10 +3,10 @@ import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
 import { Store } from '../create-store';
 import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
-import { Token } from '../../api/wallet-types';
+import { OfferStore } from '../../api/wallet-types';
 
-export class TokenStore {
-    private tokenStore: StoreManager<Token[]>;
+export class BuyOfferStoreManager {
+    private buyOffersStore: StoreManager<OfferStore>;
 
     private networkEmitter: NetworkEmitter;
     private onCreateBuyOffer:
@@ -16,7 +16,7 @@ export class TokenStore {
     private client: xrplClient;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        this.tokenStore = new StoreManager<Token[]>([]);
+        this.buyOffersStore = new StoreManager<OfferStore>({});
         this.networkEmitter = networkEmitter;
         this.onCreateBuyOffer = null;
         this.onAcceptOffer = null;
@@ -25,9 +25,9 @@ export class TokenStore {
 
     public async getStore(
         address: string
-    ): Promise<[Store<Token[]>, () => void]> {
+    ): Promise<[Store<OfferStore>, () => void]> {
         console.log('getting store for ', address);
-        const [offerStore, created] = this.tokenStore.getStore(address);
+        const [offerStore, created] = this.buyOffersStore.getStore(address);
 
         if (created) {
             console.log('added listener for ', address);
@@ -76,7 +76,7 @@ export class TokenStore {
         return Promise.resolve([
             offerStore,
             () => {
-                const released = this.tokenStore.releaseStore(address);
+                const released = this.buyOffersStore.releaseStore(address);
                 console.log('released store for ', address);
 
                 if (released && this.onCreateBuyOffer && this.onAcceptOffer) {
