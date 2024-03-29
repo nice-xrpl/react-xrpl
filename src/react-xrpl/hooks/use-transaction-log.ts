@@ -4,7 +4,7 @@ import { WalletAddressContext } from '../wallet-address-context';
 import { useWalletStoreManager } from '../stores/use-wallet-store-manager';
 import { useNetworkEmitter } from './use-network-emitter';
 import { TransactionLogEntry } from '../api/wallet-types';
-import { IssuedCurrencyAmount } from 'xrpl';
+import { Amount, IssuedCurrencyAmount } from 'xrpl';
 import { useXRPLClient } from './use-xrpl-client';
 import { WalletEvents } from '../api/network-emitter';
 import {
@@ -128,6 +128,44 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             });
         };
 
+        const onCreateSellOffer = (ledgerIndex: string, token: string, amount: Amount, timestamp: number) => {
+            setLog((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'CreateSellOffer',
+                    payload: {
+                        token,
+                        offerId: ledgerIndex
+                    },
+                    timestamp,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
+        const onAcceptSellOffer = (sellOfferId: string, token: string, timestamp: number) => {
+            setLog((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'AcceptSellOffer',
+                    payload: {
+                        token,
+                        offerId: sellOfferId
+                    },
+                    timestamp,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
         if (!isConnected) {
             return;
         }
@@ -153,11 +191,25 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             onCurrencyRecieved
         );
 
+        const onCreateSellOfferOff = networkEmitter.on(
+            account, 
+            WalletEvents.CreateSellOffer, 
+            onCreateSellOffer
+        );
+
+        const onAcceptSellOfferOff = networkEmitter.on(
+            account, 
+            WalletEvents.AcceptSellOffer, 
+            onAcceptSellOffer
+        );
+
         return () => {
             onPaymentSentOff();
             onPaymentRecievedOff();
             onCurrencySentOff();
             onCurrencyRecievedOff();
+            onCreateSellOfferOff();
+            onAcceptSellOfferOff();
         };
     }, [account, isConnected]);
 

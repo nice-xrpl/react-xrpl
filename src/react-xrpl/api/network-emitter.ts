@@ -158,19 +158,26 @@ type EventMap = {
     [WalletEvents.CreateBuyOffer]: (
         ledgerIndex: string,
         token: string,
-        amount: Amount
+        amount: Amount,
+        timestamp: number,
     ) => void;
     [WalletEvents.CreateSellOffer]: (
         ledgerIndex: string,
         token: string,
-        amount: Amount
+        amount: Amount,
+        timestamp: number,
     ) => void;
     [WalletEvents.CancelBuyOffer]: () => void;
     [WalletEvents.CancelSellOffer]: () => void;
-    [WalletEvents.AcceptBuyOffer]: (buyOfferId: string, token: string) => void;
+    [WalletEvents.AcceptBuyOffer]: (
+        buyOfferId: string, 
+        token: string, 
+        timestamp: number
+    ) => void;
     [WalletEvents.AcceptSellOffer]: (
         sellOfferId: string,
-        token: string
+        token: string,
+        timestamp: number,
     ) => void;
     [WalletEvents.TransferToken]: () => void;
     [WalletEvents.RefreshTokens]: () => void;
@@ -504,7 +511,8 @@ export class NetworkEmitter {
                         events.emitter.emit(
                             WalletEvents.AcceptSellOffer,
                             tx.transaction.NFTokenSellOffer,
-                            tokenId
+                            tokenId,
+                            tx.transaction.date ?? 0,
                         );
                     }
 
@@ -522,7 +530,8 @@ export class NetworkEmitter {
                         events.emitter.emit(
                             WalletEvents.AcceptBuyOffer,
                             tx.transaction.NFTokenBuyOffer,
-                            tokenId
+                            tokenId,
+                            tx.transaction.date ?? 0,
                         );
                     }
                 }
@@ -548,7 +557,8 @@ export class NetworkEmitter {
                         WalletEvents.CreateSellOffer,
                         ledgerIndex,
                         tx.transaction.NFTokenID,
-                        tx.transaction.Amount
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0,
                     );
                 }
             }
@@ -563,7 +573,8 @@ export class NetworkEmitter {
                         WalletEvents.CreateBuyOffer,
                         ledgerIndex,
                         tx.transaction.NFTokenID,
-                        tx.transaction.Amount
+                        tx.transaction.Amount,
+                        tx.transaction.date ?? 0,
                     );
                 }
             }

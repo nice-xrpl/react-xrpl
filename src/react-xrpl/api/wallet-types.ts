@@ -58,6 +58,20 @@ export type TransactionLogEntry =
           payload: {
               amount: IssuedCurrencyAmount;
           };
+      } | {
+          type: 'CreateSellOffer';
+          timestamp: number;
+          payload: {
+            token: string;
+            offerId: string;
+          }
+      } | {
+          type: 'AcceptSellOffer';
+          timestamp: number;
+          payload: {
+            token: string;
+            offerId: string;
+          }
       };
 
 export type TransactionType = TransactionLogEntry['type'];

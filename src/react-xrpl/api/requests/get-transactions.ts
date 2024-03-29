@@ -28,6 +28,34 @@ export function processTransactions(
     for (const transaction of response.result.transactions) {
         let tx = transaction.tx;
 
+        if (tx?.TransactionType === 'NFTokenCreateOffer' && (typeof transaction.meta !== 'string')) {
+            if (tx?.Flags === 1) {
+                initialTransactions.push({
+                    type: 'CreateSellOffer',
+                    payload: {
+                        token: tx.NFTokenID,
+                        // @ts-expect-error
+                        offerId: transaction.meta.offer_id,
+                    },
+                    timestamp: tx.date ?? 0,
+                });
+            }
+        }
+
+        if (tx?.TransactionType === 'NFTokenAcceptOffer' && (typeof transaction.meta !== 'string')) {
+            if (tx?.NFTokenSellOffer && tx?.Account === address) {
+                initialTransactions.push({
+                    type: 'AcceptSellOffer',
+                    payload: {
+                        // @ts-expect-error
+                        token: transaction.meta.nftoken_id,
+                        offerId: tx.NFTokenSellOffer
+                    },
+                    timestamp: tx.date ?? 0,
+                });
+            }
+        }
+
         if (tx?.TransactionType === 'Payment') {
             // console.log('parsing tx: ', tx);
 
