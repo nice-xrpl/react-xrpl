@@ -72,6 +72,18 @@ export type TransactionLogEntry =
             token: string;
             offerId: string;
           }
+      } | {
+          type: 'TokenMint';
+          timestamp: number;
+          payload: {
+            token: string;
+          }
+      } | {
+          type: 'TokenBurn';
+          timestamp: number;
+          payload: {
+            token: string;
+          }
       };
 
 export type TransactionType = TransactionLogEntry['type'];

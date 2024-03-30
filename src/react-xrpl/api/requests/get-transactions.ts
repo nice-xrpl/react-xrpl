@@ -56,6 +56,27 @@ export function processTransactions(
             }
         }
 
+        if (tx?.TransactionType === 'NFTokenBurn' && (typeof transaction.meta !== 'string')) {
+            initialTransactions.push({
+                type: 'TokenBurn',
+                payload: {
+                    token: tx.NFTokenID
+                },
+                timestamp: tx.date ?? 0,
+            });
+        }
+
+        if (tx?.TransactionType === 'NFTokenMint' && (typeof transaction.meta !== 'string')) {
+            initialTransactions.push({
+                type: 'TokenMint',
+                payload: {
+                    // @ts-expect-error
+                    token: transaction.meta.nftoken_id
+                },
+                timestamp: tx.date ?? 0,
+            });
+        }
+
         if (tx?.TransactionType === 'Payment') {
             // console.log('parsing tx: ', tx);
 

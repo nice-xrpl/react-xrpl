@@ -153,8 +153,8 @@ type EventMap = {
         amount: IssuedCurrencyAmount,
         timestamp: number
     ) => void;
-    [WalletEvents.TokenMint]: (token?: string) => void;
-    [WalletEvents.TokenBurn]: (token?: string) => void;
+    [WalletEvents.TokenMint]: (token: string, timestamp: number) => void;
+    [WalletEvents.TokenBurn]: (token: string, timestamp: number) => void;
     [WalletEvents.CreateBuyOffer]: (
         ledgerIndex: string,
         token: string,
@@ -403,7 +403,8 @@ export class NetworkEmitter {
                 if (tx.meta) {
                     events.emitter.emit(
                         WalletEvents.TokenMint,
-                        getNFTokenID(tx.meta)
+                        getNFTokenID(tx.meta) ?? '',
+                        tx.transaction.date ?? 0
                     );
                 }
             }
@@ -418,7 +419,8 @@ export class NetworkEmitter {
                 if (tx.meta) {
                     events.emitter.emit(
                         WalletEvents.TokenBurn,
-                        tx.transaction.NFTokenID
+                        tx.transaction.NFTokenID ?? '',
+                        tx.transaction.date ?? 0,
                     );
                 }
             }

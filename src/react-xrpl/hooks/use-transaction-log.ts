@@ -166,6 +166,40 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             });
         };
 
+        const onTokenMint = (token: string, timestamp: number) => {
+            setLog((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'TokenMint',
+                    payload: {
+                        token,                    },
+                    timestamp,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
+        const onTokenBurn = (token: string, timestamp: number) => {
+            setLog((prev) => {
+                let entry: TransactionLogEntry = {
+                    type: 'TokenBurn',
+                    payload: {
+                        token,                    },
+                    timestamp,
+                };
+                let next = [entry, ...prev];
+
+                if (next.length > limit) {
+                    next.splice(next.length - 1, 1);
+                }
+                return next;
+            });
+        };
+
         if (!isConnected) {
             return;
         }
@@ -203,6 +237,17 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             onAcceptSellOffer
         );
 
+        const onTokenMintOff = networkEmitter.on(
+            account,
+            WalletEvents.TokenMint,
+            onTokenMint
+        );
+        const onTokenBurnOff = networkEmitter.on(
+            account,
+            WalletEvents.TokenBurn,
+            onTokenBurn
+        );
+
         return () => {
             onPaymentSentOff();
             onPaymentRecievedOff();
@@ -210,6 +255,8 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
             onCurrencyRecievedOff();
             onCreateSellOfferOff();
             onAcceptSellOfferOff();
+            onTokenMintOff();
+            onTokenBurnOff();
         };
     }, [account, isConnected]);
 
