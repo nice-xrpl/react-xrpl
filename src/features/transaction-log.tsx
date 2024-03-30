@@ -49,6 +49,22 @@ function processEntry(entry: TransactionLogEntry) {
         );
     }
 
+    if (entry.type === 'TokenMint') {
+        return (
+            <div key={entry.timestamp}>
+                {entry.type}: Minted {entry.payload.token}
+            </div>
+        );
+    }
+
+    if (entry.type === 'TokenBurn') {
+        return (
+            <div key={entry.timestamp}>
+                {entry.type}: Burned {entry.payload.token}
+            </div>
+        );
+    }
+
     return <div>Unprocessed entry: {JSON.stringify(entry)}</div>;
 }
 
