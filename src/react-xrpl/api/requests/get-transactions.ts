@@ -56,7 +56,7 @@ export function processTransactions(
             }
         }
 
-        if (tx?.TransactionType === 'NFTokenBurn' && (typeof transaction.meta !== 'string')) {
+        if (tx?.TransactionType === 'NFTokenBurn' && (typeof transaction.meta !== 'string') && tx.Account === address) {
             initialTransactions.push({
                 type: 'TokenBurn',
                 payload: {
@@ -66,7 +66,7 @@ export function processTransactions(
             });
         }
 
-        if (tx?.TransactionType === 'NFTokenMint' && (typeof transaction.meta !== 'string')) {
+        if (tx?.TransactionType === 'NFTokenMint' && (typeof transaction.meta !== 'string') && tx.Account === address) {
             initialTransactions.push({
                 type: 'TokenMint',
                 payload: {
