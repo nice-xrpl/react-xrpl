@@ -28,7 +28,12 @@ export function processTransactions(
     for (const transaction of response.result.transactions) {
         let tx = transaction.tx;
 
-        if (tx?.TransactionType === 'NFTokenCreateOffer' && (typeof transaction.meta !== 'string')) {
+        console.log(address, 'parsing tx: ', transaction);
+
+        if (
+            tx?.TransactionType === 'NFTokenCreateOffer' &&
+            typeof transaction.meta !== 'string'
+        ) {
             if (tx?.Flags === 1) {
                 initialTransactions.push({
                     type: 'CreateSellOffer',
@@ -42,36 +47,47 @@ export function processTransactions(
             }
         }
 
-        if (tx?.TransactionType === 'NFTokenAcceptOffer' && (typeof transaction.meta !== 'string')) {
+        if (
+            tx?.TransactionType === 'NFTokenAcceptOffer' &&
+            typeof transaction.meta !== 'string'
+        ) {
             if (tx?.NFTokenSellOffer && tx?.Account === address) {
                 initialTransactions.push({
                     type: 'AcceptSellOffer',
                     payload: {
                         // @ts-expect-error
                         token: transaction.meta.nftoken_id,
-                        offerId: tx.NFTokenSellOffer
+                        offerId: tx.NFTokenSellOffer,
                     },
                     timestamp: tx.date ?? 0,
                 });
             }
         }
 
-        if (tx?.TransactionType === 'NFTokenBurn' && (typeof transaction.meta !== 'string') && tx.Account === address) {
+        if (
+            tx?.TransactionType === 'NFTokenBurn' &&
+            typeof transaction.meta !== 'string' &&
+            tx.Account === address
+        ) {
             initialTransactions.push({
                 type: 'TokenBurn',
                 payload: {
-                    token: tx.NFTokenID
+                    token: tx.NFTokenID,
                 },
                 timestamp: tx.date ?? 0,
             });
         }
 
-        if (tx?.TransactionType === 'NFTokenMint' && (typeof transaction.meta !== 'string') && tx.Account === address) {
+        if (
+            tx?.TransactionType === 'NFTokenMint' &&
+            typeof transaction.meta !== 'string' &&
+            tx.Account === address
+        ) {
             initialTransactions.push({
                 type: 'TokenMint',
                 payload: {
                     // @ts-expect-error
-                    token: transaction.meta.nftoken_id
+                    token: transaction.meta.nftoken_id,
                 },
                 timestamp: tx.date ?? 0,
             });

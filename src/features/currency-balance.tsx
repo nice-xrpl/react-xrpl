@@ -8,7 +8,8 @@ export function CurrencyBalance() {
             {currencies.map((currency) => {
                 return (
                     <div key={`${currency.issuer}-${currency.currency}`}>
-                        {currency.value} {currency.currency}
+                        {currency.value} {currency.currency} (issuer:
+                        {currency.issuer})
                     </div>
                 );
             })}

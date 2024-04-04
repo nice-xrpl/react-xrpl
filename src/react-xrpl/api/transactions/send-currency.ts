@@ -2,6 +2,7 @@ import {
     Client as xrplClient,
     isValidAddress,
     Wallet as xrplWallet,
+    Amount,
 } from 'xrpl';
 
 export async function sendCurrency(
@@ -30,6 +31,38 @@ export async function sendCurrency(
                 value: amount,
                 issuer: wallet.address,
             },
+            Destination: destinationAddress,
+        },
+        {
+            autofill: true,
+            wallet,
+        }
+    );
+
+    return result;
+}
+
+export async function sendCurrencyAmount(
+    client: xrplClient,
+    wallet: xrplWallet,
+    destinationAddress: string,
+    amount: Amount
+) {
+    await client.connect();
+
+    if (!isValidAddress(destinationAddress)) {
+        return Promise.reject('Invalid destination address');
+    }
+
+    if (wallet.address === destinationAddress) {
+        return Promise.reject('Source and destination addresses are the same');
+    }
+
+    const result = await client.submitAndWait(
+        {
+            TransactionType: 'Payment',
+            Account: wallet.address,
+            Amount: amount,
             Destination: destinationAddress,
         },
         {

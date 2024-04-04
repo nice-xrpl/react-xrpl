@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
-import { TxResponse } from 'xrpl';
-import { sendCurrency } from '../../api/transactions';
+import { Amount, TxResponse } from 'xrpl';
+import { sendCurrency, sendCurrencyAmount } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
@@ -17,17 +17,24 @@ export function useSendCurrency() {
         async (
             destinationAddress: string,
             currencyCode: string,
-            amount: string
+            amount: string | Amount
         ): Promise<TxResponse> => {
-            const result = await sendCurrency(
+            if (typeof amount === 'string') {
+                return await sendCurrency(
+                    clientRef.current,
+                    walletRef.current,
+                    destinationAddress,
+                    currencyCode,
+                    amount
+                );
+            }
+
+            return await sendCurrencyAmount(
                 clientRef.current,
                 walletRef.current,
                 destinationAddress,
-                currencyCode,
                 amount
             );
-
-            return result;
         },
         []
     );

@@ -29,6 +29,9 @@ function MainApp() {
             <div>
                 <LoadWalletFromSeed seed={'sEdVExhLMoRWkVArve9Hr9TMpNdjnEq'} />
             </div>
+            <div>
+                <LoadWalletFromSeed seed={'sEdTQ1D4LuYi1dbQ3ryHFpEX2emh3vW'} />
+            </div>
         </div>
     );
 }
