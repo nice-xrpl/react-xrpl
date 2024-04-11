@@ -1,47 +1,63 @@
-import { getSellOffers } from '../../api/requests/get-sell-offers';
+import { getSellOffers } from '../../api/requests';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
-import { Store } from '../create-store';
 import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
 import { OfferStore } from '../../api/wallet-types';
 
-export class SellOfferStoreManager {
-    private sellOfferStore: StoreManager<OfferStore>;
-
+export class SellOfferStoreManager extends StoreManager<OfferStore> {
     private networkEmitter: NetworkEmitter;
     private onCreateSellOffer:
         | ((index: string, tokenId: string, amount: Amount) => void)
         | null;
-    private onAcceptOffer: ((index: string, tokenId: string) => void) | null;
+    private onAcceptSellOffer:
+        | ((index: string, tokenId: string) => void)
+        | null;
     private client: xrplClient;
+    private events = false;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        this.sellOfferStore = new StoreManager<OfferStore>({});
+        super({});
+
         this.networkEmitter = networkEmitter;
         this.onCreateSellOffer = null;
-        this.onAcceptOffer = null;
+        this.onAcceptSellOffer = null;
         this.client = client;
     }
 
-    public async getStore(
-        address: string
-    ): Promise<[Store<OfferStore>, () => void]> {
-        console.log('getting store for ', address);
-        const [offerStore, created] = this.sellOfferStore.getStore(address);
+    public async setInitialSellOffers(address: string, tokenId: string) {
+        const [store] = this.getStore(address);
+        const sellOffers = await getSellOffers(this.client, tokenId);
+        console.log('initial sell offers store: ', tokenId, [...sellOffers]);
 
-        if (created) {
-            console.log('added listener for ', address);
+        store.setState((state) => {
+            return {
+                ...state,
+                [tokenId]: sellOffers,
+            };
+        });
 
-            this.onCreateSellOffer = (
-                index: string,
-                tokenId: string,
-                amount: Amount
-            ) => {
-                getSellOffers(this.client, tokenId)
-                    .then((sellOffers) => {
-                        offerStore.setState((state) => {
+        return sellOffers;
+    }
+
+    public enableEvents(address: string) {
+        if (this.events) {
+            return;
+        }
+
+        console.log('added listener for ', address);
+
+        this.onCreateSellOffer = (
+            index: string,
+            tokenId: string,
+            amount: Amount
+        ) => {
+            getSellOffers(this.client, tokenId)
+                .then((sellOffers) => {
+                    if (this.hasStore(address)) {
+                        const [store] = this.getStore(address);
+                        store.setState((state) => {
                             console.log(
-                                'updating buy offers store: ',
+                                'updating sell offers store: ',
                                 { ...state },
                                 [...sellOffers]
                             );
@@ -50,51 +66,57 @@ export class SellOfferStoreManager {
                                 [tokenId]: sellOffers,
                             };
                         });
-                    })
-                    .catch((err) => {});
-            };
+                    }
+                })
+                .catch((err) => {});
+        };
 
-            this.networkEmitter.on(
-                address,
-                WalletEvents.CreateSellOffer,
-                this.onCreateSellOffer
-            );
+        this.networkEmitter.on(
+            address,
+            WalletEvents.CreateSellOffer,
+            this.onCreateSellOffer
+        );
 
-            this.onAcceptOffer = (index: string, tokenId: string) => {
-                console.log('accept offer triggered: ', index, tokenId);
+        this.onAcceptSellOffer = (index: string, tokenId: string) => {
+            console.log('accept offer triggered: ', index, tokenId);
+            this.onCreateSellOffer?.(index, tokenId, '0');
+        };
 
-                this.onCreateSellOffer?.(index, tokenId, '0');
-            };
+        this.networkEmitter.on(
+            address,
+            WalletEvents.AcceptSellOffer,
+            this.onAcceptSellOffer
+        );
 
-            this.networkEmitter.on(
-                address,
-                WalletEvents.AcceptBuyOffer,
-                this.onAcceptOffer
-            );
+        this.events = true;
+    }
+
+    public disableEvents(address: string) {
+        if (!this.events) {
+            return;
         }
 
-        return Promise.resolve([
-            offerStore,
-            () => {
-                const released = this.sellOfferStore.releaseStore(address);
-                console.log('released store for ', address);
+        if (
+            this.onCreateSellOffer === null ||
+            this.onAcceptSellOffer === null
+        ) {
+            return;
+        }
 
-                if (released && this.onCreateSellOffer && this.onAcceptOffer) {
-                    console.log('removed listener for ', address);
+        console.log('removed listener for ', address);
 
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.CreateSellOffer,
-                        this.onCreateSellOffer
-                    );
+        this.networkEmitter.off(
+            address,
+            WalletEvents.CreateSellOffer,
+            this.onCreateSellOffer
+        );
 
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.AcceptBuyOffer,
-                        this.onAcceptOffer
-                    );
-                }
-            },
-        ]);
+        this.networkEmitter.off(
+            address,
+            WalletEvents.AcceptSellOffer,
+            this.onAcceptSellOffer
+        );
+
+        this.events = false;
     }
 }

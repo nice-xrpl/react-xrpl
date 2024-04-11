@@ -2,27 +2,28 @@ import { getBalances } from '../../api/requests';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
 import { StoreManager } from '../store-manager';
 import { Client as xrplClient } from 'xrpl';
+import { Currency } from '../../api/wallet-types';
 
-export class BalanceStoreManager extends StoreManager<string> {
+export class CurrencyStoreManager extends StoreManager<Currency[]> {
     private networkEmitter: NetworkEmitter;
-    private onBalanceChange: ((drops: string, xrp: number) => void) | null;
+    private onCurrencyChange: (() => void) | null;
     private client: xrplClient;
     private events = false;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        super('');
+        super([]);
 
         this.networkEmitter = networkEmitter;
-        this.onBalanceChange = null;
+        this.onCurrencyChange = null;
         this.client = client;
     }
 
     public async setInitialBalance(address: string) {
         const [store] = this.getStore(address);
-        const [balance] = await getBalances(this.client, address);
-        store.setState(balance);
+        const [, currencies] = await getBalances(this.client, address);
+        store.setState(currencies);
 
-        return balance;
+        return currencies;
     }
 
     public enableEvents(address: string) {
@@ -33,14 +34,19 @@ export class BalanceStoreManager extends StoreManager<string> {
         const [store] = this.getStore(address);
 
         console.log('added listener for ', address);
-        this.onBalanceChange = (drops: string, xrp: number) => {
-            store.setState(`${xrp}`);
+        this.onCurrencyChange = () => {
+            getBalances(this.client, address).then(([, currencies]) => {
+                if (this.hasStore(address)) {
+                    const [store] = this.getStore(address);
+                    store.setState(currencies);
+                }
+            });
         };
 
         this.networkEmitter.on(
             address,
-            WalletEvents.BalanceChange,
-            this.onBalanceChange
+            WalletEvents.CurrencyChange,
+            this.onCurrencyChange
         );
 
         this.events = true;
@@ -51,15 +57,15 @@ export class BalanceStoreManager extends StoreManager<string> {
             return;
         }
 
-        if (this.onBalanceChange === null) {
+        if (this.onCurrencyChange === null) {
             return;
         }
 
         console.log('removed listener for ', address);
         this.networkEmitter.off(
             address,
-            WalletEvents.BalanceChange,
-            this.onBalanceChange
+            WalletEvents.CurrencyChange,
+            this.onCurrencyChange
         );
 
         this.events = false;

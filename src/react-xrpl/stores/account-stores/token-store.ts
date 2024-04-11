@@ -1,100 +1,139 @@
-import { getBuyOffers } from '../../api/requests/get-buy-offers';
+import { getTokens } from '../../api/requests';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
-import { Store } from '../create-store';
 import { StoreManager } from '../store-manager';
-import { Amount, Client as xrplClient } from 'xrpl';
+import { Client as xrplClient } from 'xrpl';
 import { Token } from '../../api/wallet-types';
 
-export class TokenStore {
-    private tokenStore: StoreManager<Token[]>;
-
+export class TokenStoreManager extends StoreManager<Token[]> {
     private networkEmitter: NetworkEmitter;
-    private onCreateBuyOffer:
-        | ((index: string, tokenId: string, amount: Amount) => void)
+    private onTokenMint: ((token: string, timestamp: number) => void) | null;
+    private onTokenBurn: ((token: string, timestamp: number) => void) | null;
+    private onAcceptBuyOffer: ((index: string, tokenId: string) => void) | null;
+    private onAcceptSellOffer:
+        | ((index: string, tokenId: string) => void)
         | null;
-    private onAcceptOffer: ((index: string, tokenId: string) => void) | null;
     private client: xrplClient;
+    private events = false;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        this.tokenStore = new StoreManager<Token[]>([]);
+        super([]);
+
         this.networkEmitter = networkEmitter;
-        this.onCreateBuyOffer = null;
-        this.onAcceptOffer = null;
+        this.onTokenMint = null;
+        this.onTokenBurn = null;
+        this.onAcceptBuyOffer = null;
+        this.onAcceptSellOffer = null;
         this.client = client;
     }
 
-    public async getStore(
-        address: string
-    ): Promise<[Store<Token[]>, () => void]> {
-        console.log('getting store for ', address);
-        const [offerStore, created] = this.tokenStore.getStore(address);
+    public async setInitialTokens(address: string) {
+        const [store] = this.getStore(address);
+        const tokens = await getTokens(this.client, address);
+        store.setState(tokens);
 
-        if (created) {
-            console.log('added listener for ', address);
+        return tokens;
+    }
 
-            this.onCreateBuyOffer = (
-                index: string,
-                tokenId: string,
-                amount: Amount
-            ) => {
-                getBuyOffers(this.client, tokenId)
-                    .then((buyOffers) => {
-                        offerStore.setState((state) => {
-                            console.log(
-                                'updating buy offers store: ',
-                                { ...state },
-                                [...buyOffers]
-                            );
-                            return {
-                                ...state,
-                                [tokenId]: buyOffers,
-                            };
-                        });
-                    })
-                    .catch((err) => {});
-            };
-
-            this.networkEmitter.on(
-                address,
-                WalletEvents.CreateBuyOffer,
-                this.onCreateBuyOffer
-            );
-
-            this.onAcceptOffer = (index: string, tokenId: string) => {
-                console.log('accept offer triggered: ', index, tokenId);
-
-                this.onCreateBuyOffer?.(index, tokenId, '0');
-            };
-
-            this.networkEmitter.on(
-                address,
-                WalletEvents.AcceptBuyOffer,
-                this.onAcceptOffer
-            );
+    public enableEvents(address: string) {
+        if (this.events) {
+            return;
         }
 
-        return Promise.resolve([
-            offerStore,
-            () => {
-                const released = this.tokenStore.releaseStore(address);
-                console.log('released store for ', address);
+        const [store] = this.getStore(address);
 
-                if (released && this.onCreateBuyOffer && this.onAcceptOffer) {
-                    console.log('removed listener for ', address);
+        console.log('added listener for ', address);
 
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.CreateBuyOffer,
-                        this.onCreateBuyOffer
-                    );
-
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.AcceptBuyOffer,
-                        this.onAcceptOffer
-                    );
+        this.onTokenMint = this.onTokenBurn = (
+            token: string,
+            timestamp: number
+        ) => {
+            getTokens(this.client, address).then((tokens) => {
+                if (this.hasStore(address)) {
+                    const [store] = this.getStore(address);
+                    store.setState(tokens);
                 }
-            },
-        ]);
+            });
+        };
+
+        this.networkEmitter.on(
+            address,
+            WalletEvents.TokenMint,
+            this.onTokenMint
+        );
+
+        this.networkEmitter.on(
+            address,
+            WalletEvents.TokenBurn,
+            this.onTokenBurn
+        );
+
+        this.onAcceptBuyOffer = this.onAcceptSellOffer = (
+            index: string,
+            tokenId: string
+        ) => {
+            getTokens(this.client, address).then((tokens) => {
+                if (this.hasStore(address)) {
+                    const [store] = this.getStore(address);
+                    store.setState(tokens);
+                }
+            });
+        };
+
+        this.networkEmitter.on(
+            address,
+            WalletEvents.AcceptBuyOffer,
+            this.onAcceptBuyOffer
+        );
+
+        this.networkEmitter.on(
+            address,
+            WalletEvents.AcceptSellOffer,
+            this.onAcceptSellOffer
+        );
+
+        this.events = true;
+    }
+
+    public disableEvents(address: string) {
+        if (!this.events) {
+            return;
+        }
+
+        if (
+            this.onTokenBurn === null ||
+            this.onTokenMint === null ||
+            this.onAcceptBuyOffer === null ||
+            this.onAcceptSellOffer === null
+        ) {
+            return;
+        }
+
+        console.log('removed listener for ', address);
+
+        this.networkEmitter.off(
+            address,
+            WalletEvents.TokenMint,
+            this.onTokenMint
+        );
+
+        this.networkEmitter.off(
+            address,
+            WalletEvents.TokenBurn,
+            this.onTokenBurn
+        );
+
+        this.networkEmitter.off(
+            address,
+            WalletEvents.AcceptBuyOffer,
+            this.onAcceptBuyOffer
+        );
+
+        this.networkEmitter.off(
+            address,
+            WalletEvents.AcceptSellOffer,
+            this.onAcceptSellOffer
+        );
+
+        this.events = false;
     }
 }

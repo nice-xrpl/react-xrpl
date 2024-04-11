@@ -1,45 +1,59 @@
-import { getBuyOffers } from '../../api/requests/get-buy-offers';
+import { getBuyOffers } from '../../api/requests';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
-import { Store } from '../create-store';
 import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
 import { OfferStore } from '../../api/wallet-types';
 
-export class BuyOfferStoreManager {
-    private buyOffersStore: StoreManager<OfferStore>;
-
+export class BuyOfferStoreManager extends StoreManager<OfferStore> {
     private networkEmitter: NetworkEmitter;
     private onCreateBuyOffer:
         | ((index: string, tokenId: string, amount: Amount) => void)
         | null;
-    private onAcceptOffer: ((index: string, tokenId: string) => void) | null;
+    private onAcceptBuyOffer: ((index: string, tokenId: string) => void) | null;
     private client: xrplClient;
+    private events = false;
 
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
-        this.buyOffersStore = new StoreManager<OfferStore>({});
+        super({});
+
         this.networkEmitter = networkEmitter;
         this.onCreateBuyOffer = null;
-        this.onAcceptOffer = null;
+        this.onAcceptBuyOffer = null;
         this.client = client;
     }
 
-    public async getStore(
-        address: string
-    ): Promise<[Store<OfferStore>, () => void]> {
-        console.log('getting store for ', address);
-        const [offerStore, created] = this.buyOffersStore.getStore(address);
+    public async setInitialBuyOffers(address: string, tokenId: string) {
+        const [store] = this.getStore(address);
+        const buyOffers = await getBuyOffers(this.client, tokenId);
+        console.log('initial buy offers store: ', tokenId, [...buyOffers]);
 
-        if (created) {
-            console.log('added listener for ', address);
+        store.setState((state) => {
+            return {
+                ...state,
+                [tokenId]: buyOffers,
+            };
+        });
 
-            this.onCreateBuyOffer = (
-                index: string,
-                tokenId: string,
-                amount: Amount
-            ) => {
-                getBuyOffers(this.client, tokenId)
-                    .then((buyOffers) => {
-                        offerStore.setState((state) => {
+        return buyOffers;
+    }
+
+    public enableEvents(address: string) {
+        if (this.events) {
+            return;
+        }
+
+        console.log('added listener for ', address);
+
+        this.onCreateBuyOffer = (
+            index: string,
+            tokenId: string,
+            amount: Amount
+        ) => {
+            getBuyOffers(this.client, tokenId)
+                .then((buyOffers) => {
+                    if (this.hasStore(address)) {
+                        const [store] = this.getStore(address);
+                        store.setState((state) => {
                             console.log(
                                 'updating buy offers store: ',
                                 { ...state },
@@ -50,51 +64,54 @@ export class BuyOfferStoreManager {
                                 [tokenId]: buyOffers,
                             };
                         });
-                    })
-                    .catch((err) => {});
-            };
+                    }
+                })
+                .catch((err) => {});
+        };
 
-            this.networkEmitter.on(
-                address,
-                WalletEvents.CreateBuyOffer,
-                this.onCreateBuyOffer
-            );
+        this.networkEmitter.on(
+            address,
+            WalletEvents.CreateBuyOffer,
+            this.onCreateBuyOffer
+        );
 
-            this.onAcceptOffer = (index: string, tokenId: string) => {
-                console.log('accept offer triggered: ', index, tokenId);
+        this.onAcceptBuyOffer = (index: string, tokenId: string) => {
+            console.log('accept offer triggered: ', index, tokenId);
+            this.onCreateBuyOffer?.(index, tokenId, '0');
+        };
 
-                this.onCreateBuyOffer?.(index, tokenId, '0');
-            };
+        this.networkEmitter.on(
+            address,
+            WalletEvents.AcceptBuyOffer,
+            this.onAcceptBuyOffer
+        );
 
-            this.networkEmitter.on(
-                address,
-                WalletEvents.AcceptBuyOffer,
-                this.onAcceptOffer
-            );
+        this.events = true;
+    }
+
+    public disableEvents(address: string) {
+        if (!this.events) {
+            return;
         }
 
-        return Promise.resolve([
-            offerStore,
-            () => {
-                const released = this.buyOffersStore.releaseStore(address);
-                console.log('released store for ', address);
+        if (this.onCreateBuyOffer === null || this.onAcceptBuyOffer === null) {
+            return;
+        }
 
-                if (released && this.onCreateBuyOffer && this.onAcceptOffer) {
-                    console.log('removed listener for ', address);
+        console.log('removed listener for ', address);
 
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.CreateBuyOffer,
-                        this.onCreateBuyOffer
-                    );
+        this.networkEmitter.off(
+            address,
+            WalletEvents.CreateBuyOffer,
+            this.onCreateBuyOffer
+        );
 
-                    this.networkEmitter.off(
-                        address,
-                        WalletEvents.AcceptBuyOffer,
-                        this.onAcceptOffer
-                    );
-                }
-            },
-        ]);
+        this.networkEmitter.off(
+            address,
+            WalletEvents.AcceptBuyOffer,
+            this.onAcceptBuyOffer
+        );
+
+        this.events = false;
     }
 }

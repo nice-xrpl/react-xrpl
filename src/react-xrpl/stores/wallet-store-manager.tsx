@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
-import { StoreManager } from './store-manager';
-import { Currency, OfferStore, Token } from '../api/wallet-types';
 import { WalletStoreManagerContext } from './wallet-store-manager-context';
 import { useNetworkEmitter } from '../hooks/use-network-emitter';
 import { BalanceStoreManager } from './account-stores/balance-store';
 import { useXRPLClient } from '../hooks/use-xrpl-client';
+import { BuyOfferStoreManager } from './account-stores/buy-offer-store';
+import { SellOfferStoreManager } from './account-stores/sell-offer-store';
+import { TokenStoreManager } from './account-stores/token-store';
+import { CurrencyStoreManager } from './account-stores/currency-store';
 
 type WalletStoreManagerProps = {
     children: React.ReactNode;
@@ -19,12 +21,12 @@ export function WalletStoreManagerProvider({
     const stores = useMemo(() => {
         return {
             balance: new BalanceStoreManager(client, networkEmitter),
-            buyOffers: new StoreManager<OfferStore>({}),
-            sellOffers: new StoreManager<OfferStore>({}),
-            currencies: new StoreManager<Currency[]>([]),
-            tokens: new StoreManager<Token[]>([]),
+            buyOffers: new BuyOfferStoreManager(client, networkEmitter),
+            sellOffers: new SellOfferStoreManager(client, networkEmitter),
+            currencies: new CurrencyStoreManager(client, networkEmitter),
+            tokens: new TokenStoreManager(client, networkEmitter),
         };
-    }, [networkEmitter]);
+    }, [client, networkEmitter]);
 
     return (
         <WalletStoreManagerContext.Provider value={stores}>
