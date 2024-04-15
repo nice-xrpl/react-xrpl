@@ -1,8 +1,12 @@
-import { useStore } from '../../stores/use-store';
-import { useAccountStore } from '../use-account-store';
+import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
+import { useStoreManager } from '../../stores/use-store-manager';
 
-export function useTokens() {
-    const { tokens: tokenStore } = useAccountStore();
+export function useTokens(address?: string) {
+    const { tokens } = useWalletStoreManager();
 
-    return useStore(tokenStore);
+    const onCreated = (internalAddress: string) => {
+        return tokens.setInitialTokens(internalAddress);
+    };
+
+    return useStoreManager(tokens, onCreated, address);
 }

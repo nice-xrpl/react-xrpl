@@ -1,8 +1,12 @@
-import { useStore } from '../../stores/use-store';
-import { useAccountStore } from '../use-account-store';
+import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
+import { useStoreManager } from '../../stores/use-store-manager';
 
-export function useSellOffers(tokenId: string) {
-    const { sellOffers } = useAccountStore();
+export function useSellOffers(tokenId: string, address?: string) {
+    const { sellOffers } = useWalletStoreManager();
 
-    return useStore(sellOffers)[tokenId];
+    const onCreated = (internalAddress: string) => {
+        return sellOffers.setInitialSellOffers(internalAddress, tokenId);
+    };
+
+    return useStoreManager(sellOffers, onCreated, address);
 }

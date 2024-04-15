@@ -1,14 +1,14 @@
 import { useCallback, useRef } from 'react';
 import { getXRPBalance } from '../../api/requests';
-import { useWalletAddress } from '../use-wallet-address';
 import { useXRPLClient } from '../use-xrpl-client';
+import { useAddress } from './use-address';
 
 export function useGetXRPBalance() {
     const client = useXRPLClient();
     const clientRef = useRef(client);
     clientRef.current = client;
 
-    const address = useWalletAddress();
+    const address = useAddress();
 
     const get = useCallback(async () => {
         const result = await getXRPBalance(clientRef.current, address);

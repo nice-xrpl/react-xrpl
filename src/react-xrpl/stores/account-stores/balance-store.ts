@@ -17,7 +17,7 @@ export class BalanceStoreManager extends StoreManager<string> {
         this.client = client;
     }
 
-    public async setInitialBalance(address: string) {
+    public async setInitialBalance(address: string): Promise<string> {
         const [store] = this.getStore(address);
         const [balance] = await getBalances(this.client, address);
         store.setState(balance);

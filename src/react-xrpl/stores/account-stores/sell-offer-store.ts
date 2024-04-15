@@ -24,7 +24,10 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
         this.client = client;
     }
 
-    public async setInitialSellOffers(address: string, tokenId: string) {
+    public async setInitialSellOffers(
+        address: string,
+        tokenId: string
+    ): Promise<OfferStore> {
         const [store] = this.getStore(address);
         const sellOffers = await getSellOffers(this.client, tokenId);
         console.log('initial sell offers store: ', tokenId, [...sellOffers]);
@@ -36,7 +39,7 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
             };
         });
 
-        return sellOffers;
+        return { [tokenId]: sellOffers };
     }
 
     public enableEvents(address: string) {

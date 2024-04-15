@@ -2,7 +2,7 @@ type StoreListener = () => void;
 // type Optional<T> = T | undefined;
 type Fn<T> = (prevState: T) => T;
 
-export type Store<T> = {
+export type Store<T = unknown> = {
     getState: () => T;
     setState: (value: T | Fn<T>) => void;
     subscribe: (listener: StoreListener) => () => void;

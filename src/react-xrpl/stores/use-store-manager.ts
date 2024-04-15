@@ -1,13 +1,18 @@
 import { useEffect } from 'react';
 import { useStore } from './use-store';
 import { useAddress } from '../hooks/requests/use-address';
-import { useWalletStoreManager } from './use-wallet-store-manager';
 import { suspend } from 'suspend-react';
 import { StoreManager } from './store-manager';
 
-export function useStoreManager<R, S extends StoreManager<R>>(
+export function useStoreManager<
+    R,
+    S extends StoreManager<R> & {
+        enableEvents: (address: string) => void;
+        disableEvents: (address: string) => void;
+    }
+>(
     storeType: S,
-    onCreated: () => Promise<R>,
+    onCreated: (internalAddress: string) => Promise<R>,
     address?: string
 ) {
     // get the current address from account context
@@ -18,7 +23,7 @@ export function useStoreManager<R, S extends StoreManager<R>>(
 
     suspend(async () => {
         if (created) {
-            return await onCreated();
+            return await onCreated(internalAddress);
         }
 
         return store.getState();

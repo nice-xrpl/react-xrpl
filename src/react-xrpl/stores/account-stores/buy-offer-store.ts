@@ -22,7 +22,10 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
         this.client = client;
     }
 
-    public async setInitialBuyOffers(address: string, tokenId: string) {
+    public async setInitialBuyOffers(
+        address: string,
+        tokenId: string
+    ): Promise<OfferStore> {
         const [store] = this.getStore(address);
         const buyOffers = await getBuyOffers(this.client, tokenId);
         console.log('initial buy offers store: ', tokenId, [...buyOffers]);
@@ -34,7 +37,7 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
             };
         });
 
-        return buyOffers;
+        return { [tokenId]: buyOffers };
     }
 
     public enableEvents(address: string) {
