@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { AcceptBrokerOffer } from './accept-brokered-offer';
 import { AcceptBuyOffer } from './accept-buy-nft';
 import { AcceptSellOffer } from './accept-sell-nft';
@@ -25,21 +26,23 @@ export function WalletUI() {
             }}
         >
             <WalletInfo />
-            <WalletBalance />
-            <CurrencyBalance />
-            <SendXRP />
-            <CreateTrustline />
-            <SendCurrency />
-            <MintNFT />
-            <BurnNFT />
-            <ShowNFT />
-            <BuyNFT />
-            <SellNFT />
-            <OffersById />
-            <AcceptBuyOffer />
-            <AcceptSellOffer />
-            <AcceptBrokerOffer />
-            <TransactionLog />
+            <Suspense fallback={<div>Loading Wallet UI</div>}>
+                <WalletBalance />
+                <CurrencyBalance />
+                <SendXRP />
+                <CreateTrustline />
+                <SendCurrency />
+                <MintNFT />
+                <BurnNFT />
+                <ShowNFT />
+                <BuyNFT />
+                <SellNFT />
+                <OffersById />
+                <AcceptBuyOffer />
+                <AcceptSellOffer />
+                <AcceptBrokerOffer />
+                <TransactionLog />
+            </Suspense>
         </div>
     );
 }
