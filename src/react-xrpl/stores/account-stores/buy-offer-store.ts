@@ -2,7 +2,7 @@ import { getBuyOffers } from '../../api/requests';
 import { NetworkEmitter, WalletEvents } from '../../api/network-emitter';
 import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
-import { OfferStore } from '../../api/wallet-types';
+import { Offer, OfferStore } from '../../api/wallet-types';
 
 export class BuyOfferStoreManager extends StoreManager<OfferStore> {
     private networkEmitter: NetworkEmitter;
@@ -27,7 +27,14 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
         tokenId: string
     ): Promise<OfferStore> {
         const [store] = this.getStore(address);
-        const buyOffers = await getBuyOffers(this.client, tokenId);
+        const buyOffers = await getBuyOffers(this.client, tokenId).catch(
+            (error) => {
+                // TODO: silently ignore if not found error as this can indicate no offers exist
+                console.log('error in getBuyOffers: ', error);
+
+                return [] as Offer[];
+            }
+        );
         console.log('initial buy offers store: ', tokenId, [...buyOffers]);
 
         store.setState((state) => {

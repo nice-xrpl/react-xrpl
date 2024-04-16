@@ -33,7 +33,7 @@ export class CurrencyStoreManager extends StoreManager<Currency[]> {
 
         const [store] = this.getStore(address);
 
-        console.log('added listener for ', address);
+        console.log('added currency listener for ', address);
         this.onCurrencyChange = () => {
             getBalances(this.client, address).then(([, currencies]) => {
                 if (this.hasStore(address)) {
@@ -61,7 +61,7 @@ export class CurrencyStoreManager extends StoreManager<Currency[]> {
             return;
         }
 
-        console.log('removed listener for ', address);
+        console.log('removed currency listener for ', address);
         this.networkEmitter.off(
             address,
             WalletEvents.CurrencyChange,

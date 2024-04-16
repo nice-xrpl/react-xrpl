@@ -18,6 +18,8 @@ export class TokenStoreManager extends StoreManager<Token[]> {
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
         super([]);
 
+        console.log('constructing new token store...', networkEmitter);
+
         this.networkEmitter = networkEmitter;
         this.onTokenMint = null;
         this.onTokenBurn = null;
@@ -28,7 +30,11 @@ export class TokenStoreManager extends StoreManager<Token[]> {
 
     public async setInitialTokens(address: string) {
         const [store] = this.getStore(address);
-        const tokens = await getTokens(this.client, address);
+        const tokens = await getTokens(this.client, address).catch((error) => {
+            console.log('error in getTokens: ', error);
+            return [] as Token[];
+        });
+        console.log('get initial tokens: ', tokens);
         store.setState(tokens);
 
         return tokens;
@@ -39,9 +45,7 @@ export class TokenStoreManager extends StoreManager<Token[]> {
             return;
         }
 
-        const [store] = this.getStore(address);
-
-        console.log('added listener for ', address);
+        console.log('added token listener for ', address);
 
         this.onTokenMint = this.onTokenBurn = (
             token: string,
@@ -108,7 +112,7 @@ export class TokenStoreManager extends StoreManager<Token[]> {
             return;
         }
 
-        console.log('removed listener for ', address);
+        console.log('removed token listener for ', address);
 
         this.networkEmitter.off(
             address,

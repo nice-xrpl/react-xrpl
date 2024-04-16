@@ -32,7 +32,7 @@ export class BalanceStoreManager extends StoreManager<string> {
 
         const [store] = this.getStore(address);
 
-        console.log('added listener for ', address);
+        console.log('added balance listener for ', address);
         this.onBalanceChange = (drops: string, xrp: number) => {
             store.setState(`${xrp}`);
         };
@@ -55,7 +55,7 @@ export class BalanceStoreManager extends StoreManager<string> {
             return;
         }
 
-        console.log('removed listener for ', address);
+        console.log('removed balance listener for ', address);
         this.networkEmitter.off(
             address,
             WalletEvents.BalanceChange,

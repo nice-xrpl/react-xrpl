@@ -22,6 +22,7 @@ export class StoreManager<T> {
 
         store = createStore(this.initialValue);
         this.stores.set(address, store);
+        this.refCount.set(address, 0);
 
         return [store, true];
     }
@@ -29,6 +30,8 @@ export class StoreManager<T> {
     markStore(address: string) {
         let refCount = this.refCount.get(address);
         let firstRef = false;
+
+        console.log('marking store: ', address, refCount);
 
         if (refCount === 0) {
             // first ref
@@ -44,6 +47,8 @@ export class StoreManager<T> {
 
     releaseStore(address: string): boolean {
         let refCount = this.refCount.get(address);
+
+        console.log('releasing store: ', address, refCount);
 
         if (!refCount && refCount !== 0) {
             return false;
