@@ -1,0 +1,46 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+
+name: Publish to NPM
+
+#on:
+#  release:
+#    types: [created]
+on:
+  push:
+    branches:
+      - deploy/publish/v3
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js version 18
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Step 3: Install PNPM
+      - name: Install PNPM
+        run: npm install -g pnpm
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Step 5: Build the library
+      - name: Build
+        run: pnpm build
+
+      # Step 6: Publish the package to NPM
+      - name: Publish to NPM
+        run: echo "y" | pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
