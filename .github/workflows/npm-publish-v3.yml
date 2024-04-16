@@ -9,7 +9,7 @@ name: Publish to NPM
 on:
   push:
     branches:
-      - deploy/publish/v3
+      - deploy/publish-v3
 
 jobs:
   build-and-publish:
