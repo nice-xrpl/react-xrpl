@@ -47,6 +47,8 @@ function useTransactionLogInternal(
                 return [] as AccountTxResponse[];
             });
 
+            console.log('transactions for accounts: ', accounts, allResponses);
+
             allResponses
                 .then((responses) => {
                     const entries = processTransactions(responses);
@@ -56,7 +58,7 @@ function useTransactionLogInternal(
                     console.log(error);
                 });
         }
-    }, [account, client, isConnected]);
+    }, [accounts, client, isConnected]);
 
     useEffect(() => {
         // TODO: Clean this up
