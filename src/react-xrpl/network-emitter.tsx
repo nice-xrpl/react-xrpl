@@ -8,8 +8,13 @@ export function NetworkEmitter({ children }: { children: React.ReactNode }) {
     const isConnected = useIsConnected();
 
     const networkEmitter = useMemo(() => {
+        console.log('creating network emitter...');
         return createNetworkEmitter(client);
     }, [client]);
+
+    useEffect(() => {
+        console.log('network emitter changed: ', networkEmitter);
+    }, [networkEmitter]);
 
     useEffect(() => {
         if (isConnected) {

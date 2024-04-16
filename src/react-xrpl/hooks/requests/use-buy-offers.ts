@@ -8,5 +8,7 @@ export function useBuyOffers(tokenId: string, address?: string) {
         return buyOffers.setInitialBuyOffers(internalAddress, tokenId);
     };
 
-    return useStoreManager(buyOffers, onCreated, address);
+    const offers = useStoreManager(buyOffers, onCreated, address);
+
+    return offers[tokenId];
 }

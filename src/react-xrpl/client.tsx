@@ -15,7 +15,10 @@ export function XRPLClient({
     children: React.ReactNode;
     network?: string;
 }) {
+    console.log('rendering client');
+
     const client = useMemo(() => {
+        console.log('creating client in memo: ', network);
         return new xrplClient(network);
     }, [network]);
 

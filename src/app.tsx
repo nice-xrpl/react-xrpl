@@ -14,24 +14,26 @@ function MainApp() {
             <div>
                 Client connected to ripple: {isConnected ? 'true' : 'false'}
             </div>
-            <div>
+            {/* <div>
                 <CreateNewWallet />
-            </div>
+            </div> */}
+
+            {/* <div>
+                Sample Log:
+                <TransactionLog
+                    account={'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp'}
+                />
+            </div> */}
+
             <div>
-                <div>
-                    Sample Log:
-                    <TransactionLog
-                        account={'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp'}
-                    />
-                </div>
                 <LoadWalletFromSeed seed={'sEd7cUM9hqM6Ly6uvG7FU9YguzsTwg7'} />
             </div>
             <div>
                 <LoadWalletFromSeed seed={'sEdVExhLMoRWkVArve9Hr9TMpNdjnEq'} />
             </div>
-            <div>
+            {/* <div>
                 <LoadWalletFromSeed seed={'sEdTQ1D4LuYi1dbQ3ryHFpEX2emh3vW'} />
-            </div>
+            </div> */}
         </div>
     );
 }

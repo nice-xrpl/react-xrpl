@@ -1,10 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useXRPLClient } from './hooks';
-import { getInitialWalletState } from './api';
+import React, { useContext, useMemo } from 'react';
 import { WalletAddressContext } from './wallet-address-context';
-import { AccountEvents } from './account-events';
-import { useWalletStoreManager } from './stores/use-wallet-store-manager';
-import { AccountStoresContext } from './account-stores-context';
 
 type AccountProps = {
     address?: string;

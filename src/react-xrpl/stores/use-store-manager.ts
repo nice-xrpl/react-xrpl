@@ -21,13 +21,15 @@ export function useStoreManager<
     // get the balance store for the address
     const [store, created] = storeType.getStore(internalAddress);
 
-    suspend(async () => {
+    const result = suspend(async () => {
         if (created) {
             return await onCreated(internalAddress);
         }
 
         return store.getState();
-    });
+    }, [internalAddress]);
+
+    console.log('result: ', result);
 
     // set up network event if needed
     useEffect(() => {
