@@ -7,23 +7,25 @@ import { TransactionLog } from './features/transaction-log';
 
 function MainApp() {
     const isConnected = useIsConnected();
-    // const log = useTransactionLog('r4kpAq7NYMdKq2WX28htLGrSxuPownzjPG');
 
     return (
         <div className="App">
             <div>
                 Client connected to ripple: {isConnected ? 'true' : 'false'}
             </div>
-            {/* <div>
+            <div>
                 <CreateNewWallet />
-            </div> */}
+            </div>
 
-            {/* <div>
-                Sample Log:
+            <div>
+                Combined Log:
                 <TransactionLog
-                    account={'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp'}
+                    account={[
+                        'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp',
+                        'r9g9XGCX4cQAJjfko1jemKMbRYma2QdFJP',
+                    ]}
                 />
-            </div> */}
+            </div>
 
             <div>
                 <LoadWalletFromSeed seed={'sEd7cUM9hqM6Ly6uvG7FU9YguzsTwg7'} />

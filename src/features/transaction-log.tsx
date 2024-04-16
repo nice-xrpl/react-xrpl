@@ -20,7 +20,8 @@ function processEntry(entry: TransactionLogEntry) {
     if (entry.type === 'CurrencySent') {
         return (
             <div key={entry.timestamp}>
-                {entry.type}: Sent {entry.payload.amount.currency} {entry.payload.amount.value} to {entry.to}
+                {entry.type}: Sent {entry.payload.amount.currency}{' '}
+                {entry.payload.amount.value} to {entry.to}
             </div>
         );
     }
@@ -28,7 +29,8 @@ function processEntry(entry: TransactionLogEntry) {
     if (entry.type === 'CurrencyReceived') {
         return (
             <div key={entry.timestamp}>
-                {entry.type}: Recieved {entry.payload.amount.currency} {entry.payload.amount.value} from {entry.from}
+                {entry.type}: Recieved {entry.payload.amount.currency}{' '}
+                {entry.payload.amount.value} from {entry.from}
             </div>
         );
     }
@@ -68,7 +70,7 @@ function processEntry(entry: TransactionLogEntry) {
     return <div>Unprocessed entry: {JSON.stringify(entry)}</div>;
 }
 
-export function TransactionLog({ account }: { account?: string }) {
+export function TransactionLog({ account }: { account?: string | string[] }) {
     const log = useTransactionLog(account);
 
     return (

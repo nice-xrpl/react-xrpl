@@ -20,19 +20,35 @@ export async function getTransactions(
 }
 
 export function processTransactions(
-    response: AccountTxResponse,
-    address: string
+    response: AccountTxResponse | AccountTxResponse[]
 ) {
     let initialTransactions: TransactionLogEntry[] = [];
+    let responses = Array.isArray(response) ? response : [response];
 
-    for (const transaction of response.result.transactions) {
-        let tx = transaction.tx;
+    // Flatten all transactions from all responses into a single array
+    let allEntries = responses.flatMap((resp) =>
+        resp.result.transactions.map((tx) => ({
+            account: resp.result.account,
+            transaction: tx,
+        }))
+    );
 
-        console.log(address, 'parsing tx: ', transaction);
+    // Sort the transactions by the 'date' property
+    allEntries.sort((a, b) => {
+        let dateA = a.transaction.tx?.date ?? 0;
+        let dateB = b.transaction.tx?.date ?? 0;
+
+        return dateA - dateB;
+    });
+
+    for (const entry of allEntries) {
+        let tx = entry.transaction.tx;
+
+        console.log(entry.account, 'parsing tx: ', entry);
 
         if (
             tx?.TransactionType === 'NFTokenCreateOffer' &&
-            typeof transaction.meta !== 'string'
+            typeof entry.transaction.meta !== 'string'
         ) {
             if (tx?.Flags === 1) {
                 initialTransactions.push({
@@ -40,7 +56,7 @@ export function processTransactions(
                     payload: {
                         token: tx.NFTokenID,
                         // @ts-expect-error
-                        offerId: transaction.meta.offer_id,
+                        offerId: entry.transaction.meta.offer_id,
                     },
                     timestamp: tx.date ?? 0,
                 });
@@ -49,14 +65,14 @@ export function processTransactions(
 
         if (
             tx?.TransactionType === 'NFTokenAcceptOffer' &&
-            typeof transaction.meta !== 'string'
+            typeof entry.transaction.meta !== 'string'
         ) {
-            if (tx?.NFTokenSellOffer && tx?.Account === address) {
+            if (tx?.NFTokenSellOffer && tx?.Account === entry.account) {
                 initialTransactions.push({
                     type: 'AcceptSellOffer',
                     payload: {
                         // @ts-expect-error
-                        token: transaction.meta.nftoken_id,
+                        token: entry.transaction.meta.nftoken_id,
                         offerId: tx.NFTokenSellOffer,
                     },
                     timestamp: tx.date ?? 0,
@@ -66,8 +82,8 @@ export function processTransactions(
 
         if (
             tx?.TransactionType === 'NFTokenBurn' &&
-            typeof transaction.meta !== 'string' &&
-            tx.Account === address
+            typeof entry.transaction.meta !== 'string' &&
+            tx.Account === entry.account
         ) {
             initialTransactions.push({
                 type: 'TokenBurn',
@@ -80,14 +96,14 @@ export function processTransactions(
 
         if (
             tx?.TransactionType === 'NFTokenMint' &&
-            typeof transaction.meta !== 'string' &&
-            tx.Account === address
+            typeof entry.transaction.meta !== 'string' &&
+            tx.Account === entry.account
         ) {
             initialTransactions.push({
                 type: 'TokenMint',
                 payload: {
                     // @ts-expect-error
-                    token: transaction.meta.nftoken_id,
+                    token: entry.transaction.meta.nftoken_id,
                 },
                 timestamp: tx.date ?? 0,
             });
@@ -98,7 +114,7 @@ export function processTransactions(
 
             if (isIssuedCurrency(tx.Amount)) {
                 // amount is currency, not xrp
-                if (tx.Destination === address) {
+                if (tx.Destination === entry.account) {
                     initialTransactions.push({
                         type: 'CurrencyReceived',
                         from: tx.Account,
@@ -110,7 +126,7 @@ export function processTransactions(
                     });
                 }
 
-                if (tx.Account === address) {
+                if (tx.Account === entry.account) {
                     initialTransactions.push({
                         type: 'CurrencySent',
                         to: tx.Destination,
@@ -122,7 +138,7 @@ export function processTransactions(
                     });
                 }
             } else {
-                if (tx.Destination === address) {
+                if (tx.Destination === entry.account) {
                     initialTransactions.push({
                         type: 'PaymentReceived',
                         from: tx.Account,
@@ -134,7 +150,7 @@ export function processTransactions(
                     });
                 }
 
-                if (tx.Account === address) {
+                if (tx.Account === entry.account) {
                     initialTransactions.push({
                         type: 'PaymentSent',
                         to: tx.Destination,

@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { WalletAddressContext } from '../wallet-address-context';
 import { useNetworkEmitter } from './use-network-emitter';
 import { TransactionLogEntry } from '../api/wallet-types';
-import { Amount, IssuedCurrencyAmount } from 'xrpl';
+import { AccountTxResponse, Amount, IssuedCurrencyAmount } from 'xrpl';
 import { useXRPLClient } from './use-xrpl-client';
 import { WalletEvents } from '../api/network-emitter';
 import {
@@ -11,7 +11,10 @@ import {
 } from '../api/requests/get-transactions';
 import { useIsConnected } from './use-is-connected';
 
-function useTransactionLogInternal(account: string, limit: number = 10) {
+function useTransactionLogInternal(
+    account: string | string[],
+    limit: number = 10
+) {
     const client = useXRPLClient();
     const isConnected = useIsConnected();
 
@@ -21,249 +24,291 @@ function useTransactionLogInternal(account: string, limit: number = 10) {
         return [];
     });
 
+    const accounts = useMemo(() => {
+        if (typeof account === 'string') {
+            return [account];
+        } else {
+            return account;
+        }
+    }, [account]);
+
     useEffect(() => {
         // TODO: Fix this for HMR
         if (isConnected && client.isConnected()) {
-            getTransactions(client, account, limit)
-                .then((response) => {
-                    setLog(processTransactions(response, account));
+            const allResponses = Promise.all(
+                accounts.map((a) =>
+                    getTransactions(client, a, limit).catch((error) => {
+                        console.log('error: ', error);
+                        return {} as AccountTxResponse;
+                    })
+                )
+            ).catch((error) => {
+                console.log('error: ', error);
+                return [] as AccountTxResponse[];
+            });
+
+            allResponses
+                .then((responses) => {
+                    const entries = processTransactions(responses);
+                    setLog(entries);
                 })
                 .catch((error) => {
-                    console.log('error: ', error);
-                    setLog([]);
+                    console.log(error);
                 });
         }
     }, [account, client, isConnected]);
 
     useEffect(() => {
-        const onPaymentSent = (to: string, xrp: string, timestamp: number) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'PaymentSent',
-                    payload: {
-                        amount: xrp,
-                    },
-                    timestamp,
-                    to,
-                    account,
-                };
-                let next = [entry, ...prev];
+        // TODO: Clean this up
+        const offs = accounts.map((account) => {
+            const onPaymentSent = (
+                to: string,
+                xrp: string,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'PaymentSent',
+                        payload: {
+                            amount: xrp,
+                        },
+                        timestamp,
+                        to,
+                        account,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onPaymentRecieved = (
-            from: string,
-            xrp: string,
-            timestamp: number
-        ) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'PaymentReceived',
-                    payload: {
-                        amount: xrp,
-                    },
-                    timestamp,
-                    from,
-                    account,
-                };
-                let next = [entry, ...prev];
+            const onPaymentRecieved = (
+                from: string,
+                xrp: string,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'PaymentReceived',
+                        payload: {
+                            amount: xrp,
+                        },
+                        timestamp,
+                        from,
+                        account,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onCurrencySent = (
-            to: string,
-            amount: IssuedCurrencyAmount,
-            timestamp: number
-        ) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'CurrencySent',
-                    payload: {
-                        amount,
-                    },
-                    timestamp,
-                    to,
-                    account,
-                };
-                let next = [entry, ...prev];
+            const onCurrencySent = (
+                to: string,
+                amount: IssuedCurrencyAmount,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'CurrencySent',
+                        payload: {
+                            amount,
+                        },
+                        timestamp,
+                        to,
+                        account,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onCurrencyRecieved = (
-            from: string,
-            amount: IssuedCurrencyAmount,
-            timestamp: number
-        ) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'CurrencyReceived',
-                    payload: {
-                        amount,
-                    },
-                    timestamp,
-                    from,
-                    account,
-                };
-                let next = [entry, ...prev];
+            const onCurrencyRecieved = (
+                from: string,
+                amount: IssuedCurrencyAmount,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'CurrencyReceived',
+                        payload: {
+                            amount,
+                        },
+                        timestamp,
+                        from,
+                        account,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onCreateSellOffer = (ledgerIndex: string, token: string, amount: Amount, timestamp: number) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'CreateSellOffer',
-                    payload: {
-                        token,
-                        offerId: ledgerIndex
-                    },
-                    timestamp,
-                };
-                let next = [entry, ...prev];
+            const onCreateSellOffer = (
+                ledgerIndex: string,
+                token: string,
+                amount: Amount,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'CreateSellOffer',
+                        payload: {
+                            token,
+                            offerId: ledgerIndex,
+                        },
+                        timestamp,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onAcceptSellOffer = (sellOfferId: string, token: string, timestamp: number) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'AcceptSellOffer',
-                    payload: {
-                        token,
-                        offerId: sellOfferId
-                    },
-                    timestamp,
-                };
-                let next = [entry, ...prev];
+            const onAcceptSellOffer = (
+                sellOfferId: string,
+                token: string,
+                timestamp: number
+            ) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'AcceptSellOffer',
+                        payload: {
+                            token,
+                            offerId: sellOfferId,
+                        },
+                        timestamp,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onTokenMint = (token: string, timestamp: number) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'TokenMint',
-                    payload: {
-                        token,                    },
-                    timestamp,
-                };
-                let next = [entry, ...prev];
+            const onTokenMint = (token: string, timestamp: number) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'TokenMint',
+                        payload: {
+                            token,
+                        },
+                        timestamp,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        const onTokenBurn = (token: string, timestamp: number) => {
-            setLog((prev) => {
-                let entry: TransactionLogEntry = {
-                    type: 'TokenBurn',
-                    payload: {
-                        token,                    },
-                    timestamp,
-                };
-                let next = [entry, ...prev];
+            const onTokenBurn = (token: string, timestamp: number) => {
+                setLog((prev) => {
+                    let entry: TransactionLogEntry = {
+                        type: 'TokenBurn',
+                        payload: {
+                            token,
+                        },
+                        timestamp,
+                    };
+                    let next = [entry, ...prev];
 
-                if (next.length > limit) {
-                    next.splice(next.length - 1, 1);
-                }
-                return next;
-            });
-        };
+                    if (next.length > limit) {
+                        next.splice(next.length - 1, 1);
+                    }
+                    return next;
+                });
+            };
 
-        if (!isConnected) {
-            return;
-        }
+            if (!isConnected) {
+                return () => {};
+            }
 
-        const onPaymentSentOff = networkEmitter.on(
-            account,
-            WalletEvents.PaymentSent,
-            onPaymentSent
-        );
-        const onPaymentRecievedOff = networkEmitter.on(
-            account,
-            WalletEvents.PaymentRecieved,
-            onPaymentRecieved
-        );
-        const onCurrencySentOff = networkEmitter.on(
-            account,
-            WalletEvents.CurrencySent,
-            onCurrencySent
-        );
-        const onCurrencyRecievedOff = networkEmitter.on(
-            account,
-            WalletEvents.CurrencyRecieved,
-            onCurrencyRecieved
-        );
+            const onPaymentSentOff = networkEmitter.on(
+                account,
+                WalletEvents.PaymentSent,
+                onPaymentSent
+            );
+            const onPaymentRecievedOff = networkEmitter.on(
+                account,
+                WalletEvents.PaymentRecieved,
+                onPaymentRecieved
+            );
+            const onCurrencySentOff = networkEmitter.on(
+                account,
+                WalletEvents.CurrencySent,
+                onCurrencySent
+            );
+            const onCurrencyRecievedOff = networkEmitter.on(
+                account,
+                WalletEvents.CurrencyRecieved,
+                onCurrencyRecieved
+            );
 
-        const onCreateSellOfferOff = networkEmitter.on(
-            account, 
-            WalletEvents.CreateSellOffer, 
-            onCreateSellOffer
-        );
+            const onCreateSellOfferOff = networkEmitter.on(
+                account,
+                WalletEvents.CreateSellOffer,
+                onCreateSellOffer
+            );
 
-        const onAcceptSellOfferOff = networkEmitter.on(
-            account, 
-            WalletEvents.AcceptSellOffer, 
-            onAcceptSellOffer
-        );
+            const onAcceptSellOfferOff = networkEmitter.on(
+                account,
+                WalletEvents.AcceptSellOffer,
+                onAcceptSellOffer
+            );
 
-        const onTokenMintOff = networkEmitter.on(
-            account,
-            WalletEvents.TokenMint,
-            onTokenMint
-        );
-        const onTokenBurnOff = networkEmitter.on(
-            account,
-            WalletEvents.TokenBurn,
-            onTokenBurn
-        );
+            const onTokenMintOff = networkEmitter.on(
+                account,
+                WalletEvents.TokenMint,
+                onTokenMint
+            );
+            const onTokenBurnOff = networkEmitter.on(
+                account,
+                WalletEvents.TokenBurn,
+                onTokenBurn
+            );
+
+            return () => {
+                onPaymentSentOff();
+                onPaymentRecievedOff();
+                onCurrencySentOff();
+                onCurrencyRecievedOff();
+                onCreateSellOfferOff();
+                onAcceptSellOfferOff();
+                onTokenMintOff();
+                onTokenBurnOff();
+            };
+        });
 
         return () => {
-            onPaymentSentOff();
-            onPaymentRecievedOff();
-            onCurrencySentOff();
-            onCurrencyRecievedOff();
-            onCreateSellOfferOff();
-            onAcceptSellOfferOff();
-            onTokenMintOff();
-            onTokenBurnOff();
+            offs.forEach((off) => off());
         };
     }, [account, isConnected]);
 
     return log;
 }
 
-export function useTransactionLog(account?: string, limit?: number) {
+export function useTransactionLog(account?: string | string[], limit?: number) {
     const address = useContext(WalletAddressContext);
 
     const accountsInternal = useMemo(() => {
@@ -274,6 +319,11 @@ export function useTransactionLog(account?: string, limit?: number) {
 
         if (typeof account === 'string') {
             // useTransactionLog(account)
+            return account;
+        }
+
+        if (Array.isArray(account)) {
+            // useTransactionLog([account1, account2, ...])
             return account;
         }
 
