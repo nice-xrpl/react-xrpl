@@ -17,7 +17,7 @@ export function createWallet(seed?: string) {
 
 export async function createAndFundWallet(
     client: xrplClient,
-    amount: string = '1024'
+    amount: string = '1000'
 ): Promise<xrplWallet> {
     await client.connect();
 
