@@ -14,7 +14,7 @@ export function CreateNewWallet() {
                 <button
                     onClick={async () => {
                         setSending(true);
-                        const wallet = await createAndFundWallet('1000000');
+                        const wallet = await createAndFundWallet('1000');
 
                         setSending(false);
 

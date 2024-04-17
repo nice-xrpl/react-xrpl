@@ -28,11 +28,16 @@ function MainApp() {
             </div>
 
             <div>
+                Empty Log:
+                <TransactionLog account={[]} />
+            </div>
+
+            {/* <div>
                 <LoadWalletFromSeed seed={'sEd7cUM9hqM6Ly6uvG7FU9YguzsTwg7'} />
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
                 <LoadWalletFromSeed seed={'sEdVExhLMoRWkVArve9Hr9TMpNdjnEq'} />
-            </div>
+            </div> */}
             {/* <div>
                 <LoadWalletFromSeed seed={'sEdTQ1D4LuYi1dbQ3ryHFpEX2emh3vW'} />
             </div> */}

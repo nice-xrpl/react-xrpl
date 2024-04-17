@@ -44,7 +44,7 @@ export function processTransactions(
     for (const entry of allEntries) {
         let tx = entry.transaction.tx;
 
-        console.log(entry.account, 'parsing tx: ', entry);
+        // console.log(entry.account, 'parsing tx: ', entry);
 
         if (
             tx?.TransactionType === 'NFTokenCreateOffer' &&

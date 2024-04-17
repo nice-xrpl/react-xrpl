@@ -35,28 +35,34 @@ function useTransactionLogInternal(
     useEffect(() => {
         // TODO: Fix this for HMR
         if (isConnected && client.isConnected()) {
-            const allResponses = Promise.all(
-                accounts.map((a) =>
-                    getTransactions(client, a, limit).catch((error) => {
-                        console.log('error: ', error);
-                        return {} as AccountTxResponse;
-                    })
-                )
-            ).catch((error) => {
-                console.log('error: ', error);
-                return [] as AccountTxResponse[];
-            });
-
-            console.log('transactions for accounts: ', accounts, allResponses);
-
-            allResponses
-                .then((responses) => {
-                    const entries = processTransactions(responses);
-                    setLog(entries);
-                })
-                .catch((error) => {
-                    console.log(error);
+            if (accounts.length > 0) {
+                const allResponses = Promise.all(
+                    accounts.map((a) =>
+                        getTransactions(client, a, limit).catch((error) => {
+                            console.log('error: ', error);
+                            return {} as AccountTxResponse;
+                        })
+                    )
+                ).catch((error) => {
+                    console.log('error: ', error);
+                    return [] as AccountTxResponse[];
                 });
+
+                console.log(
+                    'transactions for accounts: ',
+                    accounts,
+                    allResponses
+                );
+
+                allResponses
+                    .then((responses) => {
+                        const entries = processTransactions(responses);
+                        setLog(entries);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
         }
     }, [accounts, client, isConnected]);
 
