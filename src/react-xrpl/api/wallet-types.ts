@@ -35,6 +35,7 @@ export type TransactionLogEntry =
           payload: {
               amount: string;
           };
+          hash: string;
       }
     | {
           type: 'PaymentReceived';
@@ -44,6 +45,7 @@ export type TransactionLogEntry =
           payload: {
               amount: string;
           };
+          hash: string;
       }
     | {
           type: 'CurrencySent';
@@ -53,6 +55,7 @@ export type TransactionLogEntry =
           payload: {
               amount: IssuedCurrencyAmount;
           };
+          hash: string;
       }
     | {
           type: 'CurrencyReceived';
@@ -62,32 +65,41 @@ export type TransactionLogEntry =
           payload: {
               amount: IssuedCurrencyAmount;
           };
-      } | {
+          hash: string;
+      }
+    | {
           type: 'CreateSellOffer';
           timestamp: number;
           payload: {
-            token: string;
-            offerId: string;
-          }
-      } | {
+              token: string;
+              offerId: string;
+          };
+          hash: string;
+      }
+    | {
           type: 'AcceptSellOffer';
           timestamp: number;
           payload: {
-            token: string;
-            offerId: string;
-          }
-      } | {
+              token: string;
+              offerId: string;
+          };
+          hash: string;
+      }
+    | {
           type: 'TokenMint';
           timestamp: number;
           payload: {
-            token: string;
-          }
-      } | {
+              token: string;
+          };
+          hash: string;
+      }
+    | {
           type: 'TokenBurn';
           timestamp: number;
           payload: {
-            token: string;
-          }
+              token: string;
+          };
+          hash: string;
       };
 
 export type TransactionType = TransactionLogEntry['type'];

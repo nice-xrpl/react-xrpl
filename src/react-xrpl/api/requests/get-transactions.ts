@@ -59,6 +59,7 @@ export function processTransactions(
                         offerId: entry.transaction.meta.offer_id,
                     },
                     timestamp: tx.date ?? 0,
+                    hash: tx.hash ?? tx.hash ?? '',
                 });
             }
         }
@@ -76,6 +77,7 @@ export function processTransactions(
                         offerId: tx.NFTokenSellOffer,
                     },
                     timestamp: tx.date ?? 0,
+                    hash: tx.hash ?? tx.hash ?? '',
                 });
             }
         }
@@ -91,6 +93,7 @@ export function processTransactions(
                     token: tx.NFTokenID,
                 },
                 timestamp: tx.date ?? 0,
+                hash: tx.hash ?? tx.hash ?? '',
             });
         }
 
@@ -106,6 +109,7 @@ export function processTransactions(
                     token: entry.transaction.meta.nftoken_id,
                 },
                 timestamp: tx.date ?? 0,
+                hash: tx.hash ?? tx.hash ?? '',
             });
         }
 
@@ -123,6 +127,7 @@ export function processTransactions(
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Destination,
+                        hash: tx.hash ?? tx.hash ?? '',
                     });
                 }
 
@@ -135,6 +140,7 @@ export function processTransactions(
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Account,
+                        hash: tx.hash ?? tx.hash ?? '',
                     });
                 }
             } else {
@@ -147,6 +153,7 @@ export function processTransactions(
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Destination,
+                        hash: tx.hash ?? tx.hash ?? '',
                     });
                 }
 
@@ -159,6 +166,7 @@ export function processTransactions(
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Account,
+                        hash: tx.hash ?? tx.hash ?? '',
                     });
                 }
             }

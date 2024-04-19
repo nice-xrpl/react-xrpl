@@ -3,7 +3,7 @@ import { TransactionLogEntry, useTransactionLog } from 'react-xrpl';
 function processEntry(entry: TransactionLogEntry) {
     if (entry.type === 'PaymentReceived') {
         return (
-            <div key={`${entry.account}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Recieved {entry.payload.amount} from {entry.from}
             </div>
         );
@@ -11,7 +11,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'PaymentSent') {
         return (
-            <div key={`${entry.account}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Sent {entry.payload.amount} to {entry.to}
             </div>
         );
@@ -19,7 +19,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'CurrencySent') {
         return (
-            <div key={`${entry.account}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Sent {entry.payload.amount.currency}{' '}
                 {entry.payload.amount.value} to {entry.to}
             </div>
@@ -28,7 +28,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'CurrencyReceived') {
         return (
-            <div key={`${entry.account}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Recieved {entry.payload.amount.currency}{' '}
                 {entry.payload.amount.value} from {entry.from}
             </div>
@@ -37,7 +37,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'CreateSellOffer') {
         return (
-            <div key={`${entry.payload.offerId}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Created sell offer for {entry.payload.token}
             </div>
         );
@@ -45,7 +45,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'AcceptSellOffer') {
         return (
-            <div key={`${entry.payload.offerId}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Accepted sell offer for {entry.payload.token}
             </div>
         );
@@ -53,7 +53,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'TokenMint') {
         return (
-            <div key={`${entry.payload.token}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Minted {entry.payload.token}
             </div>
         );
@@ -61,7 +61,7 @@ function processEntry(entry: TransactionLogEntry) {
 
     if (entry.type === 'TokenBurn') {
         return (
-            <div key={`${entry.payload.token}${entry.timestamp}`}>
+            <div key={entry.hash}>
                 {entry.type}: Burned {entry.payload.token}
             </div>
         );

@@ -131,56 +131,76 @@ export const WalletEvents = {
 } as const;
 
 type EventMap = {
-    [WalletEvents.BalanceChange]: (balance: string, xrp: number) => void;
+    [WalletEvents.BalanceChange]: (
+        balance: string,
+        xrp: number,
+        hash: string
+    ) => void;
     [WalletEvents.PaymentSent]: (
         to: string,
         xrp: string,
-        timestamp: number
+        timestamp: number,
+        hash: string
     ) => void;
     [WalletEvents.PaymentRecieved]: (
         from: string,
         xrp: string,
-        timestamp: number
+        timestamp: number,
+        hash: string
     ) => void;
     [WalletEvents.CurrencyChange]: () => void;
     [WalletEvents.CurrencySent]: (
         to: string,
         amount: IssuedCurrencyAmount,
-        timestamp: number
+        timestamp: number,
+        hash: string
     ) => void;
     [WalletEvents.CurrencyRecieved]: (
         from: string,
         amount: IssuedCurrencyAmount,
-        timestamp: number
+        timestamp: number,
+        hash: string
     ) => void;
-    [WalletEvents.TokenMint]: (token: string, timestamp: number) => void;
-    [WalletEvents.TokenBurn]: (token: string, timestamp: number) => void;
+    [WalletEvents.TokenMint]: (
+        token: string,
+        timestamp: number,
+        hash: string
+    ) => void;
+    [WalletEvents.TokenBurn]: (
+        token: string,
+        timestamp: number,
+        hash: string
+    ) => void;
     [WalletEvents.CreateBuyOffer]: (
         ledgerIndex: string,
         token: string,
         amount: Amount,
         timestamp: number,
+        hash: string
     ) => void;
     [WalletEvents.CreateSellOffer]: (
         ledgerIndex: string,
         token: string,
         amount: Amount,
         timestamp: number,
+        hash: string
     ) => void;
-    [WalletEvents.CancelBuyOffer]: () => void;
-    [WalletEvents.CancelSellOffer]: () => void;
+    [WalletEvents.CancelBuyOffer]: (hash: string) => void;
+    [WalletEvents.CancelSellOffer]: (hash: string) => void;
     [WalletEvents.AcceptBuyOffer]: (
-        buyOfferId: string, 
-        token: string, 
-        timestamp: number
+        buyOfferId: string,
+        token: string,
+        timestamp: number,
+        hash: string
     ) => void;
     [WalletEvents.AcceptSellOffer]: (
         sellOfferId: string,
         token: string,
         timestamp: number,
+        hash: string
     ) => void;
-    [WalletEvents.TransferToken]: () => void;
-    [WalletEvents.RefreshTokens]: () => void;
+    [WalletEvents.TransferToken]: (hash: string) => void;
+    [WalletEvents.RefreshTokens]: (hash: string) => void;
 };
 
 export type WalletEvent = keyof EventMap;
@@ -192,7 +212,8 @@ type AddressEvents = {
 
 function processNodes(
     nodes: Node[],
-    addressEvents: Map<string, AddressEvents>
+    addressEvents: Map<string, AddressEvents>,
+    hash: string
 ) {
     for (const node of nodes) {
         if (isModifiedNode(node)) {
@@ -213,7 +234,8 @@ function processNodes(
                         events.emitter.emit(
                             WalletEvents.BalanceChange,
                             balance,
-                            dropsToXrp(balance)
+                            dropsToXrp(balance),
+                            hash
                         );
                     }
                     break;
@@ -251,7 +273,8 @@ function processNodes(
                         events.emitter.emit(
                             WalletEvents.BalanceChange,
                             balance,
-                            dropsToXrp(balance)
+                            dropsToXrp(balance),
+                            hash
                         );
                     }
                     break;
@@ -307,14 +330,12 @@ function processNodes(
 export class NetworkEmitter {
     private _client: xrplClient;
     private _addressEvents: Map<string, AddressEvents>;
-    private _globalEvents: EventEmitter<EventMap>;
     private _eventsEnabled: boolean = false;
 
     constructor(client: xrplClient) {
         console.log('constructing new network emitter...');
 
         this._addressEvents = new Map<string, AddressEvents>();
-        this._globalEvents = new EventEmitter<EventMap>();
         this._client = client;
     }
 
@@ -404,7 +425,8 @@ export class NetworkEmitter {
                     events.emitter.emit(
                         WalletEvents.TokenMint,
                         getNFTokenID(tx.meta) ?? '',
-                        tx.transaction.date ?? 0
+                        tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
@@ -421,6 +443,7 @@ export class NetworkEmitter {
                         WalletEvents.TokenBurn,
                         tx.transaction.NFTokenID ?? '',
                         tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
@@ -447,14 +470,16 @@ export class NetworkEmitter {
                         WalletEvents.CurrencyRecieved,
                         tx.transaction.Account,
                         tx.transaction.Amount,
-                        tx.transaction.date ?? 0
+                        tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 } else {
                     destinationEvents.emitter.emit(
                         WalletEvents.PaymentRecieved,
                         tx.transaction.Account,
                         tx.transaction.Amount,
-                        tx.transaction.date ?? 0
+                        tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
@@ -468,14 +493,16 @@ export class NetworkEmitter {
                         WalletEvents.CurrencySent,
                         tx.transaction.Destination,
                         tx.transaction.Amount,
-                        tx.transaction.date ?? 0
+                        tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 } else {
                     sourceEvents.emitter.emit(
                         WalletEvents.PaymentSent,
                         tx.transaction.Destination,
                         tx.transaction.Amount,
-                        tx.transaction.date ?? 0
+                        tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
@@ -515,6 +542,7 @@ export class NetworkEmitter {
                             tx.transaction.NFTokenSellOffer,
                             tokenId,
                             tx.transaction.date ?? 0,
+                            tx.transaction.hash ?? ''
                         );
                     }
 
@@ -534,6 +562,7 @@ export class NetworkEmitter {
                             tx.transaction.NFTokenBuyOffer,
                             tokenId,
                             tx.transaction.date ?? 0,
+                            tx.transaction.hash ?? ''
                         );
                     }
                 }
@@ -561,6 +590,7 @@ export class NetworkEmitter {
                         tx.transaction.NFTokenID,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
@@ -577,13 +607,18 @@ export class NetworkEmitter {
                         tx.transaction.NFTokenID,
                         tx.transaction.Amount,
                         tx.transaction.date ?? 0,
+                        tx.transaction.hash ?? ''
                     );
                 }
             }
         }
 
         if (tx.meta?.AffectedNodes) {
-            processNodes(tx.meta.AffectedNodes, this._addressEvents);
+            processNodes(
+                tx.meta.AffectedNodes,
+                this._addressEvents,
+                tx.transaction.hash ?? ''
+            );
         }
 
         console.groupEnd();

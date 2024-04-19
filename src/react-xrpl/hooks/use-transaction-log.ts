@@ -61,7 +61,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
             const onPaymentSent = (
                 to: string,
                 xrp: string,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -72,6 +73,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                         timestamp,
                         to,
                         account,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -85,7 +87,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
             const onPaymentRecieved = (
                 from: string,
                 xrp: string,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -96,6 +99,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                         timestamp,
                         from,
                         account,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -109,7 +113,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
             const onCurrencySent = (
                 to: string,
                 amount: IssuedCurrencyAmount,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -120,6 +125,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                         timestamp,
                         to,
                         account,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -133,7 +139,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
             const onCurrencyRecieved = (
                 from: string,
                 amount: IssuedCurrencyAmount,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -144,6 +151,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                         timestamp,
                         from,
                         account,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -158,7 +166,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                 ledgerIndex: string,
                 token: string,
                 amount: Amount,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -168,6 +177,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                             offerId: ledgerIndex,
                         },
                         timestamp,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -181,7 +191,8 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
             const onAcceptSellOffer = (
                 sellOfferId: string,
                 token: string,
-                timestamp: number
+                timestamp: number,
+                hash: string
             ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
@@ -191,6 +202,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                             offerId: sellOfferId,
                         },
                         timestamp,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -201,7 +213,11 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                 });
             };
 
-            const onTokenMint = (token: string, timestamp: number) => {
+            const onTokenMint = (
+                token: string,
+                timestamp: number,
+                hash: string
+            ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
                         type: 'TokenMint',
@@ -209,6 +225,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                             token,
                         },
                         timestamp,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
@@ -219,7 +236,11 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                 });
             };
 
-            const onTokenBurn = (token: string, timestamp: number) => {
+            const onTokenBurn = (
+                token: string,
+                timestamp: number,
+                hash: string
+            ) => {
                 setLog((prev) => {
                     let entry: TransactionLogEntry = {
                         type: 'TokenBurn',
@@ -227,6 +248,7 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
                             token,
                         },
                         timestamp,
+                        hash,
                     };
                     let next = [entry, ...prev];
 
