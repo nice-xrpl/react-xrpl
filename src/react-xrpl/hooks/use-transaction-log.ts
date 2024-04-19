@@ -11,10 +11,7 @@ import {
 } from '../api/requests/get-transactions';
 import { useIsConnected } from './use-is-connected';
 
-function useTransactionLogInternal(
-    account: string | string[],
-    limit: number = 10
-) {
+function useTransactionLogInternal(accounts: string[], limit: number = 10) {
     const client = useXRPLClient();
     const isConnected = useIsConnected();
 
@@ -23,14 +20,6 @@ function useTransactionLogInternal(
     const [log, setLog] = useState<TransactionLogEntry[]>(() => {
         return [];
     });
-
-    const accounts = useMemo(() => {
-        if (typeof account === 'string') {
-            return [account];
-        } else {
-            return account;
-        }
-    }, [account]);
 
     useEffect(() => {
         // TODO: Fix this for HMR
@@ -311,7 +300,7 @@ function useTransactionLogInternal(
         return () => {
             offs.forEach((off) => off());
         };
-    }, [account, isConnected]);
+    }, [accounts, isConnected]);
 
     return log;
 }
@@ -322,12 +311,12 @@ export function useTransactionLog(account?: string | string[], limit?: number) {
     const accountsInternal = useMemo(() => {
         if (address && !account) {
             // useTransactionLog()
-            return address;
+            return [address];
         }
 
         if (typeof account === 'string') {
             // useTransactionLog(account)
-            return account;
+            return [account];
         }
 
         if (Array.isArray(account)) {
@@ -335,8 +324,8 @@ export function useTransactionLog(account?: string | string[], limit?: number) {
             return account;
         }
 
-        return '';
-    }, [address]);
+        return [];
+    }, [address, account]);
 
     return useTransactionLogInternal(accountsInternal, limit);
 }
