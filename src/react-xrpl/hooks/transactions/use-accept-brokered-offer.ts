@@ -4,6 +4,14 @@ import { acceptBrokeredOffer } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
+/**
+ * Creates a custom hook that accepts a brokered offer by submitting a transaction to the XRPL network.
+ *
+ * @return {Function} A function that accepts the following parameters:
+ *   - tokenBuyOfferId: The ID of the buy offer.
+ *   - tokenSellOfferId: The ID of the sell offer.
+ *   - fee: The fee amount for the broker.
+ */
 export function useAcceptBrokeredOffer() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

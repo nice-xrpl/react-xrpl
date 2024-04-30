@@ -5,6 +5,16 @@ import {
     Amount,
 } from 'xrpl';
 
+/**
+ * Sends a payment transaction to a destination address with the specified currency and amount.
+ *
+ * @param {xrplClient} client - The XRPL client used to send the transaction.
+ * @param {xrplWallet} wallet - The wallet initiating the transaction.
+ * @param {string} destinationAddress - The destination address for the payment.
+ * @param {string} currencyCode - The currency code of the payment.
+ * @param {string} amount - The amount of currency to be sent.
+ * @return {Promise} A Promise that resolves with the result of the transaction submission.
+ */
 export async function sendCurrency(
     client: xrplClient,
     wallet: xrplWallet,
@@ -42,6 +52,15 @@ export async function sendCurrency(
     return result;
 }
 
+/**
+ * Sends a currency amount from one wallet to a destination address.
+ *
+ * @param {xrplClient} client - The XRPL client used to send the transaction.
+ * @param {xrplWallet} wallet - The wallet initiating the transaction.
+ * @param {string} destinationAddress - The destination address for the payment.
+ * @param {Amount} amount - The amount of currency to be sent.
+ * @return {Promise} A Promise that resolves with the result of the transaction submission.
+ */
 export async function sendCurrencyAmount(
     client: xrplClient,
     wallet: xrplWallet,

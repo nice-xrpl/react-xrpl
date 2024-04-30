@@ -8,10 +8,22 @@ export type Store<T = unknown> = {
     subscribe: (listener: StoreListener) => () => void;
 };
 
+/**
+ * Checks if the given value is a function.
+ *
+ * @param {unknown} fn - The value to be checked.
+ * @return {fn is Function} - Returns true if the value is a function, false otherwise.
+ */
 function isFunction(fn: unknown): fn is Function {
     return typeof fn === 'function';
 }
 
+/**
+ * Creates a store with initial value.
+ *
+ * @param {T} initialValue - The initial value for the store.
+ * @return {Store<T>} The created store object with getState, setState, and subscribe methods.
+ */
 export function createStore<T>(initialValue: T): Store<T> {
     let state: T = initialValue;
 

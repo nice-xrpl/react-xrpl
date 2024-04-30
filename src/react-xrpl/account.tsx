@@ -7,9 +7,17 @@ type AccountProps = {
     children?: React.ReactNode;
 };
 
-// TODO: support suspense
-// TODO: require ErrorBoundary for error handling
+/**
+ * A React component that manages the account address based on context or provided address.
+ *
+ * @param {string} address - The address of the account.
+ * @param {React.ReactElement} fallback - The fallback element to render.
+ * @param {React.ReactNode} children - The child components.
+ * @return {JSX.Element} The JSX element representing the account.
+ */
 export function Account({ address, fallback = <></>, children }: AccountProps) {
+    // TODO: support suspense
+    // TODO: require ErrorBoundary for error handling
     const contextAddress = useContext(WalletAddressContext);
 
     const internalAddress = useMemo(() => {

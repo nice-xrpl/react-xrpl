@@ -2,6 +2,14 @@ import { AccountTxResponse, Client } from 'xrpl';
 import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
 import { TransactionLogEntry } from '../wallet-types';
 
+/**
+ * Retrieves a list of transactions for a given account.
+ *
+ * @param {Client} client - The XRPL client used to make the request.
+ * @param {string} account - The account for which to retrieve transactions.
+ * @param {number} [limit] - The maximum number of transactions to retrieve. Default is no limit.
+ * @return {Promise<AccountTxResponse | AccountTxResponse[]>} A promise that resolves to the response containing the list of transactions.
+ */
 export async function getTransactions(
     client: Client,
     account: string,
@@ -19,6 +27,12 @@ export async function getTransactions(
     return response;
 }
 
+/**
+ * Processes transactions from the response and categorizes them based on transaction type.
+ *
+ * @param {AccountTxResponse | AccountTxResponse[]} response - The response containing transactions.
+ * @return {TransactionLogEntry[]} An array of categorized transaction log entries.
+ */
 export function processTransactions(
     response: AccountTxResponse | AccountTxResponse[]
 ) {

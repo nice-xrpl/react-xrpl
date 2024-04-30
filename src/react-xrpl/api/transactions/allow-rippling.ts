@@ -5,6 +5,14 @@ import {
     Transaction,
 } from 'xrpl';
 
+/**
+ * Sets or clears the default ripple flag for a given XRPL wallet.
+ *
+ * @param {xrplClient} client - The XRPL client to use for connecting to the network.
+ * @param {xrplWallet} wallet - The XRPL wallet to modify.
+ * @param {boolean} rippling - Whether to set or clear the default ripple flag.
+ * @return {Promise<any>} A promise that resolves with the result of the transaction submission.
+ */
 export async function allowRippling(
     client: xrplClient,
     wallet: xrplWallet,

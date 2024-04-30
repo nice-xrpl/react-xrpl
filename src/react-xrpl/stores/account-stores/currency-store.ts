@@ -4,12 +4,21 @@ import { StoreManager } from '../store-manager';
 import { Client as xrplClient } from 'xrpl';
 import { Currency } from '../../api/wallet-types';
 
+/**
+ * Manages currency stores for addresses.
+ */
 export class CurrencyStoreManager extends StoreManager<Currency[]> {
     private networkEmitter: NetworkEmitter;
     private onCurrencyChange: (() => void) | null;
     private client: xrplClient;
     private events = false;
 
+    /**
+     * Constructs a new CurrencyStoreManager.
+     *
+     * @param client The XRPL client.
+     * @param networkEmitter The network emitter.
+     */
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
         super([]);
 
@@ -18,7 +27,13 @@ export class CurrencyStoreManager extends StoreManager<Currency[]> {
         this.client = client;
     }
 
-    public async setInitialBalance(address: string) {
+    /**
+     * Sets the initial balance for a given address.
+     *
+     * @param address The address for which to set the initial balance.
+     * @return A promise that resolves to the balance of the address.
+     */
+    public async setInitialBalance(address: string): Promise<Currency[]> {
         const [store] = this.getStore(address);
         const [, currencies] = await getBalances(this.client, address);
         store.setState(currencies);
@@ -26,6 +41,11 @@ export class CurrencyStoreManager extends StoreManager<Currency[]> {
         return currencies;
     }
 
+    /**
+     * Enables events for a specific address by adding a currency listener and setting up the necessary event handling.
+     *
+     * @param address The address for which to enable events.
+     */
     public enableEvents(address: string) {
         if (this.events) {
             return;
@@ -52,6 +72,11 @@ export class CurrencyStoreManager extends StoreManager<Currency[]> {
         this.events = true;
     }
 
+    /**
+     * Disables events for a specific address by removing the currency listener and necessary event handling.
+     *
+     * @param address The address for which to disable events.
+     */
     public disableEvents(address: string) {
         if (!this.events) {
             return;

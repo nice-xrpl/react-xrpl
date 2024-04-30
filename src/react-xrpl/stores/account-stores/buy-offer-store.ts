@@ -4,6 +4,9 @@ import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
 import { Offer, OfferStore } from '../../api/wallet-types';
 
+/**
+ * Manages the buy offer store for a given address.
+ */
 export class BuyOfferStoreManager extends StoreManager<OfferStore> {
     private networkEmitter: NetworkEmitter;
     private onCreateBuyOffer:
@@ -13,6 +16,12 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
     private client: xrplClient;
     private events = false;
 
+    /**
+     * Constructs a new instance of the BuyOfferStoreManager.
+     *
+     * @param client The XRPL Client to use for requests.
+     * @param networkEmitter The network emitter to use for events.
+     */
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
         super({});
 
@@ -22,6 +31,13 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
         this.client = client;
     }
 
+    /**
+     * Sets the initial buy offers for a given address and token ID.
+     *
+     * @param address The address for which to set the initial buy offers.
+     * @param tokenId The ID of the token for which to set the initial buy offers.
+     * @return A Promise that resolves to the OfferStore object containing the initial buy offers.
+     */
     public async setInitialBuyOffers(
         address: string,
         tokenId: string
@@ -47,6 +63,11 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
         return { [tokenId]: buyOffers };
     }
 
+    /**
+     * Enables events for a specific address by adding a listener and setting up the necessary event handling.
+     *
+     * @param address The address for which to enable events.
+     */
     public enableEvents(address: string) {
         if (this.events) {
             return;
@@ -99,6 +120,11 @@ export class BuyOfferStoreManager extends StoreManager<OfferStore> {
         this.events = true;
     }
 
+    /**
+     * Disables events for a specific address by removing the listener and necessary event handling.
+     *
+     * @param address The address for which to disable events.
+     */
     public disableEvents(address: string) {
         if (!this.events) {
             return;

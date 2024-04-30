@@ -5,6 +5,17 @@ import {
 } from 'xrpl';
 import { allowRippling } from './allow-rippling';
 
+/**
+ * Creates a trustline between two wallets.
+ *
+ * @param {xrplClient} client - The XRPL client instance.
+ * @param {xrplWallet} wallet - The wallet that is creating the trustline.
+ * @param {string} targetWalletAddress - The address of the wallet that is receiving the trustline.
+ * @param {string} currencyCode - The currency code of the trustline.
+ * @param {string} limit - The limit of the trustline.
+ * @return {Promise<TxResponse>} A promise that resolves with the transaction response.
+ * @throws {Promise<string>} If the target address is invalid or if the source and target addresses are the same.
+ */
 export async function createTrustline(
     client: xrplClient,
     wallet: xrplWallet,

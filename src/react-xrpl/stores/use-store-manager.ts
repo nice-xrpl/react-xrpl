@@ -3,8 +3,15 @@ import { useStore } from './use-store';
 import { useAddress } from '../hooks/requests/use-address';
 import { suspend } from 'suspend-react';
 import { StoreManager } from './store-manager';
-import internal from 'stream';
 
+/**
+ * A custom hook that manages a store of type S, which extends StoreManager<R> and provides methods for enabling and disabling events.
+ *
+ * @param {S} storeType - The type of store to manage.
+ * @param {(internalAddress: string) => Promise<R>} onCreated - A function that is called when the store is created, returning a promise of type R.
+ * @param {string} [address] - The address to use for the store. If not provided, the current address from the account context will be used.
+ * @return {R} The state of the store.
+ */
 export function useStoreManager<
     R,
     S extends StoreManager<R> & {
@@ -40,7 +47,6 @@ export function useStoreManager<
 
     // set up network event if needed
     useEffect(() => {
-
         const firstRef = storeType.markStore(internalAddress);
 
         console.log('marked store: ', firstRef);

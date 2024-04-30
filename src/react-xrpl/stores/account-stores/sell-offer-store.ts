@@ -4,6 +4,9 @@ import { StoreManager } from '../store-manager';
 import { Amount, Client as xrplClient } from 'xrpl';
 import { Offer, OfferStore } from '../../api/wallet-types';
 
+/**
+ * Manages the sell offer store for a given address and token ID.
+ */
 export class SellOfferStoreManager extends StoreManager<OfferStore> {
     private networkEmitter: NetworkEmitter;
     private onCreateSellOffer:
@@ -15,6 +18,12 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
     private client: xrplClient;
     private events = false;
 
+    /**
+     * Creates a new SellOfferStoreManager instance.
+     *
+     * @param client The XRPL client to use for requests.
+     * @param networkEmitter The network emitter to use for event handling.
+     */
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
         super({});
 
@@ -24,6 +33,13 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
         this.client = client;
     }
 
+    /**
+     * Sets the initial sell offers for a given address and token ID.
+     *
+     * @param address The address for which to set the initial sell offers.
+     * @param tokenId The ID of the token for which to set the initial sell offers.
+     * @return A Promise that resolves to the OfferStore object containing the initial sell offers.
+     */
     public async setInitialSellOffers(
         address: string,
         tokenId: string
@@ -49,6 +65,11 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
         return { [tokenId]: sellOffers };
     }
 
+    /**
+     * Enables events for a specific address by adding a listener and setting up the necessary event handling.
+     *
+     * @param address The address for which to enable events.
+     */
     public enableEvents(address: string) {
         if (this.events) {
             return;
@@ -101,6 +122,11 @@ export class SellOfferStoreManager extends StoreManager<OfferStore> {
         this.events = true;
     }
 
+    /**
+     * Disables events for a specific address by removing the listener and necessary event handling.
+     *
+     * @param address The address for which to disable events.
+     */
     public disableEvents(address: string) {
         if (!this.events) {
             return;

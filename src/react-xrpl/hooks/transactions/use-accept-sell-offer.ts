@@ -4,6 +4,11 @@ import { acceptSellOffer } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
+/**
+ * Generates a function comment for the given function body.
+ *
+ * @return {Function} A function that accepts a token offer ID and returns a promise of TxResponse.
+ */
 export function useAcceptSellOffer() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

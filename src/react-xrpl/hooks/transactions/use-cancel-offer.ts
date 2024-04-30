@@ -4,6 +4,11 @@ import { cancelOffer } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
+/**
+ * Creates a custom hook that cancels a token offer by submitting an NFTokenCancelOffer transaction to the XRPL network.
+ *
+ * @return {Function} A function that accepts a token offer ID and returns a promise of TxResponse.
+ */
 export function useCancelOffer() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

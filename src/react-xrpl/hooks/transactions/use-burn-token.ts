@@ -4,6 +4,11 @@ import { burnToken } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
+/**
+ * Creates a custom hook that burns a non-fungible token by submitting an NFTokenBurn transaction to the XRPL network.
+ *
+ * @return {Function} A function that accepts a token ID and returns a promise of TxResponse.
+ */
 export function useBurnToken() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

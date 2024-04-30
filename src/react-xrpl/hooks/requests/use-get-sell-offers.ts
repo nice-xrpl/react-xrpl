@@ -5,6 +5,11 @@ import { useXRPLClient } from '../use-xrpl-client';
 import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
 import { useAddress } from './use-address';
 
+/**
+ * Retrieves the sell offers for a given token from the XRPL network.
+ *
+ * @return {Function} A function that, when called with a token ID, retrieves the sell offers for that token and updates the sellOffers store.
+ */
 export function useGetSellOffers() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

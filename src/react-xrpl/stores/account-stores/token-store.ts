@@ -4,6 +4,9 @@ import { StoreManager } from '../store-manager';
 import { Client as xrplClient } from 'xrpl';
 import { Token } from '../../api/wallet-types';
 
+/**
+ * Manages the token store for a given address.
+ */
 export class TokenStoreManager extends StoreManager<Token[]> {
     private networkEmitter: NetworkEmitter;
     private onTokenMint: ((token: string, timestamp: number) => void) | null;
@@ -15,6 +18,11 @@ export class TokenStoreManager extends StoreManager<Token[]> {
     private client: xrplClient;
     private events = false;
 
+    /**
+     * Creates a new TokenStoreManager.
+     * @param client An xrplClient.
+     * @param networkEmitter A NetworkEmitter.
+     */
     constructor(client: xrplClient, networkEmitter: NetworkEmitter) {
         super([]);
 
@@ -28,7 +36,12 @@ export class TokenStoreManager extends StoreManager<Token[]> {
         this.client = client;
     }
 
-    public async setInitialTokens(address: string) {
+    /**
+     * Sets the initial tokens for a given address.
+     * @param address The address for which to set the initial tokens.
+     * @return A Promise that resolves to the Token[] for the given address.
+     */
+    public async setInitialTokens(address: string): Promise<Token[]> {
         const [store] = this.getStore(address);
         const tokens = await getTokens(this.client, address).catch((error) => {
             console.log('error in getTokens: ', error);
@@ -40,6 +53,10 @@ export class TokenStoreManager extends StoreManager<Token[]> {
         return tokens;
     }
 
+    /**
+     * Enables events for a specific address by adding a listener and setting up the necessary event handling.
+     * @param address The address for which to enable events.
+     */
     public enableEvents(address: string) {
         if (this.events) {
             return;
@@ -98,6 +115,10 @@ export class TokenStoreManager extends StoreManager<Token[]> {
         this.events = true;
     }
 
+    /**
+     * Disables events for a specific address by removing the listener and necessary event handling.
+     * @param address The address for which to disable events.
+     */
     public disableEvents(address: string) {
         if (!this.events) {
             return;

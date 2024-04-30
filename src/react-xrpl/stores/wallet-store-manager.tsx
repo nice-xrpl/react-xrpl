@@ -12,6 +12,13 @@ type WalletStoreManagerProps = {
     children: React.ReactNode;
 };
 
+/**
+ * A React component that provides a context for managing wallet stores.
+ *
+ * @param {WalletStoreManagerProps} props - The component props.
+ * @param {React.ReactNode} props.children - The child components.
+ * @return {JSX.Element} The JSX element representing the provider.
+ */
 export function WalletStoreManagerProvider({
     children,
 }: WalletStoreManagerProps) {

@@ -3,6 +3,11 @@ import { getTokens } from '../../api/requests';
 import { useXRPLClient } from '../use-xrpl-client';
 import { useAddress } from './use-address';
 
+/**
+ * A hook that retrieves tokens associated with a given address.
+ *
+ * @return {function} A function that, when called, retrieves tokens.
+ */
 export function useGetTokens() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

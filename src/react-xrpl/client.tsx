@@ -8,6 +8,14 @@ import { ClientStoreContext } from './client-store-context';
 import { WalletStoreManagerProvider } from './stores/wallet-store-manager';
 import { NetworkEmitter } from './network-emitter';
 
+/**
+ * Creates an XRPL client with the specified network and provides it to its children components.
+ *
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to be wrapped by the XRPL client.
+ * @param {string} [props.network=Networks.Testnet] - The network to connect to. Defaults to Networks.Testnet.
+ * @return {JSX.Element} The XRPL client component.
+ */
 export function XRPLClient({
     children,
     network = Networks.Testnet,

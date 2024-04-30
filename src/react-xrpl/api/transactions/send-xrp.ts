@@ -5,6 +5,17 @@ import {
     xrpToDrops,
 } from 'xrpl';
 
+/**
+ * Sends XRP from one wallet to a destination address.
+ *
+ * @param {xrplClient} client - The XRPL client used to send the transaction.
+ * @param {xrplWallet} wallet - The wallet initiating the transaction.
+ * @param {string} destinationAddress - The destination address for the payment.
+ * @param {number} amount - The amount of XRP to be sent.
+ * @return {Promise<TxResponse>} A Promise that resolves with the result of the transaction submission.
+ * @throws {string} 'Invalid destination address' if the destination address is invalid.
+ * @throws {string} 'Source and destination addresses are the same' if the source and destination addresses are the same.
+ */
 export async function sendXRP(
     client: xrplClient,
     wallet: xrplWallet,

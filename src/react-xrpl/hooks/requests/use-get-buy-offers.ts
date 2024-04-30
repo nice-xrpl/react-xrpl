@@ -5,6 +5,11 @@ import { useXRPLClient } from '../use-xrpl-client';
 import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
 import { useAddress } from './use-address';
 
+/**
+ * Custom hook that retrieves buy offers for a given token ID from the XRPL network.
+ *
+ * @return {Function} A function that, when called with a token ID, retrieves the buy offers for that token and updates the buyOffers store.
+ */
 export function useGetBuyOffers() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

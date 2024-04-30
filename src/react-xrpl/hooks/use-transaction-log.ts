@@ -11,6 +11,13 @@ import {
 } from '../api/requests/get-transactions';
 import { useIsConnected } from './use-is-connected';
 
+/**
+ * Retrieves the transaction log for the specified accounts and updates the state with the new log entries.
+ *
+ * @param {string[]} accounts - The accounts to retrieve the transaction log for.
+ * @param {number} [limit=10] - The maximum number of log entries to retrieve.
+ * @return {TransactionLogEntry[]} The transaction log for the specified accounts.
+ */
 function useTransactionLogInternal(accounts: string[], limit: number = 10) {
     const client = useXRPLClient();
     const isConnected = useIsConnected();
@@ -327,6 +334,13 @@ function useTransactionLogInternal(accounts: string[], limit: number = 10) {
     return log;
 }
 
+/**
+ * Retrieves the transaction log for the specified accounts and updates the state with the new log entries.
+ *
+ * @param {string | string[]} [account] - The account(s) to retrieve the transaction log for.
+ * @param {number} [limit] - The maximum number of log entries to retrieve.
+ * @return {TransactionLogEntry[]} The transaction log for the specified accounts.
+ */
 export function useTransactionLog(account?: string | string[], limit?: number) {
     const address = useContext(WalletAddressContext);
 

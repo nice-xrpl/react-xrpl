@@ -4,6 +4,11 @@ import { createTrustline } from '../../api/transactions';
 import { useWallet } from '../use-wallet';
 import { useXRPLClient } from '../use-xrpl-client';
 
+/**
+ * Returns a function that can be used to create a trustline.
+ *
+ * @return {Function} A function that creates a trustline.
+ */
 export function useCreateTrustline() {
     const client = useXRPLClient();
     const clientRef = useRef(client);

@@ -1,5 +1,13 @@
 import { Client as xrplClient, Wallet as xrplWallet } from 'xrpl';
 
+/**
+ * Burns a non-fungible token by submitting an NFTokenBurn transaction to the XRPL network.
+ *
+ * @param {xrplClient} client - The XRPL client used to connect to the network.
+ * @param {xrplWallet} wallet - The wallet used to sign and submit the transaction.
+ * @param {string} tokenID - The ID of the token to be burned.
+ * @return {Promise<any>} A promise that resolves with the result of the transaction submission.
+ */
 export async function burnToken(
     client: xrplClient,
     wallet: xrplWallet,

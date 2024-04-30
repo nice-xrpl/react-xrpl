@@ -16,6 +16,12 @@ import {
     Node,
 } from 'xrpl/dist/npm/models/transactions/metadata';
 
+/**
+ * Converts a hexadecimal string to a Uint8Array.
+ *
+ * @param {string} hexString - The hexadecimal string to convert.
+ * @return {Uint8Array} The converted Uint8Array.
+ */
 function hexToUInt8Array(hexString: string) {
     if (hexString.length % 2 !== 0) {
         throw new Error('Hex string must have an even number of characters');
@@ -31,6 +37,12 @@ function hexToUInt8Array(hexString: string) {
     return bytes;
 }
 
+/**
+ * Finds the ledger index for a created offer in the given array of nodes.
+ *
+ * @param {Node[]} nodes - An array of nodes to search through.
+ * @return {string} The ledger index of the created offer, or an empty string if not found.
+ */
 function findLedgerIndexForCreatedOffer(nodes: Node[]) {
     for (const node of nodes) {
         if (isCreatedNode(node)) {
@@ -43,6 +55,12 @@ function findLedgerIndexForCreatedOffer(nodes: Node[]) {
     return '';
 }
 
+/**
+ * Finds the ledger index for an accepted offer in the given array of nodes.
+ *
+ * @param {Node[]} nodes - An array of nodes to search through.
+ * @return {string} The ledger index of the accepted offer, or an empty string if not found.
+ */
 function findLedgerIndexForAcceptedOffer(nodes: Node[]) {
     for (const node of nodes) {
         if (isDeletedNode(node)) {
@@ -55,6 +73,13 @@ function findLedgerIndexForAcceptedOffer(nodes: Node[]) {
     return '';
 }
 
+/**
+ * Finds the NFTokenID for a specific offer index in the given array of nodes.
+ *
+ * @param {string} offerIndex - The index of the offer to search for.
+ * @param {Node[]} nodes - An array of nodes to search through.
+ * @return {string} The NFTokenID of the offer if found, otherwise an empty string.
+ */
 function findNFTokenIDForOffer(offerIndex: string, nodes: Node[]) {
     for (const node of nodes) {
         if (isDeletedNode(node)) {
@@ -70,6 +95,12 @@ function findNFTokenIDForOffer(offerIndex: string, nodes: Node[]) {
     return '';
 }
 
+/**
+ * Extracts accounts from NFTokenPage nodes.
+ *
+ * @param {Node[]} nodes - An array of nodes to extract accounts from.
+ * @return {any[]} An array of extracted accounts.
+ */
 function extractAccountsFromNFTokenPage(nodes: Node[]) {
     let accounts = [];
 
@@ -210,6 +241,13 @@ type AddressEvents = {
     refCount: number;
 };
 
+/**
+ * Processes an array of nodes, emitting events for balance changes and offer creations/cancellations.
+ *
+ * @param {Node[]} nodes - An array of nodes to process.
+ * @param {Map<string, AddressEvents>} addressEvents - A map of address events.
+ * @param {string} hash - A hash string.
+ */
 function processNodes(
     nodes: Node[],
     addressEvents: Map<string, AddressEvents>,
@@ -332,6 +370,12 @@ export class NetworkEmitter {
     private _addressEvents: Map<string, AddressEvents>;
     private _eventsEnabled: boolean = false;
 
+    /**
+     * Constructor for creating a new network emitter.
+     *
+     * @param {xrplClient} client - The XRPL client to use for network communication.
+     * @return {void} No return value.
+     */
     constructor(client: xrplClient) {
         console.log('constructing new network emitter...');
 
@@ -339,6 +383,11 @@ export class NetworkEmitter {
         this._client = client;
     }
 
+    /**
+     * Starts the transaction stream if events are not already enabled.
+     *
+     * @return {Promise<void>} No return value.
+     */
     public async start() {
         if (!this._eventsEnabled) {
             console.log('starting transaction stream...');
@@ -348,6 +397,11 @@ export class NetworkEmitter {
         }
     }
 
+    /**
+     * Stops the transaction stream if events are currently enabled.
+     *
+     * @return {Promise<void>} No return value.
+     */
     public async stop() {
         if (this._eventsEnabled) {
             console.log('stopping transaction stream...');
@@ -358,7 +412,12 @@ export class NetworkEmitter {
         }
     }
 
-    // addAddress starts emitting events based on blockchain transactions for address
+    /**
+     * Adds an address to the address events map and subscribes to events for that address.
+     *
+     * @param {string} address - The address to add and subscribe to events for.
+     * @return {Promise<void>} No return value.
+     */
     private async addAddress(address: string) {
         let events = this._addressEvents.get(address);
 
@@ -383,6 +442,12 @@ export class NetworkEmitter {
         });
     }
 
+    /**
+     * Removes an address from the address events map and unsubscribes from events for that address.
+     *
+     * @param {string} address - The address to remove and unsubscribe from events for.
+     * @return {Promise<void>} No return value.
+     */
     private async removeAddress(address: string) {
         let events = this._addressEvents.get(address);
 
@@ -405,9 +470,14 @@ export class NetworkEmitter {
         }
     }
 
-    // TODO: use meta and AffectedNodes to check final balances on payments/tokens/currencies?
+    /**
+     * Handles a transaction event.
+     *
+     * @param {TransactionStream} tx - The transaction stream object.
+     */
     private onTransaction = (tx: TransactionStream) => {
         console.group('transaction started: ', tx);
+        // TODO: use meta and AffectedNodes to check final balances on payments/tokens/currencies?
 
         if (tx.engine_result !== 'tesSUCCESS') {
             console.log('transaction failed');
@@ -624,6 +694,14 @@ export class NetworkEmitter {
         console.groupEnd();
     };
 
+    /**
+     * Registers a callback function to be executed when a specific event occurs for a given address.
+     *
+     * @param {string} address - The address to register the event for.
+     * @param {T} event - The event to listen for.
+     * @param {EventMap[T]} callback - The callback function to be executed when the event occurs.
+     * @return {() => void} A function that can be called to unregister the callback.
+     */
     public on<T extends WalletEvent>(
         address: string,
         event: T,
@@ -637,6 +715,14 @@ export class NetworkEmitter {
         };
     }
 
+    /**
+     * Removes a callback function from the event listener for a specific event and address.
+     *
+     * @param {string} address - The address to remove the event listener from.
+     * @param {T} event - The event to remove the listener for.
+     * @param {EventMap[T]} callback - The callback function to remove.
+     * @return {void} This function does not return anything.
+     */
     public off<T extends WalletEvent>(
         address: string,
         event: T,
@@ -647,6 +733,12 @@ export class NetworkEmitter {
     }
 }
 
+/**
+ * Creates a new NetworkEmitter instance using the provided xrplClient.
+ *
+ * @param {xrplClient} client - The xrplClient to be used by the NetworkEmitter.
+ * @return {NetworkEmitter} A new instance of NetworkEmitter.
+ */
 export function createNetworkEmitter(client: xrplClient) {
     return new NetworkEmitter(client);
 }

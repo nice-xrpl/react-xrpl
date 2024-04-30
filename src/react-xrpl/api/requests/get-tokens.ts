@@ -1,6 +1,13 @@
 import { Client as xrplClient, convertHexToString } from 'xrpl';
 import { Token } from '../wallet-types';
 
+/**
+ * Retrieves a list of tokens associated with a given address.
+ *
+ * @param {xrplClient} client - The XRPL client used to connect to the XRPL network.
+ * @param {string} address - The address for which to retrieve the tokens.
+ * @return {Promise<Token[]>} A promise that resolves to an array of tokens.
+ */
 export async function getTokens(client: xrplClient, address: string) {
     await client.connect();
 
