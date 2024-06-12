@@ -1,5 +1,6 @@
 export * from './use-accept-buy-offer';
 export * from './use-accept-sell-offer';
+export * from './use-allow-rippling';
 export * from './use-accept-brokered-offer';
 export * from './use-burn-token';
 export * from './use-cancel-offer';
