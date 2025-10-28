@@ -1,6 +1,7 @@
 import {
     Amount,
     IssuedCurrencyAmount,
+    SubmittableTransaction,
     TransactionStream,
     dropsToXrp,
     encodeAccountID,
@@ -8,7 +9,10 @@ import {
     Client as xrplClient,
 } from 'xrpl';
 import { EventEmitter } from 'tseep';
-import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
+import {
+    isIssuedCurrency,
+    isMPTAmount,
+} from 'xrpl/dist/npm/models/transactions/common';
 import {
     isCreatedNode,
     isDeletedNode,
@@ -485,109 +489,117 @@ export class NetworkEmitter {
             return;
         }
 
-        if (tx.transaction.TransactionType === 'NFTokenMint') {
-            const events = this._addressEvents.get(tx.transaction.Account);
+        const transaction = tx.tx_json ?? tx.transaction;
+
+        if (!transaction) {
+            console.log('transaction has no transaction object: ', tx);
+            console.groupEnd();
+            return;
+        }
+
+        if (transaction.TransactionType === 'NFTokenMint') {
+            const events = this._addressEvents.get(transaction.Account);
 
             if (events) {
-                console.log(tx.transaction.Account, ' minted a token: ', tx);
+                console.log(transaction.Account, ' minted a token: ', tx);
 
                 if (tx.meta) {
                     events.emitter.emit(
                         WalletEvents.TokenMint,
                         getNFTokenID(tx.meta) ?? '',
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
         }
 
-        if (tx.transaction.TransactionType === 'NFTokenBurn') {
-            const events = this._addressEvents.get(tx.transaction.Account);
+        if (transaction.TransactionType === 'NFTokenBurn') {
+            const events = this._addressEvents.get(transaction.Account);
 
             if (events) {
-                console.log(tx.transaction.Account, ' burned a token: ', tx);
+                console.log(transaction.Account, ' burned a token: ', tx);
 
                 if (tx.meta) {
                     events.emitter.emit(
                         WalletEvents.TokenBurn,
-                        tx.transaction.NFTokenID ?? '',
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.NFTokenID ?? '',
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
         }
 
-        if (tx.transaction.TransactionType === 'Payment') {
+        if (transaction.TransactionType === 'Payment') {
             const destinationEvents = this._addressEvents.get(
-                tx.transaction.Destination
+                transaction.Destination
             );
-            const sourceEvents = this._addressEvents.get(
-                tx.transaction.Account
-            );
+            const sourceEvents = this._addressEvents.get(transaction.Account);
 
             if (destinationEvents) {
-                console.log(
-                    tx.transaction.Destination,
-                    ' received payment: ',
-                    tx
-                );
+                console.log(transaction.Destination, ' received payment: ', tx);
 
-                if (isIssuedCurrency(tx.transaction.Amount)) {
+                if (isIssuedCurrency(transaction.Amount)) {
                     destinationEvents.emitter.emit(WalletEvents.CurrencyChange);
                     destinationEvents.emitter.emit(
                         WalletEvents.CurrencyRecieved,
-                        tx.transaction.Account,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.Account,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
+                } else if (isMPTAmount(transaction.Amount)) {
+                    console.warn('MPT amount is not supported yet');
+                    console.warn('MPT amount: ', transaction.Amount);
                 } else {
                     destinationEvents.emitter.emit(
                         WalletEvents.PaymentRecieved,
-                        tx.transaction.Account,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.Account,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
 
             if (sourceEvents) {
-                console.log(tx.transaction.Account, ' sent payment: ', tx);
+                console.log(transaction.Account, ' sent payment: ', tx);
 
-                if (isIssuedCurrency(tx.transaction.Amount)) {
+                if (isIssuedCurrency(transaction.Amount)) {
                     sourceEvents.emitter.emit(WalletEvents.CurrencyChange);
                     sourceEvents.emitter.emit(
                         WalletEvents.CurrencySent,
-                        tx.transaction.Destination,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.Destination,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
+                } else if (isMPTAmount(transaction.Amount)) {
+                    console.warn('MPT amount is not supported yet');
+                    console.warn('MPT amount: ', transaction.Amount);
                 } else {
                     sourceEvents.emitter.emit(
                         WalletEvents.PaymentSent,
-                        tx.transaction.Destination,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.Destination,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
         }
 
-        if (tx.transaction.TransactionType === 'NFTokenAcceptOffer') {
+        if (transaction.TransactionType === 'NFTokenAcceptOffer') {
             const accounts = extractAccountsFromNFTokenPage(
                 tx.meta?.AffectedNodes || []
             );
 
-            // broker account will be in tx.transaction.Account but not in token page
+            // broker account will be in transaction.Account but not in token page
             // check just in case
-            if (accounts.indexOf(tx.transaction.Account) === -1) {
+            if (accounts.indexOf(transaction.Account) === -1) {
                 // add broker account to accounts
-                accounts.push(tx.transaction.Account);
+                accounts.push(transaction.Account);
             }
 
             console.log(accounts);
@@ -596,60 +608,58 @@ export class NetworkEmitter {
                 const events = this._addressEvents.get(account);
 
                 if (events) {
-                    if (tx.transaction.NFTokenSellOffer) {
+                    if (transaction.NFTokenSellOffer) {
                         console.log(account, ' accepted a sell offer: ', tx);
                         const ledgerIndex = findLedgerIndexForAcceptedOffer(
                             tx.meta?.AffectedNodes || []
                         );
 
                         const tokenId = findNFTokenIDForOffer(
-                            tx.transaction.NFTokenSellOffer,
+                            transaction.NFTokenSellOffer,
                             tx.meta?.AffectedNodes ?? []
                         );
 
                         events.emitter.emit(
                             WalletEvents.AcceptSellOffer,
-                            tx.transaction.NFTokenSellOffer,
+                            transaction.NFTokenSellOffer,
                             tokenId,
-                            tx.transaction.date ?? 0,
-                            tx.transaction.hash ?? ''
+                            transaction.date ?? 0,
+                            transaction.hash ?? ''
                         );
                     }
 
-                    if (tx.transaction.NFTokenBuyOffer) {
+                    if (transaction.NFTokenBuyOffer) {
                         console.log(account, ' accepted a buy offer: ', tx);
                         const ledgerIndex = findLedgerIndexForAcceptedOffer(
                             tx.meta?.AffectedNodes || []
                         );
 
                         const tokenId = findNFTokenIDForOffer(
-                            tx.transaction.NFTokenBuyOffer,
+                            transaction.NFTokenBuyOffer,
                             tx.meta?.AffectedNodes ?? []
                         );
 
                         events.emitter.emit(
                             WalletEvents.AcceptBuyOffer,
-                            tx.transaction.NFTokenBuyOffer,
+                            transaction.NFTokenBuyOffer,
                             tokenId,
-                            tx.transaction.date ?? 0,
-                            tx.transaction.hash ?? ''
+                            transaction.date ?? 0,
+                            transaction.hash ?? ''
                         );
                     }
                 }
             }
         }
 
-        if (tx.transaction.TransactionType === 'NFTokenCreateOffer') {
-            const sellerEvents = this._addressEvents.get(
-                tx.transaction.Account
-            );
+        if (transaction.TransactionType === 'NFTokenCreateOffer') {
+            const sellerEvents = this._addressEvents.get(transaction.Account);
 
-            const buyerEvents = tx.transaction.Owner
-                ? this._addressEvents.get(tx.transaction.Owner)
+            const buyerEvents = transaction.Owner
+                ? this._addressEvents.get(transaction.Owner)
                 : undefined;
 
             if (sellerEvents) {
-                if (tx.transaction.Flags === 1) {
+                if (transaction.Flags === 1) {
                     // created a sell offer - only possibly by token owner
                     const ledgerIndex = findLedgerIndexForCreatedOffer(
                         tx.meta?.AffectedNodes || []
@@ -657,16 +667,16 @@ export class NetworkEmitter {
                     sellerEvents.emitter.emit(
                         WalletEvents.CreateSellOffer,
                         ledgerIndex,
-                        tx.transaction.NFTokenID,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.NFTokenID,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
 
             if (buyerEvents) {
-                if (tx.transaction.Flags !== 1) {
+                if (transaction.Flags !== 1) {
                     // buyer offer created - only emit for the owner of the token
                     const ledgerIndex = findLedgerIndexForCreatedOffer(
                         tx.meta?.AffectedNodes || []
@@ -674,10 +684,10 @@ export class NetworkEmitter {
                     buyerEvents.emitter.emit(
                         WalletEvents.CreateBuyOffer,
                         ledgerIndex,
-                        tx.transaction.NFTokenID,
-                        tx.transaction.Amount,
-                        tx.transaction.date ?? 0,
-                        tx.transaction.hash ?? ''
+                        transaction.NFTokenID,
+                        transaction.Amount,
+                        transaction.date ?? 0,
+                        transaction.hash ?? ''
                     );
                 }
             }
@@ -687,7 +697,7 @@ export class NetworkEmitter {
             processNodes(
                 tx.meta.AffectedNodes,
                 this._addressEvents,
-                tx.transaction.hash ?? ''
+                transaction.hash ?? ''
             );
         }
 
