@@ -71,6 +71,13 @@ export class StoreManager<T> {
      */
     markStore(address: string): boolean {
         let refCount = this.refCount.get(address);
+
+        if (refCount === undefined) {
+            // Store doesn't exist yet, this shouldn't happen if markStore is called after getStore
+            console.warn('markStore called on non-existent store:', address);
+            return false;
+        }
+
         let firstRef = false;
 
         console.log('marking store: ', address, refCount);
@@ -80,9 +87,7 @@ export class StoreManager<T> {
             firstRef = true;
         }
 
-        if (refCount || refCount === 0) {
-            this.refCount.set(address, refCount + 1);
-        }
+        this.refCount.set(address, refCount + 1);
 
         return firstRef;
     }
@@ -104,7 +109,7 @@ export class StoreManager<T> {
         }
 
         if (refCount === 0) {
-            this.stores.delete(address);
+            // this.stores.delete(address);
             this.refCount.delete(address);
 
             return true;
@@ -113,7 +118,7 @@ export class StoreManager<T> {
         refCount--;
 
         if (refCount === 0) {
-            this.stores.delete(address);
+            // this.stores.delete(address);
             this.refCount.delete(address);
 
             return true;
