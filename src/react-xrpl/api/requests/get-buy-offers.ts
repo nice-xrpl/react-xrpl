@@ -1,4 +1,4 @@
-import { Client as xrplClient } from 'xrpl';
+import { RIPPLED_API_V1, Client as xrplClient } from 'xrpl';
 import { Offer } from '../wallet-types';
 
 /**
@@ -14,6 +14,7 @@ export async function getBuyOffers(client: xrplClient, tokenId: string) {
     const response = await client.request({
         command: 'nft_buy_offers',
         nft_id: tokenId,
+        api_version: RIPPLED_API_V1,
     });
 
     let offers: Offer[] = [];

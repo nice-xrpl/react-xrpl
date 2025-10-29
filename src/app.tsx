@@ -3,6 +3,7 @@ import { LoadWalletFromSeed } from './features/load-wallet-from-seed';
 import './app.css';
 import { useIsConnected, XRPLClient } from 'react-xrpl';
 import { TransactionLog } from './features/transaction-log';
+import { LoadWalletFromAddress } from './features/load-wallet-from-address';
 
 function MainApp() {
     const isConnected = useIsConnected();
@@ -39,6 +40,11 @@ function MainApp() {
             </div>
             <div>
                 <LoadWalletFromSeed seed={'sEdTJqiJie8PtqHEUEPkQKJQw2Aobnh'} />
+            </div>
+            <div>
+                <LoadWalletFromAddress
+                    address={'rEayvcRT4YG5H4DHCGnz5NZB1PnvkPYEfU'}
+                />
             </div>
         </div>
     );

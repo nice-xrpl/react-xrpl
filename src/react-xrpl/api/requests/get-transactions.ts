@@ -1,4 +1,4 @@
-import { AccountTxResponse, Client } from 'xrpl';
+import { AccountTxResponse, Client, RIPPLED_API_V1 } from 'xrpl';
 import {
     isIssuedCurrency,
     isMPTAmount,
@@ -23,6 +23,7 @@ export async function getTransactions(
         account,
         ledger_index_max: -1,
         limit,
+        api_version: RIPPLED_API_V1,
     });
 
     console.log('ACCOUNT TX: ', response);
@@ -64,7 +65,7 @@ export function processTransactions(
     for (const entry of allEntries) {
         let tx = entry.transaction.tx_json ?? entry.transaction.tx;
 
-        // console.log(entry.account, 'parsing tx: ', entry);
+        console.log(entry.account, 'parsing tx: ', entry);
 
         if (
             tx?.TransactionType === 'NFTokenCreateOffer' &&

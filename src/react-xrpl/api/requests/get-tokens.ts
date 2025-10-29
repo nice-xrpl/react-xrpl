@@ -1,4 +1,4 @@
-import { Client as xrplClient, convertHexToString } from 'xrpl';
+import { Client as xrplClient, convertHexToString, RIPPLED_API_V1 } from 'xrpl';
 import { Token } from '../wallet-types';
 
 /**
@@ -15,6 +15,7 @@ export async function getTokens(client: xrplClient, address: string) {
     const nfts = await client.request({
         command: 'account_nfts',
         account: address,
+        api_version: RIPPLED_API_V1,
     });
 
     let tokens: Token[] = [];

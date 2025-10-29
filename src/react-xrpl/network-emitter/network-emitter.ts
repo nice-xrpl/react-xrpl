@@ -1,4 +1,4 @@
-import { TransactionStream, Client as xrplClient } from 'xrpl';
+import { RIPPLED_API_V1, TransactionStream, Client as xrplClient } from 'xrpl';
 import { AddressEvents, EventMap, WalletEvents, WalletEvent } from './types';
 import { EventEmitter } from 'tseep';
 import { BalanceStore } from './balance-store';
@@ -74,6 +74,7 @@ export class NetworkEmitter {
                         command: 'subscribe',
                         // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
                         accounts: [address],
+                        api_version: RIPPLED_API_V1,
                     });
 
                     // queue up initial values
@@ -136,6 +137,7 @@ export class NetworkEmitter {
                     await this._client.request({
                         command: 'unsubscribe',
                         accounts: [address],
+                        api_version: RIPPLED_API_V1,
                     });
 
                     events.subbed = false;
