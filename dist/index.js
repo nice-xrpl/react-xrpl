@@ -545,8 +545,8 @@ function requireLib$2() {
       }); ; ) {
         let K = 0, $ = !0;
         for (let W = L; W < H.length; W++) {
-          const G = H[W], J = E * K + G;
-          if (!Number.isSafeInteger(J) || E * K / E !== K || J - G !== E * K)
+          const x = H[W], J = E * K + x;
+          if (!Number.isSafeInteger(J) || E * K / E !== K || J - x !== E * K)
             throw new Error("convertRadix: carry overflow");
           K = J % S;
           const re = Math.floor(J / S);
@@ -726,7 +726,7 @@ function requireLib$2() {
     // @__NO_SIDE_EFFECTS__
     function D(A) {
       const E = A === "bech32" ? 1 : 734539939, S = /* @__PURE__ */ p(5), L = S.decode, U = S.encode, H = /* @__PURE__ */ w(L);
-      function K(J, re, x = 90) {
+      function K(J, re, G = 90) {
         if (typeof J != "string")
           throw new Error(`bech32.encode prefix should be string, not ${typeof J}`);
         if (!Array.isArray(re) || re.length && typeof re[0] != "number")
@@ -734,8 +734,8 @@ function requireLib$2() {
         if (J.length === 0)
           throw new TypeError(`Invalid prefix length ${J.length}`);
         const Q = J.length + 7 + re.length;
-        if (x !== !1 && Q > x)
-          throw new TypeError(`Length ${Q} exceeds limit ${x}`);
+        if (G !== !1 && Q > G)
+          throw new TypeError(`Length ${Q} exceeds limit ${G}`);
         const se = J.toLowerCase(), ue = /* @__PURE__ */ R(se, re, E);
         return `${se}1${_.encode(re)}${ue}`;
       }
@@ -744,13 +744,13 @@ function requireLib$2() {
           throw new Error(`bech32.decode input should be string, not ${typeof J}`);
         if (J.length < 8 || re !== !1 && J.length > re)
           throw new TypeError(`Wrong string length: ${J.length} (${J}). Expected (8..${re})`);
-        const x = J.toLowerCase();
-        if (J !== x && J !== J.toUpperCase())
+        const G = J.toLowerCase();
+        if (J !== G && J !== J.toUpperCase())
           throw new Error("String must be lowercase or uppercase");
-        const Q = x.lastIndexOf("1");
+        const Q = G.lastIndexOf("1");
         if (Q === 0 || Q === -1)
           throw new Error('Letter "1" must be present between prefix and data only');
-        const se = x.slice(0, Q), ue = x.slice(Q + 1);
+        const se = G.slice(0, Q), ue = G.slice(Q + 1);
         if (ue.length < 6)
           throw new Error("Data must be at least 6 characters long");
         const oe = _.decode(ue).slice(0, -6), Z = /* @__PURE__ */ R(se, oe, E);
@@ -759,11 +759,11 @@ function requireLib$2() {
         return { prefix: se, words: oe };
       }
       const W = /* @__PURE__ */ w($);
-      function G(J) {
-        const { prefix: re, words: x } = $(J, !1);
-        return { prefix: re, words: x, bytes: L(x) };
+      function x(J) {
+        const { prefix: re, words: G } = $(J, !1);
+        return { prefix: re, words: G, bytes: L(G) };
       }
-      return { encode: K, decode: $, decodeToBytes: G, decodeUnsafe: W, fromWords: L, fromWordsUnsafe: H, toWords: U };
+      return { encode: K, decode: $, decodeToBytes: x, decodeUnsafe: W, fromWords: L, fromWordsUnsafe: H, toWords: U };
     }
     e.bech32 = /* @__PURE__ */ D("bech32"), e.bech32m = /* @__PURE__ */ D("bech32m"), e.utf8 = {
       encode: (A) => new TextDecoder().decode(A),
@@ -2163,7 +2163,7 @@ function requireBignumber() {
     (function(r) {
       var t, i = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i, n = Math.ceil, s = Math.floor, a = "[BigNumber Error] ", o = a + "Number primitive has more than 15 significant digits: ", d = 1e14, u = 14, b = 9007199254740991, l = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13], g = 1e7, p = 1e9;
       function w(R) {
-        var D, N, T, f = x.prototype = { constructor: x, toString: null, valueOf: null }, C = new x(1), A = 20, E = 4, S = -7, L = 21, U = -1e7, H = 1e7, K = !1, $ = 1, W = 0, G = {
+        var D, N, T, f = G.prototype = { constructor: G, toString: null, valueOf: null }, C = new G(1), A = 20, E = 4, S = -7, L = 21, U = -1e7, H = 1e7, K = !1, $ = 1, W = 0, x = {
           prefix: "",
           groupSize: 3,
           secondaryGroupSize: 0,
@@ -2174,9 +2174,9 @@ function requireBignumber() {
           // non-breaking space
           suffix: ""
         }, J = "0123456789abcdefghijklmnopqrstuvwxyz", re = !0;
-        function x(B, q) {
+        function G(B, q) {
           var M, k, F, V, X, O, P, z, j = this;
-          if (!(j instanceof x)) return new x(B, q);
+          if (!(j instanceof G)) return new G(B, q);
           if (q == null) {
             if (B && B._isBigNumber === !0) {
               j.s = B.s, !B.c || B.e > H ? j.c = j.e = null : B.e < U ? j.c = [j.e = 0] : (j.e = B.e, j.c = B.c.slice());
@@ -2196,10 +2196,10 @@ function requireBignumber() {
             (V = z.indexOf(".")) > -1 && (z = z.replace(".", "")), (X = z.search(/e/i)) > 0 ? (V < 0 && (V = X), V += +z.slice(X + 1), z = z.substring(0, X)) : V < 0 && (V = z.length);
           } else {
             if (h(q, 2, J.length, "Base"), q == 10 && re)
-              return j = new x(B), oe(j, A + j.e + 1, E);
+              return j = new G(B), oe(j, A + j.e + 1, E);
             if (z = String(B), O = typeof B == "number") {
               if (B * 0 != 0) return T(j, z, O, q);
-              if (j.s = 1 / B < 0 ? (z = z.slice(1), -1) : 1, x.DEBUG && z.replace(/^0\.0*|\./, "").length > 15)
+              if (j.s = 1 / B < 0 ? (z = z.slice(1), -1) : 1, G.DEBUG && z.replace(/^0\.0*|\./, "").length > 15)
                 throw Error(o + B);
             } else
               j.s = z.charCodeAt(0) === 45 ? (z = z.slice(1), -1) : 1;
@@ -2221,7 +2221,7 @@ function requireBignumber() {
           for (X = 0; z.charCodeAt(X) === 48; X++) ;
           for (P = z.length; z.charCodeAt(--P) === 48; ) ;
           if (z = z.slice(X, ++P)) {
-            if (P -= X, O && x.DEBUG && P > 15 && (B > b || B !== s(B)))
+            if (P -= X, O && G.DEBUG && P > 15 && (B > b || B !== s(B)))
               throw Error(o + j.s * B);
             if ((V = V - X - 1) > H)
               j.c = j.e = null;
@@ -2240,7 +2240,7 @@ function requireBignumber() {
           } else
             j.c = [j.e = 0];
         }
-        x.clone = w, x.ROUND_UP = 0, x.ROUND_DOWN = 1, x.ROUND_CEIL = 2, x.ROUND_FLOOR = 3, x.ROUND_HALF_UP = 4, x.ROUND_HALF_DOWN = 5, x.ROUND_HALF_EVEN = 6, x.ROUND_HALF_CEIL = 7, x.ROUND_HALF_FLOOR = 8, x.EUCLID = 9, x.config = x.set = function(B) {
+        G.clone = w, G.ROUND_UP = 0, G.ROUND_DOWN = 1, G.ROUND_CEIL = 2, G.ROUND_FLOOR = 3, G.ROUND_HALF_UP = 4, G.ROUND_HALF_DOWN = 5, G.ROUND_HALF_EVEN = 6, G.ROUND_HALF_CEIL = 7, G.ROUND_HALF_FLOOR = 8, G.EUCLID = 9, G.config = G.set = function(B) {
           var q, M;
           if (B != null)
             if (typeof B == "object") {
@@ -2263,7 +2263,7 @@ function requireBignumber() {
                 else
                   throw Error(a + q + " not true or false: " + M);
               if (B.hasOwnProperty(q = "MODULO_MODE") && (M = B[q], h(M, 0, 9, q), $ = M), B.hasOwnProperty(q = "POW_PRECISION") && (M = B[q], h(M, 0, p, q), W = M), B.hasOwnProperty(q = "FORMAT"))
-                if (M = B[q], typeof M == "object") G = M;
+                if (M = B[q], typeof M == "object") x = M;
                 else throw Error(a + q + " not an object: " + M);
               if (B.hasOwnProperty(q = "ALPHABET"))
                 if (M = B[q], typeof M == "string" && !/^.?$|[+\-.\s]|(.).*\1/.test(M))
@@ -2280,12 +2280,12 @@ function requireBignumber() {
             CRYPTO: K,
             MODULO_MODE: $,
             POW_PRECISION: W,
-            FORMAT: G,
+            FORMAT: x,
             ALPHABET: J
           };
-        }, x.isBigNumber = function(B) {
+        }, G.isBigNumber = function(B) {
           if (!B || B._isBigNumber !== !0) return !1;
-          if (!x.DEBUG) return !0;
+          if (!G.DEBUG) return !0;
           var q, M, k = B.c, F = B.e, V = B.s;
           e: if ({}.toString.call(k) == "[object Array]") {
             if ((V === 1 || V === -1) && F >= -p && F <= p && F === s(F)) {
@@ -2302,18 +2302,18 @@ function requireBignumber() {
           } else if (k === null && F === null && (V === null || V === 1 || V === -1))
             return !0;
           throw Error(a + "Invalid BigNumber: " + B);
-        }, x.maximum = x.max = function() {
+        }, G.maximum = G.max = function() {
           return se(arguments, -1);
-        }, x.minimum = x.min = function() {
+        }, G.minimum = G.min = function() {
           return se(arguments, 1);
-        }, x.random = (function() {
+        }, G.random = (function() {
           var B = 9007199254740992, q = Math.random() * B & 2097151 ? function() {
             return s(Math.random() * B);
           } : function() {
             return (Math.random() * 1073741824 | 0) * 8388608 + (Math.random() * 8388608 | 0);
           };
           return function(M) {
-            var k, F, V, X, O, P = 0, z = [], j = new x(C);
+            var k, F, V, X, O, P = 0, z = [], j = new G(C);
             if (M == null ? M = A : h(M, 0, p), X = n(M / u), K)
               if (crypto.getRandomValues) {
                 for (k = crypto.getRandomValues(new Uint32Array(X *= 2)); P < X; )
@@ -2338,8 +2338,8 @@ function requireBignumber() {
             }
             return j.e = V, j.c = z, j;
           };
-        })(), x.sum = function() {
-          for (var B = 1, q = arguments, M = new x(q[0]); B < q.length; ) M = M.plus(q[B++]);
+        })(), G.sum = function() {
+          for (var B = 1, q = arguments, M = new G(q[0]); B < q.length; ) M = M.plus(q[B++]);
           return M;
         }, N = /* @__PURE__ */ (function() {
           var B = "0123456789";
@@ -2353,7 +2353,7 @@ function requireBignumber() {
           }
           return function(M, k, F, V, X) {
             var O, P, z, j, Y, te, ne, ae, le = M.indexOf("."), fe = A, ce = E;
-            for (le >= 0 && (j = W, W = 0, M = M.replace(".", ""), ae = new x(k), te = ae.pow(M.length - le), W = j, ae.c = q(
+            for (le >= 0 && (j = W, W = 0, M = M.replace(".", ""), ae = new G(k), te = ae.pow(M.length - le), W = j, ae.c = q(
               c(m(te.c), te.e, "0"),
               10,
               F,
@@ -2399,14 +2399,14 @@ function requireBignumber() {
           return function(k, F, V, X, O) {
             var P, z, j, Y, te, ne, ae, le, fe, ce, de, he, me, ie, Ae, Ee, be, ye = k.s == F.s ? 1 : -1, pe = k.c, ge = F.c;
             if (!pe || !pe[0] || !ge || !ge[0])
-              return new x(
+              return new G(
                 // Return NaN if either NaN, or both Infinity or 0.
                 !k.s || !F.s || (pe ? ge && pe[0] == ge[0] : !ge) ? NaN : (
                   // Return ±0 if x is ±0 or y is ±Infinity, or return ±Infinity as y is ±0.
                   pe && pe[0] == 0 || !ge ? ye * 0 : ye / 0
                 )
               );
-            for (le = new x(ye), fe = le.c = [], z = k.e - F.e, ye = V + z + 1, O || (O = d, z = I(k.e / u) - I(F.e / u), ye = ye / u | 0), j = 0; ge[j] == (pe[j] || 0); j++) ;
+            for (le = new G(ye), fe = le.c = [], z = k.e - F.e, ye = V + z + 1, O || (O = d, z = I(k.e / u) - I(F.e / u), ye = ye / u | 0), j = 0; ge[j] == (pe[j] || 0); j++) ;
             if (ge[j] > (pe[j] || 0) && z--, ye < 0)
               fe.push(1), Y = !0;
             else {
@@ -2440,7 +2440,7 @@ function requireBignumber() {
           if (M == null ? M = E : h(M, 0, 8), !B.c) return B.toString();
           if (F = B.c[0], X = B.e, q == null)
             P = m(B.c), P = k == 1 || k == 2 && (X <= S || X >= L) ? y(P, X) : c(P, X, "0");
-          else if (B = oe(new x(B), q, M), V = B.e, P = m(B.c), O = P.length, k == 1 || k == 2 && (q <= V || V <= S)) {
+          else if (B = oe(new G(B), q, M), V = B.e, P = m(B.c), O = P.length, k == 1 || k == 2 && (q <= V || V <= S)) {
             for (; O < q; P += "0", O++) ;
             P = y(P, V);
           } else if (q -= X, P = c(P, V, "0"), V + 1 > O) {
@@ -2450,8 +2450,8 @@ function requireBignumber() {
           return B.s < 0 && F ? "-" + P : P;
         }
         function se(B, q) {
-          for (var M, k, F = 1, V = new x(B[0]); F < B.length; F++)
-            k = new x(B[F]), (!k.s || (M = v(V, k)) === q || M === 0 && V.s === q) && (V = k);
+          for (var M, k, F = 1, V = new G(B[0]); F < B.length; F++)
+            k = new G(B[F]), (!k.s || (M = v(V, k)) === q || M === 0 && V.s === q) && (V = k);
           return V;
         }
         function ue(B, q, M) {
@@ -2469,8 +2469,8 @@ function requireBignumber() {
               if (!O && (j = j.replace(B, function(Y, te, ne) {
                 return z = (ne = ne.toLowerCase()) == "x" ? 16 : ne == "b" ? 2 : 8, !P || P == z ? te : Y;
               }), P && (z = P, j = j.replace(q, "$1").replace(M, "0.$1")), X != j))
-                return new x(j, z);
-              if (x.DEBUG)
+                return new G(j, z);
+              if (G.DEBUG)
                 throw Error(a + "Not a" + (P ? " base " + P : "") + " number: " + X);
               V.s = null;
             }
@@ -2522,36 +2522,36 @@ function requireBignumber() {
           return M === null ? B.toString() : (q = m(B.c), q = M <= S || M >= L ? y(q, M) : c(q, M, "0"), B.s < 0 ? "-" + q : q);
         }
         return f.absoluteValue = f.abs = function() {
-          var B = new x(this);
+          var B = new G(this);
           return B.s < 0 && (B.s = 1), B;
         }, f.comparedTo = function(B, q) {
-          return v(this, new x(B, q));
+          return v(this, new G(B, q));
         }, f.decimalPlaces = f.dp = function(B, q) {
           var M, k, F, V = this;
           if (B != null)
-            return h(B, 0, p), q == null ? q = E : h(q, 0, 8), oe(new x(V), B + V.e + 1, q);
+            return h(B, 0, p), q == null ? q = E : h(q, 0, 8), oe(new G(V), B + V.e + 1, q);
           if (!(M = V.c)) return null;
           if (k = ((F = M.length - 1) - I(this.e / u)) * u, F = M[F]) for (; F % 10 == 0; F /= 10, k--) ;
           return k < 0 && (k = 0), k;
         }, f.dividedBy = f.div = function(B, q) {
-          return D(this, new x(B, q), A, E);
+          return D(this, new G(B, q), A, E);
         }, f.dividedToIntegerBy = f.idiv = function(B, q) {
-          return D(this, new x(B, q), 0, 1);
+          return D(this, new G(B, q), 0, 1);
         }, f.exponentiatedBy = f.pow = function(B, q) {
           var M, k, F, V, X, O, P, z, j, Y = this;
-          if (B = new x(B), B.c && !B.isInteger())
+          if (B = new G(B), B.c && !B.isInteger())
             throw Error(a + "Exponent not an integer: " + Z(B));
-          if (q != null && (q = new x(q)), O = B.e > 14, !Y.c || !Y.c[0] || Y.c[0] == 1 && !Y.e && Y.c.length == 1 || !B.c || !B.c[0])
-            return j = new x(Math.pow(+Z(Y), O ? B.s * (2 - _(B)) : +Z(B))), q ? j.mod(q) : j;
+          if (q != null && (q = new G(q)), O = B.e > 14, !Y.c || !Y.c[0] || Y.c[0] == 1 && !Y.e && Y.c.length == 1 || !B.c || !B.c[0])
+            return j = new G(Math.pow(+Z(Y), O ? B.s * (2 - _(B)) : +Z(B))), q ? j.mod(q) : j;
           if (P = B.s < 0, q) {
-            if (q.c ? !q.c[0] : !q.s) return new x(NaN);
+            if (q.c ? !q.c[0] : !q.s) return new G(NaN);
             k = !P && Y.isInteger() && q.isInteger(), k && (Y = Y.mod(q));
           } else {
             if (B.e > 9 && (Y.e > 0 || Y.e < -1 || (Y.e == 0 ? Y.c[0] > 1 || O && Y.c[1] >= 24e7 : Y.c[0] < 8e13 || O && Y.c[0] <= 9999975e7)))
-              return V = Y.s < 0 && _(B) ? -0 : 0, Y.e > -1 && (V = 1 / V), new x(P ? 1 / V : V);
+              return V = Y.s < 0 && _(B) ? -0 : 0, Y.e > -1 && (V = 1 / V), new G(P ? 1 / V : V);
             W && (V = n(W / u + 2));
           }
-          for (O ? (M = new x(0.5), P && (B.s = 1), z = _(B)) : (F = Math.abs(+Z(B)), z = F % 2), j = new x(C); ; ) {
+          for (O ? (M = new G(0.5), P && (B.s = 1), z = _(B)) : (F = Math.abs(+Z(B)), z = F % 2), j = new G(C); ; ) {
             if (z) {
               if (j = j.times(Y), !j.c) break;
               V ? j.c.length > V && (j.c.length = V) : k && (j = j.mod(q));
@@ -2569,22 +2569,22 @@ function requireBignumber() {
           }
           return k ? j : (P && (j = C.div(j)), q ? j.mod(q) : V ? oe(j, W, E, X) : j);
         }, f.integerValue = function(B) {
-          var q = new x(this);
+          var q = new G(this);
           return B == null ? B = E : h(B, 0, 8), oe(q, q.e + 1, B);
         }, f.isEqualTo = f.eq = function(B, q) {
-          return v(this, new x(B, q)) === 0;
+          return v(this, new G(B, q)) === 0;
         }, f.isFinite = function() {
           return !!this.c;
         }, f.isGreaterThan = f.gt = function(B, q) {
-          return v(this, new x(B, q)) > 0;
+          return v(this, new G(B, q)) > 0;
         }, f.isGreaterThanOrEqualTo = f.gte = function(B, q) {
-          return (q = v(this, new x(B, q))) === 1 || q === 0;
+          return (q = v(this, new G(B, q))) === 1 || q === 0;
         }, f.isInteger = function() {
           return !!this.c && I(this.e / u) > this.c.length - 2;
         }, f.isLessThan = f.lt = function(B, q) {
-          return v(this, new x(B, q)) < 0;
+          return v(this, new G(B, q)) < 0;
         }, f.isLessThanOrEqualTo = f.lte = function(B, q) {
-          return (q = v(this, new x(B, q))) === -1 || q === 0;
+          return (q = v(this, new G(B, q))) === -1 || q === 0;
         }, f.isNaN = function() {
           return !this.s;
         }, f.isNegative = function() {
@@ -2595,14 +2595,14 @@ function requireBignumber() {
           return !!this.c && this.c[0] == 0;
         }, f.minus = function(B, q) {
           var M, k, F, V, X = this, O = X.s;
-          if (B = new x(B, q), q = B.s, !O || !q) return new x(NaN);
+          if (B = new G(B, q), q = B.s, !O || !q) return new G(NaN);
           if (O != q)
             return B.s = -q, X.plus(B);
           var P = X.e / u, z = B.e / u, j = X.c, Y = B.c;
           if (!P || !z) {
-            if (!j || !Y) return j ? (B.s = -q, B) : new x(Y ? X : NaN);
+            if (!j || !Y) return j ? (B.s = -q, B) : new G(Y ? X : NaN);
             if (!j[0] || !Y[0])
-              return Y[0] ? (B.s = -q, B) : new x(j[0] ? X : (
+              return Y[0] ? (B.s = -q, B) : new G(j[0] ? X : (
                 // IEEE 754 (2008) 6.3: n - n = -0 when rounding to -Infinity
                 E == 3 ? -0 : 0
               ));
@@ -2628,9 +2628,9 @@ function requireBignumber() {
           return j[0] ? ue(B, j, z) : (B.s = E == 3 ? -1 : 1, B.c = [B.e = 0], B);
         }, f.modulo = f.mod = function(B, q) {
           var M, k, F = this;
-          return B = new x(B, q), !F.c || !B.s || B.c && !B.c[0] ? new x(NaN) : !B.c || F.c && !F.c[0] ? new x(F) : ($ == 9 ? (k = B.s, B.s = 1, M = D(F, B, 0, 3), B.s = k, M.s *= k) : M = D(F, B, 0, $), B = F.minus(M.times(B)), !B.c[0] && $ == 1 && (B.s = F.s), B);
+          return B = new G(B, q), !F.c || !B.s || B.c && !B.c[0] ? new G(NaN) : !B.c || F.c && !F.c[0] ? new G(F) : ($ == 9 ? (k = B.s, B.s = 1, M = D(F, B, 0, 3), B.s = k, M.s *= k) : M = D(F, B, 0, $), B = F.minus(M.times(B)), !B.c[0] && $ == 1 && (B.s = F.s), B);
         }, f.multipliedBy = f.times = function(B, q) {
-          var M, k, F, V, X, O, P, z, j, Y, te, ne, ae, le, fe, ce = this, de = ce.c, he = (B = new x(B, q)).c;
+          var M, k, F, V, X, O, P, z, j, Y, te, ne, ae, le, fe, ce = this, de = ce.c, he = (B = new G(B, q)).c;
           if (!de || !he || !de[0] || !he[0])
             return !ce.s || !B.s || de && !de[0] && !he || he && !he[0] && !de ? B.c = B.e = B.s = null : (B.s *= ce.s, !de || !he ? B.c = B.e = null : (B.c = [0], B.e = 0)), B;
           for (k = I(ce.e / u) + I(B.e / u), B.s *= ce.s, P = de.length, Y = he.length, P < Y && (ae = de, de = he, he = ae, F = P, P = Y, Y = F), F = P + Y, ae = []; F--; ae.push(0)) ;
@@ -2641,17 +2641,17 @@ function requireBignumber() {
           }
           return M ? ++k : ae.splice(0, 1), ue(B, ae, k);
         }, f.negated = function() {
-          var B = new x(this);
+          var B = new G(this);
           return B.s = -B.s || null, B;
         }, f.plus = function(B, q) {
           var M, k = this, F = k.s;
-          if (B = new x(B, q), q = B.s, !F || !q) return new x(NaN);
+          if (B = new G(B, q), q = B.s, !F || !q) return new G(NaN);
           if (F != q)
             return B.s = -q, k.minus(B);
           var V = k.e / u, X = B.e / u, O = k.c, P = B.c;
           if (!V || !X) {
-            if (!O || !P) return new x(F / 0);
-            if (!O[0] || !P[0]) return P[0] ? B : new x(O[0] ? k : F * 0);
+            if (!O || !P) return new G(F / 0);
+            if (!O[0] || !P[0]) return P[0] ? B : new G(O[0] ? k : F * 0);
           }
           if (V = I(V), X = I(X), O = O.slice(), F = V - X) {
             for (F > 0 ? (X = V, M = P) : (F = -F, M = O), M.reverse(); F--; M.push(0)) ;
@@ -2663,7 +2663,7 @@ function requireBignumber() {
         }, f.precision = f.sd = function(B, q) {
           var M, k, F, V = this;
           if (B != null && B !== !!B)
-            return h(B, 1, p), q == null ? q = E : h(q, 0, 8), oe(new x(V), B, q);
+            return h(B, 1, p), q == null ? q = E : h(q, 0, 8), oe(new G(V), B, q);
           if (!(M = V.c)) return null;
           if (F = M.length - 1, k = F * u + 1, F = M[F]) {
             for (; F % 10 == 0; F /= 10, k--) ;
@@ -2673,10 +2673,10 @@ function requireBignumber() {
         }, f.shiftedBy = function(B) {
           return h(B, -b, b), this.times("1e" + B);
         }, f.squareRoot = f.sqrt = function() {
-          var B, q, M, k, F, V = this, X = V.c, O = V.s, P = V.e, z = A + 4, j = new x("0.5");
+          var B, q, M, k, F, V = this, X = V.c, O = V.s, P = V.e, z = A + 4, j = new G("0.5");
           if (O !== 1 || !X || !X[0])
-            return new x(!O || O < 0 && (!X || X[0]) ? NaN : X ? V : 1 / 0);
-          if (O = Math.sqrt(+Z(V)), O == 0 || O == 1 / 0 ? (q = m(X), (q.length + P) % 2 == 0 && (q += "0"), O = Math.sqrt(+q), P = I((P + 1) / 2) - (P < 0 || P % 2), O == 1 / 0 ? q = "5e" + P : (q = O.toExponential(), q = q.slice(0, q.indexOf("e") + 1) + P), M = new x(q)) : M = new x(O + ""), M.c[0]) {
+            return new G(!O || O < 0 && (!X || X[0]) ? NaN : X ? V : 1 / 0);
+          if (O = Math.sqrt(+Z(V)), O == 0 || O == 1 / 0 ? (q = m(X), (q.length + P) % 2 == 0 && (q += "0"), O = Math.sqrt(+q), P = I((P + 1) / 2) - (P < 0 || P % 2), O == 1 / 0 ? q = "5e" + P : (q = O.toExponential(), q = q.slice(0, q.indexOf("e") + 1) + P), M = new G(q)) : M = new G(O + ""), M.c[0]) {
             for (P = M.e, O = P + z, O < 3 && (O = 0); ; )
               if (F = M, M = j.times(F.plus(D(V, F, z, 1))), m(F.c).slice(0, O) === (q = m(M.c)).slice(0, O))
                 if (M.e < P && --O, q = q.slice(O - 3, O + 1), q == "9999" || !k && q == "4999") {
@@ -2698,7 +2698,7 @@ function requireBignumber() {
         }, f.toFormat = function(B, q, M) {
           var k, F = this;
           if (M == null)
-            B != null && q && typeof q == "object" ? (M = q, q = null) : B && typeof B == "object" ? (M = B, B = q = null) : M = G;
+            B != null && q && typeof q == "object" ? (M = q, q = null) : B && typeof B == "object" ? (M = B, B = q = null) : M = x;
           else if (typeof M != "object")
             throw Error(a + "Argument not an object: " + M);
           if (k = F.toFixed(B, q), F.c) {
@@ -2715,10 +2715,10 @@ function requireBignumber() {
           return (M.prefix || "") + k + (M.suffix || "");
         }, f.toFraction = function(B) {
           var q, M, k, F, V, X, O, P, z, j, Y, te, ne = this, ae = ne.c;
-          if (B != null && (O = new x(B), !O.isInteger() && (O.c || O.s !== 1) || O.lt(C)))
+          if (B != null && (O = new G(B), !O.isInteger() && (O.c || O.s !== 1) || O.lt(C)))
             throw Error(a + "Argument " + (O.isInteger() ? "out of range: " : "not an integer: ") + Z(O));
-          if (!ae) return new x(ne);
-          for (q = new x(C), z = M = new x(C), k = P = new x(C), te = m(ae), V = q.e = te.length - ne.e - 1, q.c[0] = l[(X = V % u) < 0 ? u + X : X], B = !B || O.comparedTo(q) > 0 ? V > 0 ? q : z : O, X = H, H = 1 / 0, O = new x(te), P.c[0] = 0; j = D(O, q, 0, 1), F = M.plus(j.times(k)), F.comparedTo(B) != 1; )
+          if (!ae) return new G(ne);
+          for (q = new G(C), z = M = new G(C), k = P = new G(C), te = m(ae), V = q.e = te.length - ne.e - 1, q.c[0] = l[(X = V % u) < 0 ? u + X : X], B = !B || O.comparedTo(q) > 0 ? V > 0 ? q : z : O, X = H, H = 1 / 0, O = new G(te), P.c[0] = 0; j = D(O, q, 0, 1), F = M.plus(j.times(k)), F.comparedTo(B) != 1; )
             M = k, k = F, z = P.plus(j.times(F = z)), P = F, q = O.minus(j.times(F = q)), O = F;
           return F = D(B.minus(M), k, 0, 1), P = P.plus(F.times(z)), M = M.plus(F.times(k)), P.s = z.s = ne.s, V = V * 2, Y = D(z, k, V, E).minus(ne).abs().comparedTo(
             D(P, M, V, E).minus(ne).abs()
@@ -2729,10 +2729,10 @@ function requireBignumber() {
           return B != null && h(B, 1, p), Q(this, B, q, 2);
         }, f.toString = function(B) {
           var q, M = this, k = M.s, F = M.e;
-          return F === null ? k ? (q = "Infinity", k < 0 && (q = "-" + q)) : q = "NaN" : (B == null ? q = F <= S || F >= L ? y(m(M.c), F) : c(m(M.c), F, "0") : B === 10 && re ? (M = oe(new x(M), A + F + 1, E), q = c(m(M.c), M.e, "0")) : (h(B, 2, J.length, "Base"), q = N(c(m(M.c), F, "0"), 10, B, k, !0)), k < 0 && M.c[0] && (q = "-" + q)), q;
+          return F === null ? k ? (q = "Infinity", k < 0 && (q = "-" + q)) : q = "NaN" : (B == null ? q = F <= S || F >= L ? y(m(M.c), F) : c(m(M.c), F, "0") : B === 10 && re ? (M = oe(new G(M), A + F + 1, E), q = c(m(M.c), M.e, "0")) : (h(B, 2, J.length, "Base"), q = N(c(m(M.c), F, "0"), 10, B, k, !0)), k < 0 && M.c[0] && (q = "-" + q)), q;
         }, f.valueOf = f.toJSON = function() {
           return Z(this);
-        }, f._isBigNumber = !0, R != null && x.set(R), x;
+        }, f._isBigNumber = !0, R != null && G.set(R), G;
       }
       function I(R) {
         var D = R | 0;
@@ -4224,15 +4224,15 @@ function requireSha512$1() {
       for (let S = 0; S < 16; S++, p += 4)
         s[S] = g.getUint32(p), a[S] = g.getUint32(p += 4);
       for (let S = 16; S < 80; S++) {
-        const L = s[S - 15] | 0, U = a[S - 15] | 0, H = r.default.rotrSH(L, U, 1) ^ r.default.rotrSH(L, U, 8) ^ r.default.shrSH(L, U, 7), K = r.default.rotrSL(L, U, 1) ^ r.default.rotrSL(L, U, 8) ^ r.default.shrSL(L, U, 7), $ = s[S - 2] | 0, W = a[S - 2] | 0, G = r.default.rotrSH($, W, 19) ^ r.default.rotrBH($, W, 61) ^ r.default.shrSH($, W, 6), J = r.default.rotrSL($, W, 19) ^ r.default.rotrBL($, W, 61) ^ r.default.shrSL($, W, 6), re = r.default.add4L(K, J, a[S - 7], a[S - 16]), x = r.default.add4H(re, H, G, s[S - 7], s[S - 16]);
-        s[S] = x | 0, a[S] = re | 0;
+        const L = s[S - 15] | 0, U = a[S - 15] | 0, H = r.default.rotrSH(L, U, 1) ^ r.default.rotrSH(L, U, 8) ^ r.default.shrSH(L, U, 7), K = r.default.rotrSL(L, U, 1) ^ r.default.rotrSL(L, U, 8) ^ r.default.shrSL(L, U, 7), $ = s[S - 2] | 0, W = a[S - 2] | 0, x = r.default.rotrSH($, W, 19) ^ r.default.rotrBH($, W, 61) ^ r.default.shrSH($, W, 6), J = r.default.rotrSL($, W, 19) ^ r.default.rotrBL($, W, 61) ^ r.default.shrSL($, W, 6), re = r.default.add4L(K, J, a[S - 7], a[S - 16]), G = r.default.add4H(re, H, x, s[S - 7], s[S - 16]);
+        s[S] = G | 0, a[S] = re | 0;
       }
       let { Ah: w, Al: I, Bh: m, Bl: v, Ch: h, Cl: _, Dh: y, Dl: c, Eh: R, El: D, Fh: N, Fl: T, Gh: f, Gl: C, Hh: A, Hl: E } = this;
       for (let S = 0; S < 80; S++) {
-        const L = r.default.rotrSH(R, D, 14) ^ r.default.rotrSH(R, D, 18) ^ r.default.rotrBH(R, D, 41), U = r.default.rotrSL(R, D, 14) ^ r.default.rotrSL(R, D, 18) ^ r.default.rotrBL(R, D, 41), H = R & N ^ ~R & f, K = D & T ^ ~D & C, $ = r.default.add5L(E, U, K, n[S], a[S]), W = r.default.add5H($, A, L, H, i[S], s[S]), G = $ | 0, J = r.default.rotrSH(w, I, 28) ^ r.default.rotrBH(w, I, 34) ^ r.default.rotrBH(w, I, 39), re = r.default.rotrSL(w, I, 28) ^ r.default.rotrBL(w, I, 34) ^ r.default.rotrBL(w, I, 39), x = w & m ^ w & h ^ m & h, Q = I & v ^ I & _ ^ v & _;
-        A = f | 0, E = C | 0, f = N | 0, C = T | 0, N = R | 0, T = D | 0, { h: R, l: D } = r.default.add(y | 0, c | 0, W | 0, G | 0), y = h | 0, c = _ | 0, h = m | 0, _ = v | 0, m = w | 0, v = I | 0;
-        const se = r.default.add3L(G, re, Q);
-        w = r.default.add3H(se, W, J, x), I = se | 0;
+        const L = r.default.rotrSH(R, D, 14) ^ r.default.rotrSH(R, D, 18) ^ r.default.rotrBH(R, D, 41), U = r.default.rotrSL(R, D, 14) ^ r.default.rotrSL(R, D, 18) ^ r.default.rotrBL(R, D, 41), H = R & N ^ ~R & f, K = D & T ^ ~D & C, $ = r.default.add5L(E, U, K, n[S], a[S]), W = r.default.add5H($, A, L, H, i[S], s[S]), x = $ | 0, J = r.default.rotrSH(w, I, 28) ^ r.default.rotrBH(w, I, 34) ^ r.default.rotrBH(w, I, 39), re = r.default.rotrSL(w, I, 28) ^ r.default.rotrBL(w, I, 34) ^ r.default.rotrBL(w, I, 39), G = w & m ^ w & h ^ m & h, Q = I & v ^ I & _ ^ v & _;
+        A = f | 0, E = C | 0, f = N | 0, C = T | 0, N = R | 0, T = D | 0, { h: R, l: D } = r.default.add(y | 0, c | 0, W | 0, x | 0), y = h | 0, c = _ | 0, h = m | 0, _ = v | 0, m = w | 0, v = I | 0;
+        const se = r.default.add3L(x, re, Q);
+        w = r.default.add3H(se, W, J, G), I = se | 0;
       }
       ({ h: w, l: I } = r.default.add(this.Ah | 0, this.Al | 0, w | 0, I | 0)), { h: m, l: v } = r.default.add(this.Bh | 0, this.Bl | 0, m | 0, v | 0), { h, l: _ } = r.default.add(this.Ch | 0, this.Cl | 0, h | 0, _ | 0), { h: y, l: c } = r.default.add(this.Dh | 0, this.Dl | 0, y | 0, c | 0), { h: R, l: D } = r.default.add(this.Eh | 0, this.El | 0, R | 0, D | 0), { h: N, l: T } = r.default.add(this.Fh | 0, this.Fl | 0, N | 0, T | 0), { h: f, l: C } = r.default.add(this.Gh | 0, this.Gl | 0, f | 0, C | 0), { h: A, l: E } = r.default.add(this.Hh | 0, this.Hl | 0, A | 0, E | 0), this.set(w, I, m, v, h, _, y, c, R, D, N, T, f, C, A, E);
     }
@@ -4922,10 +4922,10 @@ function requireCommon() {
       return typeof O == "string" && ((0, t.isValidClassicAddress)(O) || (0, t.isValidXAddress)(O));
     }
     e.isAccount = W;
-    function G(O) {
+    function x(O) {
       return typeof O == "string" || U(O) || K(O);
     }
-    e.isAmount = G;
+    e.isAmount = x;
     function J(O) {
       return N(O) && Object.keys(O).length === c && typeof O.LockingChainDoor == "string" && L(O.LockingChainIssue) && typeof O.IssuingChainDoor == "string" && L(O.IssuingChainIssue);
     }
@@ -4934,7 +4934,7 @@ function requireCommon() {
       return O != null && Array.isArray(O);
     }
     e.isArray = re;
-    function x(O, P, z, j = {}) {
+    function G(O, P, z, j = {}) {
       var Y, te;
       const ne = (Y = j.paramName) !== null && Y !== void 0 ? Y : P, ae = (te = j.txType) !== null && te !== void 0 ? te : O.TransactionType;
       if (O[P] == null)
@@ -4942,7 +4942,7 @@ function requireCommon() {
       if (!z(O[P]))
         throw new n.ValidationError(`${ae}: invalid field ${String(ne)}`);
     }
-    e.validateRequiredField = x;
+    e.validateRequiredField = G;
     function Q(O, P, z, j = {}) {
       var Y, te;
       const ne = (Y = j.paramName) !== null && Y !== void 0 ? Y : P, ae = (te = j.txType) !== null && te !== void 0 ? te : O.TransactionType;
@@ -4963,7 +4963,7 @@ function requireCommon() {
         throw new n.ValidationError("BaseTransaction: TransactionType not string");
       if (!i.TRANSACTION_TYPES.includes(O.TransactionType))
         throw new n.ValidationError(`BaseTransaction: Unknown TransactionType ${O.TransactionType}`);
-      x(O, "Account", T), Q(O, "Fee", T), Q(O, "Sequence", f), Q(O, "AccountTxnID", T), Q(O, "LastLedgerSequence", f);
+      G(O, "Account", T), Q(O, "Fee", T), Q(O, "Sequence", f), Q(O, "AccountTxnID", T), Q(O, "LastLedgerSequence", f);
       const P = O.Memos;
       if (P != null && (!re(P) || !P.every(I)))
         throw new n.ValidationError("BaseTransaction: invalid Memos");
@@ -4977,7 +4977,7 @@ function requireCommon() {
     }
     e.validateBaseTransaction = ue;
     function oe(O) {
-      return G(O) ? parseFloat(typeof O == "string" ? O : O.value) : NaN;
+      return x(O) ? parseFloat(typeof O == "string" ? O : O.value) : NaN;
     }
     e.parseAmountValue = oe;
     function Z(O) {
@@ -5737,12 +5737,12 @@ function requireRipemd160() {
       for (let A = 0; A < 5; A++) {
         const E = 4 - A, S = b[A], L = l[A], U = s[A], H = a[A], K = d[A], $ = u[A];
         for (let W = 0; W < 16; W++) {
-          const G = (0, r.rotl)(h + g(A, y, R, N) + p[U[W]] + S, K[W]) + f | 0;
-          h = f, f = N, N = (0, r.rotl)(R, 10) | 0, R = y, y = G;
+          const x = (0, r.rotl)(h + g(A, y, R, N) + p[U[W]] + S, K[W]) + f | 0;
+          h = f, f = N, N = (0, r.rotl)(R, 10) | 0, R = y, y = x;
         }
         for (let W = 0; W < 16; W++) {
-          const G = (0, r.rotl)(_ + g(E, c, D, T) + p[H[W]] + L, $[W]) + C | 0;
-          _ = C, C = T, T = (0, r.rotl)(D, 10) | 0, D = c, c = G;
+          const x = (0, r.rotl)(_ + g(E, c, D, T) + p[H[W]] + L, $[W]) + C | 0;
+          _ = C, C = T, T = (0, r.rotl)(D, 10) | 0, D = c, c = x;
         }
       }
       this.set(this.h1 + R + T | 0, this.h2 + N + C | 0, this.h3 + f + _ | 0, this.h4 + h + c | 0, this.h0 + y + D | 0);
@@ -5819,12 +5819,12 @@ function requireUtils$7() {
       throw new Error("padded hex string expected, got unpadded hex of length " + L);
     const H = new Uint8Array(U);
     for (let K = 0, $ = 0; K < U; K++, $ += 2) {
-      const W = b(S.charCodeAt($)), G = b(S.charCodeAt($ + 1));
-      if (W === void 0 || G === void 0) {
+      const W = b(S.charCodeAt($)), x = b(S.charCodeAt($ + 1));
+      if (W === void 0 || x === void 0) {
         const J = S[$] + S[$ + 1];
         throw new Error('hex string expected, got non-hex character "' + J + '" at index ' + $);
       }
-      H[K] = W * 16 + G;
+      H[K] = W * 16 + x;
     }
     return H;
   }
@@ -5924,15 +5924,15 @@ function requireUtils$7() {
     let H = T(S), K = T(S), $ = 0;
     const W = () => {
       H.fill(1), K.fill(0), $ = 0;
-    }, G = (...Q) => U(K, H, ...Q), J = (Q = T()) => {
-      K = G(f([0]), Q), H = G(), Q.length !== 0 && (K = G(f([1]), Q), H = G());
+    }, x = (...Q) => U(K, H, ...Q), J = (Q = T()) => {
+      K = x(f([0]), Q), H = x(), Q.length !== 0 && (K = x(f([1]), Q), H = x());
     }, re = () => {
       if ($++ >= 1e3)
         throw new Error("drbg: tried 1000 values");
       let Q = 0;
       const se = [];
       for (; Q < L; ) {
-        H = G();
+        H = x();
         const ue = H.slice();
         se.push(ue), Q += H.length;
       }
@@ -5960,11 +5960,11 @@ function requireUtils$7() {
   };
   function E(S, L, U = {}) {
     const H = (K, $, W) => {
-      const G = A[$];
-      if (typeof G != "function")
+      const x = A[$];
+      if (typeof x != "function")
         throw new Error(`Invalid validator "${$}", expected function`);
       const J = S[K];
-      if (!(W && J === void 0) && !G(J, S))
+      if (!(W && J === void 0) && !x(J, S))
         throw new Error(`Invalid param ${String(K)}=${J} (${typeof J}), expected ${$}`);
     };
     for (const [K, $] of Object.entries(L))
@@ -6010,8 +6010,8 @@ function requireModular() {
       throw new Error(`invert: expected positive integers, got n=${E} mod=${S}`);
     let L = d(E, S), U = S, H = r, K = t;
     for (; L !== r; ) {
-      const W = U / L, G = U % L, J = H - K * W;
-      U = L, L = G, H = K, K = J;
+      const W = U / L, x = U % L, J = H - K * W;
+      U = L, L = x, H = K, K = J;
     }
     if (U !== t)
       throw new Error("invert: does not exist");
@@ -6027,18 +6027,18 @@ function requireModular() {
       ;
     if (U === 1) {
       const $ = (E + t) / s;
-      return function(G, J) {
-        const re = G.pow(J, $);
-        if (!G.eql(G.sqr(re), J))
+      return function(x, J) {
+        const re = x.pow(J, $);
+        if (!x.eql(x.sqr(re), J))
           throw new Error("Cannot find square root");
         return re;
       };
     }
     const K = (L + t) / i;
-    return function(W, G) {
-      if (W.pow(G, S) === W.neg(W.ONE))
+    return function(W, x) {
+      if (W.pow(x, S) === W.neg(W.ONE))
         throw new Error("Cannot find square root");
-      let J = U, re = W.pow(W.mul(W.ONE, H), L), x = W.pow(G, K), Q = W.pow(G, L);
+      let J = U, re = W.pow(W.mul(W.ONE, H), L), G = W.pow(x, K), Q = W.pow(x, L);
       for (; !W.eql(Q, W.ONE); ) {
         if (W.eql(Q, W.ZERO))
           return W.ZERO;
@@ -6046,9 +6046,9 @@ function requireModular() {
         for (let oe = W.sqr(Q); se < J && !W.eql(oe, W.ONE); se++)
           oe = W.sqr(oe);
         const ue = W.pow(re, t << BigInt(J - se - 1));
-        re = W.sqr(ue), x = W.mul(x, ue), Q = W.mul(Q, re), J = se;
+        re = W.sqr(ue), G = W.mul(G, ue), Q = W.mul(Q, re), J = se;
       }
-      return x;
+      return G;
     };
   }
   modular.tonelliShanks = g;
@@ -6065,7 +6065,7 @@ function requireModular() {
     if (E % o === a) {
       const S = (E - a) / o;
       return function(U, H) {
-        const K = U.mul(H, i), $ = U.pow(K, S), W = U.mul(H, $), G = U.mul(U.mul(W, i), $), J = U.mul(W, U.sub(G, U.ONE));
+        const K = U.mul(H, i), $ = U.pow(K, S), W = U.mul(H, $), x = U.mul(U.mul(W, i), $), J = U.mul(W, U.sub(x, U.ONE));
         if (!U.eql(U.sqr(J), H))
           throw new Error("Cannot find square root");
         return J;
@@ -6153,38 +6153,38 @@ function requireModular() {
       MASK: (0, e.bitMask)(H),
       ZERO: r,
       ONE: t,
-      create: (G) => d(G, E),
-      isValid: (G) => {
-        if (typeof G != "bigint")
-          throw new Error(`Invalid field element: expected bigint, got ${typeof G}`);
-        return r <= G && G < E;
+      create: (x) => d(x, E),
+      isValid: (x) => {
+        if (typeof x != "bigint")
+          throw new Error(`Invalid field element: expected bigint, got ${typeof x}`);
+        return r <= x && x < E;
       },
-      is0: (G) => G === r,
-      isOdd: (G) => (G & t) === t,
-      neg: (G) => d(-G, E),
-      eql: (G, J) => G === J,
-      sqr: (G) => d(G * G, E),
-      add: (G, J) => d(G + J, E),
-      sub: (G, J) => d(G - J, E),
-      mul: (G, J) => d(G * J, E),
-      pow: (G, J) => v(W, G, J),
-      div: (G, J) => d(G * l(J, E), E),
+      is0: (x) => x === r,
+      isOdd: (x) => (x & t) === t,
+      neg: (x) => d(-x, E),
+      eql: (x, J) => x === J,
+      sqr: (x) => d(x * x, E),
+      add: (x, J) => d(x + J, E),
+      sub: (x, J) => d(x - J, E),
+      mul: (x, J) => d(x * J, E),
+      pow: (x, J) => v(W, x, J),
+      div: (x, J) => d(x * l(J, E), E),
       // Same as above, but doesn't normalize
-      sqrN: (G) => G * G,
-      addN: (G, J) => G + J,
-      subN: (G, J) => G - J,
-      mulN: (G, J) => G * J,
-      inv: (G) => l(G, E),
-      sqrt: U.sqrt || ((G) => $(W, G)),
-      invertBatch: (G) => h(W, G),
+      sqrN: (x) => x * x,
+      addN: (x, J) => x + J,
+      subN: (x, J) => x - J,
+      mulN: (x, J) => x * J,
+      inv: (x) => l(x, E),
+      sqrt: U.sqrt || ((x) => $(W, x)),
+      invertBatch: (x) => h(W, x),
       // TODO: do we really need constant cmov?
       // We don't have const-time bigints anyway, so probably will be not very useful
-      cmov: (G, J, re) => re ? J : G,
-      toBytes: (G) => L ? (0, e.numberToBytesLE)(G, K) : (0, e.numberToBytesBE)(G, K),
-      fromBytes: (G) => {
-        if (G.length !== K)
-          throw new Error(`Fp.fromBytes: expected ${K}, got ${G.length}`);
-        return L ? (0, e.bytesToNumberLE)(G) : (0, e.bytesToNumberBE)(G);
+      cmov: (x, J, re) => re ? J : x,
+      toBytes: (x) => L ? (0, e.numberToBytesLE)(x, K) : (0, e.numberToBytesBE)(x, K),
+      fromBytes: (x) => {
+        if (x.length !== K)
+          throw new Error(`Fp.fromBytes: expected ${K}, got ${x.length}`);
+        return L ? (0, e.bytesToNumberLE)(x) : (0, e.bytesToNumberBE)(x);
       }
     });
     return Object.freeze(W);
@@ -6423,13 +6423,13 @@ function requireWeierstrass() {
             throw new Error("Invalid key");
           U = U.padStart(K * 2, "0");
         }
-        let G;
+        let x;
         try {
-          G = typeof U == "bigint" ? U : t.bytesToNumberBE((0, i.ensureBytes)("private key", U, K));
+          x = typeof U == "bigint" ? U : t.bytesToNumberBE((0, i.ensureBytes)("private key", U, K));
         } catch {
           throw new Error(`private key must be ${K} bytes, hex or bigint, not ${typeof U}`);
         }
-        return $ && (G = r.mod(G, W)), T(G), G;
+        return $ && (x = r.mod(x, W)), T(x), x;
       }
       const C = /* @__PURE__ */ new Map();
       function A(U) {
@@ -6453,7 +6453,7 @@ function requireWeierstrass() {
             throw new Error("invalid affine point");
           if (H instanceof E)
             throw new Error("projective point not allowed");
-          const W = (G) => y.eql(G, y.ZERO);
+          const W = (x) => y.eql(x, y.ZERO);
           return W(K) && W($) ? E.ZERO : new E(K, $, y.ONE);
         }
         get x() {
@@ -6515,8 +6515,8 @@ function requireWeierstrass() {
          */
         equals(H) {
           A(H);
-          const { px: K, py: $, pz: W } = this, { px: G, py: J, pz: re } = H, x = y.eql(y.mul(K, re), y.mul(G, W)), Q = y.eql(y.mul($, re), y.mul(J, W));
-          return x && Q;
+          const { px: K, py: $, pz: W } = this, { px: x, py: J, pz: re } = H, G = y.eql(y.mul(K, re), y.mul(x, W)), Q = y.eql(y.mul($, re), y.mul(J, W));
+          return G && Q;
         }
         /**
          * Flips point to one corresponding to (x, -y) in Affine coordinates.
@@ -6529,9 +6529,9 @@ function requireWeierstrass() {
         // https://eprint.iacr.org/2015/1060, algorithm 3
         // Cost: 8M + 3S + 3*a + 2*b3 + 15add.
         double() {
-          const { a: H, b: K } = _, $ = y.mul(K, l), { px: W, py: G, pz: J } = this;
-          let re = y.ZERO, x = y.ZERO, Q = y.ZERO, se = y.mul(W, W), ue = y.mul(G, G), oe = y.mul(J, J), Z = y.mul(W, G);
-          return Z = y.add(Z, Z), Q = y.mul(W, J), Q = y.add(Q, Q), re = y.mul(H, Q), x = y.mul($, oe), x = y.add(re, x), re = y.sub(ue, x), x = y.add(ue, x), x = y.mul(re, x), re = y.mul(Z, re), Q = y.mul($, Q), oe = y.mul(H, oe), Z = y.sub(se, oe), Z = y.mul(H, Z), Z = y.add(Z, Q), Q = y.add(se, se), se = y.add(Q, se), se = y.add(se, oe), se = y.mul(se, Z), x = y.add(x, se), oe = y.mul(G, J), oe = y.add(oe, oe), se = y.mul(oe, Z), re = y.sub(re, se), Q = y.mul(oe, ue), Q = y.add(Q, Q), Q = y.add(Q, Q), new E(re, x, Q);
+          const { a: H, b: K } = _, $ = y.mul(K, l), { px: W, py: x, pz: J } = this;
+          let re = y.ZERO, G = y.ZERO, Q = y.ZERO, se = y.mul(W, W), ue = y.mul(x, x), oe = y.mul(J, J), Z = y.mul(W, x);
+          return Z = y.add(Z, Z), Q = y.mul(W, J), Q = y.add(Q, Q), re = y.mul(H, Q), G = y.mul($, oe), G = y.add(re, G), re = y.sub(ue, G), G = y.add(ue, G), G = y.mul(re, G), re = y.mul(Z, re), Q = y.mul($, Q), oe = y.mul(H, oe), Z = y.sub(se, oe), Z = y.mul(H, Z), Z = y.add(Z, Q), Q = y.add(se, se), se = y.add(Q, se), se = y.add(se, oe), se = y.mul(se, Z), G = y.add(G, se), oe = y.mul(x, J), oe = y.add(oe, oe), se = y.mul(oe, Z), re = y.sub(re, se), Q = y.mul(oe, ue), Q = y.add(Q, Q), Q = y.add(Q, Q), new E(re, G, Q);
         }
         // Renes-Costello-Batina exception-free addition formula.
         // There is 30% faster Jacobian formula, but it is not complete.
@@ -6539,13 +6539,13 @@ function requireWeierstrass() {
         // Cost: 12M + 0S + 3*a + 3*b3 + 23add.
         add(H) {
           A(H);
-          const { px: K, py: $, pz: W } = this, { px: G, py: J, pz: re } = H;
-          let x = y.ZERO, Q = y.ZERO, se = y.ZERO;
+          const { px: K, py: $, pz: W } = this, { px: x, py: J, pz: re } = H;
+          let G = y.ZERO, Q = y.ZERO, se = y.ZERO;
           const ue = _.a, oe = y.mul(_.b, l);
-          let Z = y.mul(K, G), B = y.mul($, J), q = y.mul(W, re), M = y.add(K, $), k = y.add(G, J);
+          let Z = y.mul(K, x), B = y.mul($, J), q = y.mul(W, re), M = y.add(K, $), k = y.add(x, J);
           M = y.mul(M, k), k = y.add(Z, B), M = y.sub(M, k), k = y.add(K, W);
-          let F = y.add(G, re);
-          return k = y.mul(k, F), F = y.add(Z, q), k = y.sub(k, F), F = y.add($, W), x = y.add(J, re), F = y.mul(F, x), x = y.add(B, q), F = y.sub(F, x), se = y.mul(ue, k), x = y.mul(oe, q), se = y.add(x, se), x = y.sub(B, se), se = y.add(B, se), Q = y.mul(x, se), B = y.add(Z, Z), B = y.add(B, Z), q = y.mul(ue, q), k = y.mul(oe, k), B = y.add(B, q), q = y.sub(Z, q), q = y.mul(ue, q), k = y.add(k, q), Z = y.mul(B, k), Q = y.add(Q, Z), Z = y.mul(F, k), x = y.mul(M, x), x = y.sub(x, Z), Z = y.mul(M, B), se = y.mul(F, se), se = y.add(se, Z), new E(x, Q, se);
+          let F = y.add(x, re);
+          return k = y.mul(k, F), F = y.add(Z, q), k = y.sub(k, F), F = y.add($, W), G = y.add(J, re), F = y.mul(F, G), G = y.add(B, q), F = y.sub(F, G), se = y.mul(ue, k), G = y.mul(oe, q), se = y.add(G, se), G = y.sub(B, se), se = y.add(B, se), Q = y.mul(G, se), B = y.add(Z, Z), B = y.add(B, Z), q = y.mul(ue, q), k = y.mul(oe, k), B = y.add(B, q), q = y.sub(Z, q), q = y.mul(ue, q), k = y.add(k, q), Z = y.mul(B, k), Q = y.add(Q, Z), Z = y.mul(F, k), G = y.mul(M, G), G = y.sub(G, Z), Z = y.mul(M, B), se = y.mul(F, se), se = y.add(se, Z), new E(G, Q, se);
         }
         subtract(H) {
           return this.add(H.negate());
@@ -6556,7 +6556,7 @@ function requireWeierstrass() {
         wNAF(H) {
           return L.wNAFCached(this, C, H, (K) => {
             const $ = y.invertBatch(K.map((W) => W.pz));
-            return K.map((W, G) => W.toAffine($[G])).map(E.fromAffine);
+            return K.map((W, x) => W.toAffine($[x])).map(E.fromAffine);
           });
         }
         /**
@@ -6573,10 +6573,10 @@ function requireWeierstrass() {
           const { endo: $ } = _;
           if (!$)
             return L.unsafeLadder(this, H);
-          let { k1neg: W, k1: G, k2neg: J, k2: re } = $.splitScalar(H), x = K, Q = K, se = this;
-          for (; G > d || re > d; )
-            G & u && (x = x.add(se)), re & u && (Q = Q.add(se)), se = se.double(), G >>= u, re >>= u;
-          return W && (x = x.negate()), J && (Q = Q.negate()), Q = new E(y.mul(Q.px, $.beta), Q.py, Q.pz), x.add(Q);
+          let { k1neg: W, k1: x, k2neg: J, k2: re } = $.splitScalar(H), G = K, Q = K, se = this;
+          for (; x > d || re > d; )
+            x & u && (G = G.add(se)), re & u && (Q = Q.add(se)), se = se.double(), x >>= u, re >>= u;
+          return W && (G = G.negate()), J && (Q = Q.negate()), Q = new E(y.mul(Q.px, $.beta), Q.py, Q.pz), G.add(Q);
         }
         /**
          * Constant time multiplication.
@@ -6590,11 +6590,11 @@ function requireWeierstrass() {
         multiply(H) {
           T(H);
           let K = H, $, W;
-          const { endo: G } = _;
-          if (G) {
-            const { k1neg: J, k1: re, k2neg: x, k2: Q } = G.splitScalar(K);
+          const { endo: x } = _;
+          if (x) {
+            const { k1neg: J, k1: re, k2neg: G, k2: Q } = x.splitScalar(K);
             let { p: se, f: ue } = this.wNAF(re), { p: oe, f: Z } = this.wNAF(Q);
-            se = L.constTimeNegate(J, se), oe = L.constTimeNegate(x, oe), oe = new E(y.mul(oe.px, G.beta), oe.py, oe.pz), $ = se.add(oe), W = ue.add(Z);
+            se = L.constTimeNegate(J, se), oe = L.constTimeNegate(G, oe), oe = new E(y.mul(oe.px, x.beta), oe.py, oe.pz), $ = se.add(oe), W = ue.add(Z);
           } else {
             const { p: J, f: re } = this.wNAF(K);
             $ = J, W = re;
@@ -6608,19 +6608,19 @@ function requireWeierstrass() {
          * @returns non-zero affine point
          */
         multiplyAndAddUnsafe(H, K, $) {
-          const W = E.BASE, G = (re, x) => x === d || x === u || !re.equals(W) ? re.multiplyUnsafe(x) : re.multiply(x), J = G(this, K).add(G(H, $));
+          const W = E.BASE, x = (re, G) => G === d || G === u || !re.equals(W) ? re.multiplyUnsafe(G) : re.multiply(G), J = x(this, K).add(x(H, $));
           return J.is0() ? void 0 : J;
         }
         // Converts Projective point to affine (x, y) coordinates.
         // Can accept precomputed Z^-1 - for example, from invertBatch.
         // (x, y, z) ∋ (x=x/z, y=y/z)
         toAffine(H) {
-          const { px: K, py: $, pz: W } = this, G = this.is0();
-          H == null && (H = G ? y.ONE : y.inv(W));
-          const J = y.mul(K, H), re = y.mul($, H), x = y.mul(W, H);
-          if (G)
+          const { px: K, py: $, pz: W } = this, x = this.is0();
+          H == null && (H = x ? y.ONE : y.inv(W));
+          const J = y.mul(K, H), re = y.mul($, H), G = y.mul(W, H);
+          if (x)
             return { x: y.ZERO, y: y.ZERO };
-          if (!y.eql(x, y.ONE))
+          if (!y.eql(G, y.ONE))
             throw new Error("invZ was invalid");
           return { x: J, y: re };
         }
@@ -6801,7 +6801,7 @@ function requireWeierstrass() {
           return F._setWindowSize(k), F.multiply(BigInt(3)), F;
         }
       };
-      function G(k, F = !0) {
+      function x(k, F = !0) {
         return C.fromPrivateKey(k).toRawBytes(F);
       }
       function J(k) {
@@ -6815,11 +6815,11 @@ function requireWeierstrass() {
           throw new Error("second arg must be public key");
         return C.fromHex(F).multiply(A(k)).toRawBytes(V);
       }
-      const x = _.bits2int || function(k) {
+      const G = _.bits2int || function(k) {
         const F = t.bytesToNumberBE(k), V = k.length * 8 - _.nBitLength;
         return V > 0 ? F >> BigInt(V) : F;
       }, Q = _.bits2int_modN || function(k) {
-        return T(x(k));
+        return T(G(k));
       }, se = t.bitMask(_.nBitLength);
       function ue(k) {
         if (typeof k != "bigint")
@@ -6841,7 +6841,7 @@ function requireWeierstrass() {
         }
         const ae = t.concatBytes(...ne), le = Y;
         function fe(ce) {
-          const de = x(ce);
+          const de = G(ce);
           if (!S(de))
             return;
           const he = f(de), me = C.BASE.multiply(de).toAffine(), ie = T(me.x);
@@ -6895,7 +6895,7 @@ function requireWeierstrass() {
       }
       return {
         CURVE: _,
-        getPublicKey: G,
+        getPublicKey: x,
         getSharedSecret: re,
         sign: q,
         verify: M,
@@ -6914,14 +6914,14 @@ function requireWeierstrass() {
       let L = (U, H) => {
         let K = E, $ = h.pow(H, C), W = h.sqr($);
         W = h.mul(W, H);
-        let G = h.mul(U, W);
-        G = h.pow(G, f), G = h.mul(G, $), $ = h.mul(G, H), W = h.mul(G, U);
+        let x = h.mul(U, W);
+        x = h.pow(x, f), x = h.mul(x, $), $ = h.mul(x, H), W = h.mul(x, U);
         let J = h.mul(W, $);
-        G = h.pow(J, A);
-        let re = h.eql(G, h.ONE);
-        $ = h.mul(W, S), G = h.mul(J, K), W = h.cmov($, W, re), J = h.cmov(G, J, re);
-        for (let x = R; x > u; x--) {
-          let Q = x - b;
+        x = h.pow(J, A);
+        let re = h.eql(x, h.ONE);
+        $ = h.mul(W, S), x = h.mul(J, K), W = h.cmov($, W, re), J = h.cmov(x, J, re);
+        for (let G = R; G > u; G--) {
+          let Q = G - b;
           Q = b << Q - u;
           let se = h.pow(J, Q);
           const ue = h.eql(se, h.ONE);
@@ -6933,11 +6933,11 @@ function requireWeierstrass() {
         const U = (h.ORDER - l) / g, H = h.sqrt(h.neg(_));
         L = (K, $) => {
           let W = h.sqr($);
-          const G = h.mul(K, $);
-          W = h.mul(W, G);
+          const x = h.mul(K, $);
+          W = h.mul(W, x);
           let J = h.pow(W, U);
-          J = h.mul(J, G);
-          const re = h.mul(J, H), x = h.mul(h.sqr(J), $), Q = h.eql(x, K);
+          J = h.mul(J, x);
+          const re = h.mul(J, H), G = h.mul(h.sqr(J), $), Q = h.eql(G, K);
           let se = h.cmov(re, J, Q);
           return { isValid: Q, value: se };
         };
@@ -7142,7 +7142,7 @@ function requireSecp256k1$1() {
     /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
     const r = /* @__PURE__ */ requireSha256(), t = /* @__PURE__ */ requireUtils$b(), i = /* @__PURE__ */ requireModular(), n = /* @__PURE__ */ requireWeierstrass(), s = /* @__PURE__ */ requireUtils$7(), a = /* @__PURE__ */ requireHashToCurve(), o = /* @__PURE__ */ require_shortw_utils(), d = BigInt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"), u = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"), b = BigInt(1), l = BigInt(2), g = ($, W) => ($ + W / l) / W;
     function p($) {
-      const W = d, G = BigInt(3), J = BigInt(6), re = BigInt(11), x = BigInt(22), Q = BigInt(23), se = BigInt(44), ue = BigInt(88), oe = $ * $ * $ % W, Z = oe * oe * $ % W, B = (0, i.pow2)(Z, G, W) * Z % W, q = (0, i.pow2)(B, G, W) * Z % W, M = (0, i.pow2)(q, l, W) * oe % W, k = (0, i.pow2)(M, re, W) * M % W, F = (0, i.pow2)(k, x, W) * k % W, V = (0, i.pow2)(F, se, W) * F % W, X = (0, i.pow2)(V, ue, W) * V % W, O = (0, i.pow2)(X, se, W) * F % W, P = (0, i.pow2)(O, G, W) * Z % W, z = (0, i.pow2)(P, Q, W) * k % W, j = (0, i.pow2)(z, J, W) * oe % W, Y = (0, i.pow2)(j, l, W);
+      const W = d, x = BigInt(3), J = BigInt(6), re = BigInt(11), G = BigInt(22), Q = BigInt(23), se = BigInt(44), ue = BigInt(88), oe = $ * $ * $ % W, Z = oe * oe * $ % W, B = (0, i.pow2)(Z, x, W) * Z % W, q = (0, i.pow2)(B, x, W) * Z % W, M = (0, i.pow2)(q, l, W) * oe % W, k = (0, i.pow2)(M, re, W) * M % W, F = (0, i.pow2)(k, G, W) * k % W, V = (0, i.pow2)(F, se, W) * F % W, X = (0, i.pow2)(V, ue, W) * V % W, O = (0, i.pow2)(X, se, W) * F % W, P = (0, i.pow2)(O, x, W) * Z % W, z = (0, i.pow2)(P, Q, W) * k % W, j = (0, i.pow2)(z, J, W) * oe % W, Y = (0, i.pow2)(j, l, W);
       if (!w.eql(w.sqr(Y), $))
         throw new Error("Cannot find square root");
       return Y;
@@ -7173,8 +7173,8 @@ function requireSecp256k1$1() {
       endo: {
         beta: BigInt("0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee"),
         splitScalar: ($) => {
-          const W = u, G = BigInt("0x3086d221a7d46bcde86c90e49284eb15"), J = -b * BigInt("0xe4437ed6010e88286f547fa90abfe4c3"), re = BigInt("0x114ca50f7a8e2f3f657c1108d9d44cfd8"), x = G, Q = BigInt("0x100000000000000000000000000000000"), se = g(x * $, W), ue = g(-J * $, W);
-          let oe = (0, i.mod)($ - se * G - ue * re, W), Z = (0, i.mod)(-se * J - ue * x, W);
+          const W = u, x = BigInt("0x3086d221a7d46bcde86c90e49284eb15"), J = -b * BigInt("0xe4437ed6010e88286f547fa90abfe4c3"), re = BigInt("0x114ca50f7a8e2f3f657c1108d9d44cfd8"), G = x, Q = BigInt("0x100000000000000000000000000000000"), se = g(G * $, W), ue = g(-J * $, W);
+          let oe = (0, i.mod)($ - se * x - ue * re, W), Z = (0, i.mod)(-se * J - ue * G, W);
           const B = oe > Q, q = Z > Q;
           if (B && (oe = W - oe), q && (Z = W - Z), oe > Q || Z > Q)
             throw new Error("splitScalar: Endomorphism failed, k=" + $);
@@ -7184,23 +7184,23 @@ function requireSecp256k1$1() {
     }, r.sha256);
     const I = BigInt(0), m = ($) => typeof $ == "bigint" && I < $ && $ < d, v = ($) => typeof $ == "bigint" && I < $ && $ < u, h = {};
     function _($, ...W) {
-      let G = h[$];
-      if (G === void 0) {
+      let x = h[$];
+      if (x === void 0) {
         const J = (0, r.sha256)(Uint8Array.from($, (re) => re.charCodeAt(0)));
-        G = (0, s.concatBytes)(J, J), h[$] = G;
+        x = (0, s.concatBytes)(J, J), h[$] = x;
       }
-      return (0, r.sha256)((0, s.concatBytes)(G, ...W));
+      return (0, r.sha256)((0, s.concatBytes)(x, ...W));
     }
-    const y = ($) => $.toRawBytes(!0).slice(1), c = ($) => (0, s.numberToBytesBE)($, 32), R = ($) => (0, i.mod)($, d), D = ($) => (0, i.mod)($, u), N = e.secp256k1.ProjectivePoint, T = ($, W, G) => N.BASE.multiplyAndAddUnsafe($, W, G);
+    const y = ($) => $.toRawBytes(!0).slice(1), c = ($) => (0, s.numberToBytesBE)($, 32), R = ($) => (0, i.mod)($, d), D = ($) => (0, i.mod)($, u), N = e.secp256k1.ProjectivePoint, T = ($, W, x) => N.BASE.multiplyAndAddUnsafe($, W, x);
     function f($) {
-      let W = e.secp256k1.utils.normPrivateKeyToScalar($), G = N.fromPrivateKey(W);
-      return { scalar: G.hasEvenY() ? W : D(-W), bytes: y(G) };
+      let W = e.secp256k1.utils.normPrivateKeyToScalar($), x = N.fromPrivateKey(W);
+      return { scalar: x.hasEvenY() ? W : D(-W), bytes: y(x) };
     }
     function C($) {
       if (!m($))
         throw new Error("bad x: need 0 < x < p");
-      const W = R($ * $), G = R(W * $ + BigInt(7));
-      let J = p(G);
+      const W = R($ * $), x = R(W * $ + BigInt(7));
+      let J = p(x);
       J % l !== I && (J = R(-J));
       const re = new N($, J, b);
       return re.assertValidity(), re;
@@ -7211,19 +7211,19 @@ function requireSecp256k1$1() {
     function E($) {
       return f($).bytes;
     }
-    function S($, W, G = (0, t.randomBytes)(32)) {
-      const J = (0, s.ensureBytes)("message", $), { bytes: re, scalar: x } = f(W), Q = (0, s.ensureBytes)("auxRand", G, 32), se = c(x ^ (0, s.bytesToNumberBE)(_("BIP0340/aux", Q))), ue = _("BIP0340/nonce", se, re, J), oe = D((0, s.bytesToNumberBE)(ue));
+    function S($, W, x = (0, t.randomBytes)(32)) {
+      const J = (0, s.ensureBytes)("message", $), { bytes: re, scalar: G } = f(W), Q = (0, s.ensureBytes)("auxRand", x, 32), se = c(G ^ (0, s.bytesToNumberBE)(_("BIP0340/aux", Q))), ue = _("BIP0340/nonce", se, re, J), oe = D((0, s.bytesToNumberBE)(ue));
       if (oe === I)
         throw new Error("sign failed: k is zero");
       const { bytes: Z, scalar: B } = f(oe), q = A(Z, re, J), M = new Uint8Array(64);
-      if (M.set(Z, 0), M.set(c(D(B + q * x)), 32), !L(M, J, re))
+      if (M.set(Z, 0), M.set(c(D(B + q * G)), 32), !L(M, J, re))
         throw new Error("sign: Invalid signature produced");
       return M;
     }
-    function L($, W, G) {
-      const J = (0, s.ensureBytes)("signature", $, 64), re = (0, s.ensureBytes)("message", W), x = (0, s.ensureBytes)("publicKey", G, 32);
+    function L($, W, x) {
+      const J = (0, s.ensureBytes)("signature", $, 64), re = (0, s.ensureBytes)("message", W), G = (0, s.ensureBytes)("publicKey", x, 32);
       try {
-        const Q = C((0, s.bytesToNumberBE)(x)), se = (0, s.bytesToNumberBE)(J.subarray(0, 32));
+        const Q = C((0, s.bytesToNumberBE)(G)), se = (0, s.bytesToNumberBE)(J.subarray(0, 32));
         if (!m(se))
           return !1;
         const ue = (0, s.bytesToNumberBE)(J.subarray(32, 64));
@@ -7284,8 +7284,8 @@ function requireSecp256k1$1() {
       B: BigInt("1771"),
       Z: w.create(BigInt("-11"))
     }), K = (0, a.createHasher)(e.secp256k1.ProjectivePoint, ($) => {
-      const { x: W, y: G } = H(w.create($[0]));
-      return U(W, G);
+      const { x: W, y: x } = H(w.create($[0]));
+      return U(W, x);
     }, {
       DST: "secp256k1_XMD:SHA-256_SSWU_RO_",
       encodeDST: "secp256k1_XMD:SHA-256_SSWU_NU_",
@@ -7678,25 +7678,25 @@ function requireEdwards() {
     function W(Z) {
       return (0, e.mod)(Z, w);
     }
-    function G(Z) {
+    function x(Z) {
       return W(r.bytesToNumberLE(Z));
     }
     function J(Z) {
       const B = h;
       Z = (0, t.ensureBytes)("private key", Z, B);
-      const q = (0, t.ensureBytes)("hashed private key", m(Z), 2 * B), M = D(q.slice(0, B)), k = q.slice(B, 2 * B), F = G(M), V = H.multiply(F), X = V.toRawBytes();
+      const q = (0, t.ensureBytes)("hashed private key", m(Z), 2 * B), M = D(q.slice(0, B)), k = q.slice(B, 2 * B), F = x(M), V = H.multiply(F), X = V.toRawBytes();
       return { head: M, prefix: k, scalar: F, point: V, pointBytes: X };
     }
     function re(Z) {
       return J(Z).pointBytes;
     }
-    function x(Z = new Uint8Array(), ...B) {
+    function G(Z = new Uint8Array(), ...B) {
       const q = r.concatBytes(...B);
-      return G(m(N(q, (0, t.ensureBytes)("context", Z), !!I)));
+      return x(m(N(q, (0, t.ensureBytes)("context", Z), !!I)));
     }
     function Q(Z, B, q = {}) {
       Z = (0, t.ensureBytes)("message", Z), I && (Z = I(Z));
-      const { prefix: M, scalar: k, pointBytes: F } = J(B), V = x(q.context, M, Z), X = H.multiply(V).toRawBytes(), O = x(q.context, X, F, Z), P = W(V + O * k);
+      const { prefix: M, scalar: k, pointBytes: F } = J(B), V = G(q.context, M, Z), X = H.multiply(V).toRawBytes(), O = G(q.context, X, F, Z), P = W(V + O * k);
       E(P);
       const z = r.concatBytes(X, r.numberToBytesLE(P, p.BYTES));
       return (0, t.ensureBytes)("result", z, h * 2);
@@ -7714,7 +7714,7 @@ function requireEdwards() {
       }
       if (!F && O.isSmallOrder())
         return !1;
-      const j = x(k, P.toRawBytes(), O.toRawBytes(), B);
+      const j = G(k, P.toRawBytes(), O.toRawBytes(), B);
       return P.add(O.multiplyUnsafe(j)).subtract(z).clearCofactor().equals(U.ZERO);
     }
     return H._setWindowSize(8), {
@@ -7774,11 +7774,11 @@ function requireMontgomery() {
     function h(T, f) {
       const C = m(T), A = m(f), E = C;
       let S = i, L = t, U = C, H = i, K = t, $;
-      for (let G = BigInt(b - 1); G >= t; G--) {
-        const J = A >> G & i;
+      for (let x = BigInt(b - 1); x >= t; x--) {
+        const J = A >> x & i;
         K ^= J, $ = I(K, S, U), S = $[0], U = $[1], $ = I(K, L, H), L = $[0], H = $[1], K = J;
-        const re = S + L, x = u(re * re), Q = S - L, se = u(Q * Q), ue = x - se, oe = U + H, Z = U - H, B = u(Z * re), q = u(oe * Q), M = B + q, k = B - q;
-        U = u(M * M), H = u(E * u(k * k)), S = u(x * se), L = u(ue * (x + u(v * ue)));
+        const re = S + L, G = u(re * re), Q = S - L, se = u(Q * Q), ue = G - se, oe = U + H, Z = U - H, B = u(Z * re), q = u(oe * Q), M = B + q, k = B - q;
+        U = u(M * M), H = u(E * u(k * k)), S = u(G * se), L = u(ue * (G + u(v * ue)));
       }
       $ = I(K, S, U), S = $[0], U = $[1], $ = I(K, L, H), L = $[0], H = $[1];
       const W = w(L);
@@ -7954,14 +7954,14 @@ function requireEd25519$1() {
       if (!(q instanceof Z))
         throw new Error("RistrettoPoint expected");
     }
-    const W = u, G = BigInt("25063068953384623474111414158702152701244531502492656460079210482610430750235"), J = BigInt("54469307008909316920995813868745141605393597292927456921205312896311721017578"), re = BigInt("1159843021668779879193775521855586647937357759715417654439879720876111806838"), x = BigInt("40440834346308536858101042469323190826248399146238708352240133220865137265952"), Q = (q) => y(l, q), se = BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), ue = (q) => e.ed25519.CURVE.Fp.create((0, a.bytesToNumberLE)(q) & se);
+    const W = u, x = BigInt("25063068953384623474111414158702152701244531502492656460079210482610430750235"), J = BigInt("54469307008909316920995813868745141605393597292927456921205312896311721017578"), re = BigInt("1159843021668779879193775521855586647937357759715417654439879720876111806838"), G = BigInt("40440834346308536858101042469323190826248399146238708352240133220865137265952"), Q = (q) => y(l, q), se = BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), ue = (q) => e.ed25519.CURVE.Fp.create((0, a.bytesToNumberLE)(q) & se);
     function oe(q) {
       const { d: M } = e.ed25519.CURVE, k = e.ed25519.CURVE.Fp.ORDER, F = e.ed25519.CURVE.Fp.create, V = F(W * q * q), X = F((V + l) * re);
       let O = BigInt(-1);
       const P = F((O - M * V) * F(V + M));
       let { isValid: z, value: j } = y(X, P), Y = F(j * q);
       (0, s.isNegativeLE)(Y, k) || (Y = F(-Y)), z || (j = Y), z || (O = V);
-      const te = F(O * (V - l) * x - P), ne = j * j, ae = F((j + j) * P), le = F(te * G), fe = F(l - ne), ce = F(l + ne);
+      const te = F(O * (V - l) * G - P), ne = j * j, ae = F((j + j) * P), le = F(te * x), fe = F(l - ne), ce = F(l + ne);
       return new e.ed25519.ExtendedPoint(F(ae * ce), F(fe * le), F(le * ce), F(ae * fe));
     }
     class Z {
@@ -9258,15 +9258,15 @@ function requireAutofill() {
       function H(W) {
         try {
           $(E.next(W));
-        } catch (G) {
-          U(G);
+        } catch (x) {
+          U(x);
         }
       }
       function K(W) {
         try {
           $(E.throw(W));
-        } catch (G) {
-          U(G);
+        } catch (x) {
+          U(x);
         }
       }
       function $(W) {
@@ -9287,8 +9287,8 @@ function requireAutofill() {
       return S < U;
     if (L !== H)
       return L < H;
-    const K = A[2].split("-"), $ = E[2].split("-"), W = parseInt(K[0], 10), G = parseInt($[0], 10);
-    return W !== G ? W < G : K.length !== $.length ? K.length > $.length : K.length === 2 ? K[1][0].startsWith($[1][0]) ? K[1].startsWith("b") ? parseInt(K[1].slice(1), 10) < parseInt($[1].slice(1), 10) : parseInt(K[1].slice(2), 10) < parseInt($[1].slice(2), 10) : K[1] < $[1] : !1;
+    const K = A[2].split("-"), $ = E[2].split("-"), W = parseInt(K[0], 10), x = parseInt($[0], 10);
+    return W !== x ? W < x : K.length !== $.length ? K.length > $.length : K.length === 2 ? K[1][0].startsWith($[1][0]) ? K[1].startsWith("b") ? parseInt(K[1].slice(1), 10) < parseInt($[1].slice(1), 10) : parseInt(K[1].slice(2), 10) < parseInt($[1].slice(2), 10) : K[1] < $[1] : !1;
   }
   function l(f) {
     return !!(f.networkID !== void 0 && f.networkID > d && f.buildVersion && b(u, f.buildVersion));
@@ -9360,8 +9360,8 @@ function requireAutofill() {
       } else if (U)
         L = yield h(f);
       else if (C.TransactionType === "Batch") {
-        const $ = yield C.RawTransactions.reduce((W, G) => e(this, void 0, void 0, function* () {
-          const J = yield W, re = yield _(f, G.RawTransaction);
+        const $ = yield C.RawTransactions.reduce((W, x) => e(this, void 0, void 0, function* () {
+          const J = yield W, re = yield _(f, x.RawTransaction);
           return t.default.sum(J, re);
         }), Promise.resolve(new t.default(0)));
         L = t.default.sum(L.times(2), $);
@@ -12672,7 +12672,7 @@ var hasRequiredTransaction;
 function requireTransaction() {
   if (hasRequiredTransaction) return transaction;
   hasRequiredTransaction = 1, Object.defineProperty(transaction, "__esModule", { value: !0 }), transaction.validate = void 0;
-  const e = requireErrors(), r = requireFlags(), t = requireAccountDelete(), i = requireAccountSet(), n = requireAMMBid(), s = requireAMMClawback(), a = requireAMMCreate(), o = requireAMMDelete(), d = requireAMMDeposit(), u = requireAMMVote(), b = requireAMMWithdraw(), l = requireBatch(), g = requireCheckCancel(), p = requireCheckCash(), w = requireCheckCreate(), I = requireClawback(), m = requireCommon(), v = requireCredentialAccept(), h = requireCredentialCreate(), _ = requireCredentialDelete(), y = requireDelegateSet(), c = requireDepositPreauth(), R = requireDIDDelete(), D = requireDIDSet(), N = requireEscrowCancel(), T = requireEscrowCreate(), f = requireEscrowFinish(), C = requireMPTokenAuthorize(), A = requireMPTokenIssuanceCreate(), E = requireMPTokenIssuanceDestroy(), S = requireMPTokenIssuanceSet(), L = requireNFTokenAcceptOffer(), U = requireNFTokenBurn(), H = requireNFTokenCancelOffer(), K = requireNFTokenCreateOffer(), $ = requireNFTokenMint(), W = requireNFTokenModify(), G = requireOfferCancel(), J = requireOfferCreate(), re = requireOracleDelete(), x = requireOracleSet(), Q = requirePayment(), se = requirePaymentChannelClaim(), ue = requirePaymentChannelCreate(), oe = requirePaymentChannelFund(), Z = requirePermissionedDomainDelete(), B = requirePermissionedDomainSet(), q = requireSetRegularKey(), M = requireSignerListSet(), k = requireTicketCreate(), F = requireTrustSet(), V = requireVaultClawback(), X = requireVaultCreate(), O = requireVaultDelete(), P = requireVaultDeposit(), z = requireVaultSet(), j = requireVaultWithdraw(), Y = requireXChainAccountCreateCommit(), te = requireXChainAddAccountCreateAttestation(), ne = requireXChainAddClaimAttestation(), ae = requireXChainClaim(), le = requireXChainCommit(), fe = requireXChainCreateBridge(), ce = requireXChainCreateClaimID(), de = requireXChainModifyBridge();
+  const e = requireErrors(), r = requireFlags(), t = requireAccountDelete(), i = requireAccountSet(), n = requireAMMBid(), s = requireAMMClawback(), a = requireAMMCreate(), o = requireAMMDelete(), d = requireAMMDeposit(), u = requireAMMVote(), b = requireAMMWithdraw(), l = requireBatch(), g = requireCheckCancel(), p = requireCheckCash(), w = requireCheckCreate(), I = requireClawback(), m = requireCommon(), v = requireCredentialAccept(), h = requireCredentialCreate(), _ = requireCredentialDelete(), y = requireDelegateSet(), c = requireDepositPreauth(), R = requireDIDDelete(), D = requireDIDSet(), N = requireEscrowCancel(), T = requireEscrowCreate(), f = requireEscrowFinish(), C = requireMPTokenAuthorize(), A = requireMPTokenIssuanceCreate(), E = requireMPTokenIssuanceDestroy(), S = requireMPTokenIssuanceSet(), L = requireNFTokenAcceptOffer(), U = requireNFTokenBurn(), H = requireNFTokenCancelOffer(), K = requireNFTokenCreateOffer(), $ = requireNFTokenMint(), W = requireNFTokenModify(), x = requireOfferCancel(), J = requireOfferCreate(), re = requireOracleDelete(), G = requireOracleSet(), Q = requirePayment(), se = requirePaymentChannelClaim(), ue = requirePaymentChannelCreate(), oe = requirePaymentChannelFund(), Z = requirePermissionedDomainDelete(), B = requirePermissionedDomainSet(), q = requireSetRegularKey(), M = requireSignerListSet(), k = requireTicketCreate(), F = requireTrustSet(), V = requireVaultClawback(), X = requireVaultCreate(), O = requireVaultDelete(), P = requireVaultDeposit(), z = requireVaultSet(), j = requireVaultWithdraw(), Y = requireXChainAccountCreateCommit(), te = requireXChainAddAccountCreateAttestation(), ne = requireXChainAddClaimAttestation(), ae = requireXChainClaim(), le = requireXChainCommit(), fe = requireXChainCreateBridge(), ce = requireXChainCreateClaimID(), de = requireXChainModifyBridge();
   function he(me) {
     const ie = Object.assign({}, me);
     switch ((0, m.validateBaseTransaction)(ie), Object.keys(ie).forEach((Ae) => {
@@ -12788,7 +12788,7 @@ function requireTransaction() {
         (0, W.validateNFTokenModify)(ie);
         break;
       case "OfferCancel":
-        (0, G.validateOfferCancel)(ie);
+        (0, x.validateOfferCancel)(ie);
         break;
       case "OfferCreate":
         (0, J.validateOfferCreate)(ie);
@@ -12797,7 +12797,7 @@ function requireTransaction() {
         (0, re.validateOracleDelete)(ie);
         break;
       case "OracleSet":
-        (0, x.validateOracleSet)(ie);
+        (0, G.validateOracleSet)(ie);
         break;
       case "Payment":
         (0, Q.validatePayment)(ie);
@@ -14549,7 +14549,8 @@ async function getTokens(e, r) {
   await e.connect();
   const t = await e.request({
     command: "account_nfts",
-    account: r
+    account: r,
+    api_version: npmExports.RIPPLED_API_V1
   });
   let i = [];
   for (const n of t.result.account_nfts)
@@ -14578,7 +14579,8 @@ async function getBuyOffers(e, r) {
   await e.connect();
   const t = await e.request({
     command: "nft_buy_offers",
-    nft_id: r
+    nft_id: r,
+    api_version: npmExports.RIPPLED_API_V1
   });
   let i = [];
   for (const n of t.result.offers)
@@ -14595,7 +14597,8 @@ async function getSellOffers(e, r) {
   await e.connect();
   const t = await e.request({
     command: "nft_sell_offers",
-    nft_id: r
+    nft_id: r,
+    api_version: npmExports.RIPPLED_API_V1
   });
   let i = [];
   for (const n of t.result.offers)
@@ -14692,7 +14695,8 @@ async function getTransactions(e, r, t) {
     command: "account_tx",
     account: r,
     ledger_index_max: -1,
-    limit: t
+    limit: t,
+    api_version: npmExports.RIPPLED_API_V1
   });
   return console.log("ACCOUNT TX: ", i), i;
 }
@@ -14710,7 +14714,7 @@ function processTransactions(e) {
   });
   for (const n of i) {
     let s = n.transaction.tx_json ?? n.transaction.tx;
-    s?.TransactionType === "NFTokenCreateOffer" && typeof n.transaction.meta != "string" && s?.Flags === 1 && r.push({
+    console.log(n.account, "parsing tx: ", n), s?.TransactionType === "NFTokenCreateOffer" && typeof n.transaction.meta != "string" && s?.Flags === 1 && r.push({
       type: "CreateSellOffer",
       payload: {
         token: s.NFTokenID,
@@ -15853,7 +15857,8 @@ let NetworkEmitter$1 = class {
           await this._client.connect(), await this._client.request({
             command: "subscribe",
             // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
-            accounts: [r]
+            accounts: [r],
+            api_version: npmExports.RIPPLED_API_V1
           }), t.balance.setInitialBalance(), t.currencies.setInitialBalance(), t.tokens.setInitialTokens(), t.emitter.on(
             WalletEvents.BalanceChange,
             t.balance.onBalanceChange
@@ -15891,7 +15896,8 @@ let NetworkEmitter$1 = class {
         try {
           await this._client.request({
             command: "unsubscribe",
-            accounts: [r]
+            accounts: [r],
+            api_version: npmExports.RIPPLED_API_V1
           }), t.subbed = !1;
         } catch (i) {
           console.error("error unsubscribing from address: ", i);
