@@ -1,6 +1,8 @@
 import { TransactionLogEntry, useTransactionLog } from 'react-xrpl';
 
 function processEntry(entry: TransactionLogEntry) {
+    // console.log('entry: ', entry);
+
     if (entry.type === 'PaymentReceived') {
         return (
             <div key={`${entry.account}-${entry.hash}`}>

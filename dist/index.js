@@ -14803,7 +14803,7 @@ function useTransactionLogInternal(e = [], r = 10) {
     }), () => {
       o = !0;
     };
-  }, []);
+  }, [t, e, r]);
   const [s, a] = useState(() => []);
   return useEffect(() => {
     const o = e.map((d) => {

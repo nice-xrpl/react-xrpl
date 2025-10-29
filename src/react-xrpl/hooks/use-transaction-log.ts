@@ -67,7 +67,7 @@ function useTransactionLogInternal(
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [client, accounts, limit]);
 
     const [log, setLog] = useState<TransactionLogEntry[]>(() => {
         return [];
