@@ -1,4 +1,10 @@
-import { Payment, ResponseOnlyTxInfo, TransactionStream } from 'xrpl';
+import {
+    dropsToXrp,
+    Payment,
+    ResponseOnlyTxInfo,
+    TransactionStream,
+    xrpToDrops,
+} from 'xrpl';
 import { AddressEvents, WalletEvents } from './types';
 import {
     isIssuedCurrency,
@@ -29,10 +35,12 @@ export function handleTransactionPayment(
             console.warn('MPT amount is not supported yet');
             console.warn('MPT amount: ', transaction.Amount);
         } else {
+            const amount = dropsToXrp(transaction.Amount);
+
             destinationEvents.emitter.emit(
                 WalletEvents.PaymentRecieved,
                 transaction.Account,
-                transaction.Amount,
+                `${amount}`,
                 transaction.date ?? 0,
                 transaction.hash ?? ''
             );
@@ -55,10 +63,11 @@ export function handleTransactionPayment(
             console.warn('MPT amount is not supported yet');
             console.warn('MPT amount: ', transaction.Amount);
         } else {
+            const amount = dropsToXrp(transaction.Amount);
             sourceEvents.emitter.emit(
                 WalletEvents.PaymentSent,
                 transaction.Destination,
-                transaction.Amount,
+                `${amount}`,
                 transaction.date ?? 0,
                 transaction.hash ?? ''
             );

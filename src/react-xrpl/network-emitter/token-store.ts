@@ -12,6 +12,11 @@ export class TokenStore {
         this._store = createStore<Token[]>([]);
         this._client = client;
         this._address = address;
+
+        this.onTokenMint = this.onTokenMint.bind(this);
+        this.onTokenBurn = this.onTokenBurn.bind(this);
+        this.onAcceptBuyOffer = this.onAcceptBuyOffer.bind(this);
+        this.onAcceptSellOffer = this.onAcceptSellOffer.bind(this);
     }
 
     public getStore() {

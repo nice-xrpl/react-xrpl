@@ -14714,7 +14714,7 @@ function processTransactions(e) {
   });
   for (const n of i) {
     let s = n.transaction.tx_json ?? n.transaction.tx;
-    console.log(n.account, "parsing tx: ", n), s?.TransactionType === "NFTokenCreateOffer" && typeof n.transaction.meta != "string" && s?.Flags === 1 && r.push({
+    if (console.log(n.account, "parsing tx: ", n), s?.TransactionType === "NFTokenCreateOffer" && typeof n.transaction.meta != "string" && s?.Flags === 1 && r.push({
       type: "CreateSellOffer",
       payload: {
         token: s.NFTokenID,
@@ -14747,43 +14747,57 @@ function processTransactions(e) {
       },
       timestamp: s.date ?? 0,
       hash: s.hash ?? s.hash ?? ""
-    }), s?.TransactionType === "Payment" && (commonExports.isIssuedCurrency(s.Amount) ? (s.Destination === n.account && r.push({
-      type: "CurrencyReceived",
-      from: s.Account,
-      payload: {
-        amount: s.Amount
-      },
-      timestamp: s.date ?? 0,
-      account: s.Destination,
-      hash: s.hash ?? s.hash ?? ""
-    }), s.Account === n.account && r.push({
-      type: "CurrencySent",
-      to: s.Destination,
-      payload: {
-        amount: s.Amount
-      },
-      timestamp: s.date ?? 0,
-      account: s.Account,
-      hash: s.hash ?? s.hash ?? ""
-    })) : commonExports.isMPTAmount(s.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", s.Amount)) : (s.Destination === n.account && r.push({
-      type: "PaymentReceived",
-      from: s.Account,
-      payload: {
-        amount: s.Amount
-      },
-      timestamp: s.date ?? 0,
-      account: s.Destination,
-      hash: s.hash ?? s.hash ?? ""
-    }), s.Account === n.account && r.push({
-      type: "PaymentSent",
-      to: s.Destination,
-      payload: {
-        amount: s.Amount
-      },
-      timestamp: s.date ?? 0,
-      account: s.Account,
-      hash: s.hash ?? s.hash ?? ""
-    })));
+    }), s?.TransactionType === "Payment")
+      if (commonExports.isIssuedCurrency(s.Amount))
+        s.Destination === n.account && r.push({
+          type: "CurrencyReceived",
+          from: s.Account,
+          payload: {
+            amount: s.Amount
+          },
+          timestamp: s.date ?? 0,
+          account: s.Destination,
+          hash: s.hash ?? s.hash ?? ""
+        }), s.Account === n.account && r.push({
+          type: "CurrencySent",
+          to: s.Destination,
+          payload: {
+            amount: s.Amount
+          },
+          timestamp: s.date ?? 0,
+          account: s.Account,
+          hash: s.hash ?? s.hash ?? ""
+        });
+      else if (commonExports.isMPTAmount(s.Amount))
+        console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", s.Amount);
+      else {
+        if (s.Destination === n.account) {
+          const a = npmExports.dropsToXrp(s.Amount);
+          r.push({
+            type: "PaymentReceived",
+            from: s.Account,
+            payload: {
+              amount: `${a}`
+            },
+            timestamp: s.date ?? 0,
+            account: s.Destination,
+            hash: s.hash ?? s.hash ?? ""
+          });
+        }
+        if (s.Account === n.account) {
+          const a = npmExports.dropsToXrp(s.Amount);
+          r.push({
+            type: "PaymentSent",
+            to: s.Destination,
+            payload: {
+              amount: `${a}`
+            },
+            timestamp: s.date ?? 0,
+            account: s.Account,
+            hash: s.hash ?? s.hash ?? ""
+          });
+        }
+      }
   }
   return r;
 }
@@ -15489,7 +15503,7 @@ class BalanceStore {
     return this._store.setState(r), r;
   }
   onBalanceChange(r, t) {
-    console.log("balance change: ", r, t), console.log("this: ", this), console.log("balance store: ", this._store), console.log("balance store: ", this._store), this._store.setState(`${t}`);
+    console.log("balance change: ", r, t), this._store.setState(`${t}`);
   }
 }
 class BuyOfferStore {
@@ -15497,7 +15511,7 @@ class BuyOfferStore {
   _client;
   _address;
   constructor(r, t) {
-    this._store = createStore({}), this._client = r, this._address = t;
+    this._store = createStore({}), this._client = r, this._address = t, this.onCreateBuyOffer = this.onCreateBuyOffer.bind(this), this.onAcceptBuyOffer = this.onAcceptBuyOffer.bind(this);
   }
   getStore() {
     return this._store;
@@ -15529,7 +15543,7 @@ class SellOfferStore {
   _client;
   _address;
   constructor(r, t) {
-    this._store = createStore({}), this._client = r, this._address = t;
+    this._store = createStore({}), this._client = r, this._address = t, this.onCreateSellOffer = this.onCreateSellOffer.bind(this), this.onAcceptSellOffer = this.onAcceptSellOffer.bind(this);
   }
   getStore() {
     return this._store;
@@ -15561,7 +15575,7 @@ class TokenStore {
   _client;
   _address;
   constructor(r, t) {
-    this._store = createStore([]), this._client = r, this._address = t;
+    this._store = createStore([]), this._client = r, this._address = t, this.onTokenMint = this.onTokenMint.bind(this), this.onTokenBurn = this.onTokenBurn.bind(this), this.onAcceptBuyOffer = this.onAcceptBuyOffer.bind(this), this.onAcceptSellOffer = this.onAcceptSellOffer.bind(this);
   }
   getStore() {
     return this._store;
@@ -15596,7 +15610,7 @@ class CurrencyStore {
   _client;
   _address;
   constructor(r, t) {
-    this._store = createStore([]), this._client = r, this._address = t;
+    this._store = createStore([]), this._client = r, this._address = t, this.onCurrencyChange = this.onCurrencyChange.bind(this);
   }
   getStore() {
     return this._store;
@@ -15631,31 +15645,48 @@ function handleTransactionNFTokenBurn(e, r, t) {
 }
 function handleTransactionPayment(e, r, t) {
   const i = e.get(t.Destination), n = e.get(t.Account);
-  i && (console.log(t.Destination, " received payment: ", r), commonExports.isIssuedCurrency(t.Amount) ? (i.emitter.emit(WalletEvents.CurrencyChange), i.emitter.emit(
-    WalletEvents.CurrencyRecieved,
-    t.Account,
-    t.Amount,
-    t.date ?? 0,
-    t.hash ?? ""
-  )) : commonExports.isMPTAmount(t.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount)) : i.emitter.emit(
-    WalletEvents.PaymentRecieved,
-    t.Account,
-    t.Amount,
-    t.date ?? 0,
-    t.hash ?? ""
-  )), n && (console.log(t.Account, " sent payment: ", r), commonExports.isIssuedCurrency(t.Amount) ? (n.emitter.emit(WalletEvents.CurrencyChange), n.emitter.emit(
-    WalletEvents.CurrencySent,
-    t.Destination,
-    t.Amount,
-    t.date ?? 0,
-    t.hash ?? ""
-  )) : commonExports.isMPTAmount(t.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount)) : n.emitter.emit(
-    WalletEvents.PaymentSent,
-    t.Destination,
-    t.Amount,
-    t.date ?? 0,
-    t.hash ?? ""
-  ));
+  if (i)
+    if (console.log(t.Destination, " received payment: ", r), commonExports.isIssuedCurrency(t.Amount))
+      i.emitter.emit(WalletEvents.CurrencyChange), i.emitter.emit(
+        WalletEvents.CurrencyRecieved,
+        t.Account,
+        t.Amount,
+        t.date ?? 0,
+        t.hash ?? ""
+      );
+    else if (commonExports.isMPTAmount(t.Amount))
+      console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount);
+    else {
+      const s = npmExports.dropsToXrp(t.Amount);
+      i.emitter.emit(
+        WalletEvents.PaymentRecieved,
+        t.Account,
+        `${s}`,
+        t.date ?? 0,
+        t.hash ?? ""
+      );
+    }
+  if (n)
+    if (console.log(t.Account, " sent payment: ", r), commonExports.isIssuedCurrency(t.Amount))
+      n.emitter.emit(WalletEvents.CurrencyChange), n.emitter.emit(
+        WalletEvents.CurrencySent,
+        t.Destination,
+        t.Amount,
+        t.date ?? 0,
+        t.hash ?? ""
+      );
+    else if (commonExports.isMPTAmount(t.Amount))
+      console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount);
+    else {
+      const s = npmExports.dropsToXrp(t.Amount);
+      n.emitter.emit(
+        WalletEvents.PaymentSent,
+        t.Destination,
+        `${s}`,
+        t.date ?? 0,
+        t.hash ?? ""
+      );
+    }
 }
 function hexToUInt8Array(e) {
   if (e.length % 2 !== 0)

@@ -28,9 +28,6 @@ export class BalanceStore {
 
     public onBalanceChange(drops: string, xrp: number) {
         console.log('balance change: ', drops, xrp);
-        console.log('this: ', this);
-        console.log('balance store: ', this._store);
-        console.log('balance store: ', this._store);
         this._store.setState(`${xrp}`);
     }
 }

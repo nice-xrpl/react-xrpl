@@ -12,6 +12,9 @@ export class BuyOfferStore {
         this._store = createStore<OfferStore>({});
         this._client = client;
         this._address = address;
+
+        this.onCreateBuyOffer = this.onCreateBuyOffer.bind(this);
+        this.onAcceptBuyOffer = this.onAcceptBuyOffer.bind(this);
     }
 
     public getStore() {

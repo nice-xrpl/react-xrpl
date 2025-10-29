@@ -1,4 +1,4 @@
-import { AccountTxResponse, Client, RIPPLED_API_V1 } from 'xrpl';
+import { AccountTxResponse, Client, dropsToXrp, RIPPLED_API_V1 } from 'xrpl';
 import {
     isIssuedCurrency,
     isMPTAmount,
@@ -169,11 +169,12 @@ export function processTransactions(
                 console.warn('MPT amount: ', tx.Amount);
             } else {
                 if (tx.Destination === entry.account) {
+                    const amount = dropsToXrp(tx.Amount);
                     initialTransactions.push({
                         type: 'PaymentReceived',
                         from: tx.Account,
                         payload: {
-                            amount: tx.Amount,
+                            amount: `${amount}`,
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Destination,
@@ -182,11 +183,12 @@ export function processTransactions(
                 }
 
                 if (tx.Account === entry.account) {
+                    const amount = dropsToXrp(tx.Amount);
                     initialTransactions.push({
                         type: 'PaymentSent',
                         to: tx.Destination,
                         payload: {
-                            amount: tx.Amount,
+                            amount: `${amount}`,
                         },
                         timestamp: tx.date ?? 0,
                         account: tx.Account,

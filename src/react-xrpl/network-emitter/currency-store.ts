@@ -12,6 +12,8 @@ export class CurrencyStore {
         this._store = createStore<Currency[]>([]);
         this._client = client;
         this._address = address;
+
+        this.onCurrencyChange = this.onCurrencyChange.bind(this);
     }
 
     public getStore() {
