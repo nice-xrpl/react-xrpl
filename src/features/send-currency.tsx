@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useSendCurrency } from 'react-xrpl';
+import { useSendCurrency, useSendCurrencyAmount } from 'react-xrpl';
 
 export function SendCurrency() {
-    const sendCurrency = useSendCurrency();
+    // const sendCurrency = useSendCurrency();
+    const sendCurrencyAmount = useSendCurrencyAmount();
 
     const [destinationAddress, setDestinationAddress] = useState('');
     const [amount, setAmount] = useState(48);
@@ -29,10 +30,13 @@ export function SendCurrency() {
                 <button
                     onClick={async () => {
                         setSending(true);
-                        const result = await sendCurrency(
+                        const result = await sendCurrencyAmount(
                             destinationAddress,
-                            'USD',
-                            `${amount}`
+                            {
+                                currency: 'USD',
+                                value: amount.toString(),
+                                issuer: 'rBLFSFoUGx4BWbsvXvpoa5GvnHQGZ8dxCL',
+                            }
                         );
                         setSending(false);
                         console.log(result);

@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import { NetworkEmitter } from '../api/network-emitter';
 import { NetworkEmitterContext } from '../network-emitter-context';
+import { NetworkEmitter } from '../network-emitter/network-emitter';
 
 /**
  * Retrieves the network emitter from the network emitter context.

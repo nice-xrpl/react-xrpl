@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { createNetworkEmitter } from './api/network-emitter';
 import { useIsConnected, useXRPLClient } from './hooks';
+import { NetworkEmitter as NetworkEmitterClass } from './network-emitter/network-emitter';
 import { NetworkEmitterContext } from './network-emitter-context';
 
 /**
@@ -16,7 +16,7 @@ export function NetworkEmitter({ children }: { children: React.ReactNode }) {
 
     const networkEmitter = useMemo(() => {
         console.log('creating network emitter...');
-        return createNetworkEmitter(client);
+        return new NetworkEmitterClass(client);
     }, [client]);
 
     useEffect(() => {

@@ -1,8 +1,7 @@
 import { CreateNewWallet } from './features/create-new-wallet';
 import { LoadWalletFromSeed } from './features/load-wallet-from-seed';
-import { LoadWalletFromAddress } from './features/load-wallet-from-address';
 import './app.css';
-import { useIsConnected, useTransactionLog, XRPLClient } from 'react-xrpl';
+import { useIsConnected, XRPLClient } from 'react-xrpl';
 import { TransactionLog } from './features/transaction-log';
 
 function MainApp() {
@@ -21,8 +20,8 @@ function MainApp() {
                 Combined Log:
                 <TransactionLog
                     account={[
-                        'rBAdK7eR3oqvi5AQCEZFKtG3qizwRxnnFp',
-                        'r9g9XGCX4cQAJjfko1jemKMbRYma2QdFJP',
+                        'rQECgtBN5pV9awN6Li24kMAyQZVqTzhHGG',
+                        'rKmrRjaKo6V8ZfJndM6JiC4SVkRbkCneif',
                     ]}
                 />
             </div>
@@ -32,15 +31,15 @@ function MainApp() {
                 <TransactionLog account={[]} />
             </div>
 
-            {/* <div>
-                <LoadWalletFromSeed seed={'sEd7cUM9hqM6Ly6uvG7FU9YguzsTwg7'} />
-            </div> */}
-            {/* <div>
-                <LoadWalletFromSeed seed={'sEdVExhLMoRWkVArve9Hr9TMpNdjnEq'} />
-            </div> */}
-            {/* <div>
-                <LoadWalletFromSeed seed={'sEdTQ1D4LuYi1dbQ3ryHFpEX2emh3vW'} />
-            </div> */}
+            <div>
+                <LoadWalletFromSeed seed={'sEd7hhRKjF5Wysi5WZe9zhkPaSTVSvd'} />
+            </div>
+            <div>
+                <LoadWalletFromSeed seed={'sEdTSE75avHq6YVeQvWaphXjyRQjcRu'} />
+            </div>
+            <div>
+                <LoadWalletFromSeed seed={'sEdTJqiJie8PtqHEUEPkQKJQw2Aobnh'} />
+            </div>
         </div>
     );
 }

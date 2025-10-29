@@ -1,5 +1,7 @@
-import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
-import { useStoreManager } from '../../stores/use-store-manager';
+import { useStore } from 'src/react-xrpl/stores/use-store';
+import { useNetworkEmitter } from '../use-network-emitter';
+import { useAddress } from './use-address';
+import { useEffect } from 'react';
 
 /**
  * Retrieves the currency balance for a given address using the WalletStoreManager.
@@ -8,11 +10,20 @@ import { useStoreManager } from '../../stores/use-store-manager';
  * @return {Currency[]} - An array of Currency objects representing the currency balance of the address.
  */
 export function useCurrencyBalance(address?: string) {
-    const { currencies } = useWalletStoreManager();
+    const networkEmitter = useNetworkEmitter();
+    const internalAddress = useAddress(address);
 
-    const onCreated = (internalAddress: string) => {
-        return currencies.setInitialBalance(internalAddress);
-    };
+    useEffect(() => {
+        networkEmitter.enableEventsForAddress(internalAddress);
 
-    return useStoreManager(currencies, onCreated, address);
+        return () => {
+            networkEmitter.disableEventsForAddress(internalAddress);
+        };
+    }, [internalAddress]);
+
+    const currencyStore = networkEmitter
+        .getCurrencyStore(internalAddress)
+        .getStore();
+
+    return useStore(currencyStore);
 }

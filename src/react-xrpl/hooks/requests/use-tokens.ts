@@ -1,5 +1,7 @@
-import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
-import { useStoreManager } from '../../stores/use-store-manager';
+import { useStore } from 'src/react-xrpl/stores/use-store';
+import { useNetworkEmitter } from '../use-network-emitter';
+import { useAddress } from './use-address';
+import { useEffect } from 'react';
 
 /**
  * Retrieves the tokens associated with a given address using the WalletStoreManager.
@@ -8,11 +10,18 @@ import { useStoreManager } from '../../stores/use-store-manager';
  * @return {Promise<Token[]>} - A promise that resolves to an array of tokens associated with the address.
  */
 export function useTokens(address?: string) {
-    const { tokens } = useWalletStoreManager();
+    const networkEmitter = useNetworkEmitter();
+    const internalAddress = useAddress(address);
 
-    const onCreated = (internalAddress: string) => {
-        return tokens.setInitialTokens(internalAddress);
-    };
+    useEffect(() => {
+        networkEmitter.enableEventsForAddress(internalAddress);
 
-    return useStoreManager(tokens, onCreated, address);
+        return () => {
+            networkEmitter.disableEventsForAddress(internalAddress);
+        };
+    }, [internalAddress]);
+
+    const tokenStore = networkEmitter.getTokenStore(internalAddress).getStore();
+
+    return useStore(tokenStore);
 }

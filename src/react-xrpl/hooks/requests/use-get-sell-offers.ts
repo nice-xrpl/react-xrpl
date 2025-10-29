@@ -2,8 +2,8 @@ import { useCallback, useRef } from 'react';
 import { Offer } from '../../api';
 import { getSellOffers } from '../../api/requests';
 import { useXRPLClient } from '../use-xrpl-client';
-import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
 import { useAddress } from './use-address';
+import { useNetworkEmitter } from '../use-network-emitter';
 
 /**
  * Retrieves the sell offers for a given token from the XRPL network.
@@ -14,13 +14,15 @@ export function useGetSellOffers() {
     const client = useXRPLClient();
     const clientRef = useRef(client);
     clientRef.current = client;
-    const { sellOffers } = useWalletStoreManager();
-    const address = useAddress();
+    const internalAddress = useAddress();
+    const networkEmitter = useNetworkEmitter();
 
     const send = useCallback(async (tokenId: string): Promise<Offer[]> => {
         const result = await getSellOffers(clientRef.current, tokenId);
 
-        const [store] = sellOffers.getStore(address);
+        const store = networkEmitter
+            .getSellOfferStore(internalAddress)
+            .getStore();
 
         store.setState((state) => {
             return {

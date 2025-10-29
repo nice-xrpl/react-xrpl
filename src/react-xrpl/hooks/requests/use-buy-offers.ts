@@ -1,5 +1,7 @@
-import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
-import { useStoreManager } from '../../stores/use-store-manager';
+import { useNetworkEmitter } from '../use-network-emitter';
+import { useAddress } from './use-address';
+import { useStore } from 'src/react-xrpl/stores/use-store';
+import { useEffect } from 'react';
 
 /**
  * Custom hook that returns the buy offers for a given token ID.
@@ -9,13 +11,31 @@ import { useStoreManager } from '../../stores/use-store-manager';
  * @return {Offer[] | undefined} The buy offers for the given token ID, or undefined if not found.
  */
 export function useBuyOffers(tokenId: string, address?: string) {
-    const { buyOffers } = useWalletStoreManager();
+    const networkEmitter = useNetworkEmitter();
+    const internalAddress = useAddress(address);
 
-    const onCreated = (internalAddress: string) => {
-        return buyOffers.setInitialBuyOffers(internalAddress, tokenId);
-    };
+    // const onCreated = (internalAddress: string) => {
+    //     return buyOffers.setInitialBuyOffers(internalAddress, tokenId);
+    // };
 
-    const offers = useStoreManager(buyOffers, onCreated, address);
+    useEffect(() => {
+        networkEmitter.enableEventsForAddress(internalAddress).then(() => {
+            if (networkEmitter.hasEventsForAddress(internalAddress)) {
+                networkEmitter
+                    .getBuyOfferStore(internalAddress)
+                    .setInitialBuyOffers(tokenId);
+            }
+        });
+
+        return () => {
+            networkEmitter.disableEventsForAddress(internalAddress);
+        };
+    }, [internalAddress]);
+
+    const offersStore = networkEmitter
+        .getBuyOfferStore(internalAddress)
+        .getStore();
+    const offers = useStore(offersStore);
 
     return offers[tokenId];
 }

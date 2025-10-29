@@ -1,5 +1,7 @@
-import { useWalletStoreManager } from '../../stores/use-wallet-store-manager';
-import { useStoreManager } from '../../stores/use-store-manager';
+import { useStore } from 'src/react-xrpl/stores/use-store';
+import { useNetworkEmitter } from '../use-network-emitter';
+import { useAddress } from './use-address';
+import { useEffect } from 'react';
 
 /**
  * A custom hook that retrieves the balance of a given address using the WalletStoreManager.
@@ -8,11 +10,20 @@ import { useStoreManager } from '../../stores/use-store-manager';
  * @return {Promise<string>} - A promise that resolves to the balance of the address as a string.
  */
 export function useBalance(address?: string) {
-    const { balance } = useWalletStoreManager();
+    const networkEmitter = useNetworkEmitter();
+    const internalAddress = useAddress(address);
 
-    const onCreated = (internalAddress: string) => {
-        return balance.setInitialBalance(internalAddress);
-    };
+    useEffect(() => {
+        networkEmitter.enableEventsForAddress(internalAddress);
 
-    return useStoreManager(balance, onCreated, address);
+        return () => {
+            networkEmitter.disableEventsForAddress(internalAddress);
+        };
+    }, [internalAddress]);
+
+    const balanceStore = networkEmitter
+        .getBalanceStore(internalAddress)
+        .getStore();
+
+    return useStore(balanceStore);
 }
