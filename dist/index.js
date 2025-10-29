@@ -1,0 +1,16530 @@
+import { jsx, Fragment } from "react/jsx-runtime";
+import { createContext, useContext, useCallback, useRef, useSyncExternalStore, useMemo, useEffect, useState } from "react";
+const Networks = {
+  Testnet: "wss://s.altnet.rippletest.net:51233",
+  Devnet: "wss://s.devnet.rippletest.net:51233"
+}, ReserveRequirement = 10;
+var npm = {}, client = {}, eventemitter3 = { exports: {} }, hasRequiredEventemitter3;
+function requireEventemitter3() {
+  return hasRequiredEventemitter3 || (hasRequiredEventemitter3 = 1, (function(e) {
+    var r = Object.prototype.hasOwnProperty, t = "~";
+    function i() {
+    }
+    Object.create && (i.prototype = /* @__PURE__ */ Object.create(null), new i().__proto__ || (t = !1));
+    function n(d, u, b) {
+      this.fn = d, this.context = u, this.once = b || !1;
+    }
+    function s(d, u, b, l, g) {
+      if (typeof b != "function")
+        throw new TypeError("The listener must be a function");
+      var p = new n(b, l || d, g), w = t ? t + u : u;
+      return d._events[w] ? d._events[w].fn ? d._events[w] = [d._events[w], p] : d._events[w].push(p) : (d._events[w] = p, d._eventsCount++), d;
+    }
+    function a(d, u) {
+      --d._eventsCount === 0 ? d._events = new i() : delete d._events[u];
+    }
+    function o() {
+      this._events = new i(), this._eventsCount = 0;
+    }
+    o.prototype.eventNames = function() {
+      var u = [], b, l;
+      if (this._eventsCount === 0) return u;
+      for (l in b = this._events)
+        r.call(b, l) && u.push(t ? l.slice(1) : l);
+      return Object.getOwnPropertySymbols ? u.concat(Object.getOwnPropertySymbols(b)) : u;
+    }, o.prototype.listeners = function(u) {
+      var b = t ? t + u : u, l = this._events[b];
+      if (!l) return [];
+      if (l.fn) return [l.fn];
+      for (var g = 0, p = l.length, w = new Array(p); g < p; g++)
+        w[g] = l[g].fn;
+      return w;
+    }, o.prototype.listenerCount = function(u) {
+      var b = t ? t + u : u, l = this._events[b];
+      return l ? l.fn ? 1 : l.length : 0;
+    }, o.prototype.emit = function(u, b, l, g, p, w) {
+      var I = t ? t + u : u;
+      if (!this._events[I]) return !1;
+      var m = this._events[I], v = arguments.length, h, _;
+      if (m.fn) {
+        switch (m.once && this.removeListener(u, m.fn, void 0, !0), v) {
+          case 1:
+            return m.fn.call(m.context), !0;
+          case 2:
+            return m.fn.call(m.context, b), !0;
+          case 3:
+            return m.fn.call(m.context, b, l), !0;
+          case 4:
+            return m.fn.call(m.context, b, l, g), !0;
+          case 5:
+            return m.fn.call(m.context, b, l, g, p), !0;
+          case 6:
+            return m.fn.call(m.context, b, l, g, p, w), !0;
+        }
+        for (_ = 1, h = new Array(v - 1); _ < v; _++)
+          h[_ - 1] = arguments[_];
+        m.fn.apply(m.context, h);
+      } else {
+        var y = m.length, c;
+        for (_ = 0; _ < y; _++)
+          switch (m[_].once && this.removeListener(u, m[_].fn, void 0, !0), v) {
+            case 1:
+              m[_].fn.call(m[_].context);
+              break;
+            case 2:
+              m[_].fn.call(m[_].context, b);
+              break;
+            case 3:
+              m[_].fn.call(m[_].context, b, l);
+              break;
+            case 4:
+              m[_].fn.call(m[_].context, b, l, g);
+              break;
+            default:
+              if (!h) for (c = 1, h = new Array(v - 1); c < v; c++)
+                h[c - 1] = arguments[c];
+              m[_].fn.apply(m[_].context, h);
+          }
+      }
+      return !0;
+    }, o.prototype.on = function(u, b, l) {
+      return s(this, u, b, l, !1);
+    }, o.prototype.once = function(u, b, l) {
+      return s(this, u, b, l, !0);
+    }, o.prototype.removeListener = function(u, b, l, g) {
+      var p = t ? t + u : u;
+      if (!this._events[p]) return this;
+      if (!b)
+        return a(this, p), this;
+      var w = this._events[p];
+      if (w.fn)
+        w.fn === b && (!g || w.once) && (!l || w.context === l) && a(this, p);
+      else {
+        for (var I = 0, m = [], v = w.length; I < v; I++)
+          (w[I].fn !== b || g && !w[I].once || l && w[I].context !== l) && m.push(w[I]);
+        m.length ? this._events[p] = m.length === 1 ? m[0] : m : a(this, p);
+      }
+      return this;
+    }, o.prototype.removeAllListeners = function(u) {
+      var b;
+      return u ? (b = t ? t + u : u, this._events[b] && a(this, b)) : (this._events = new i(), this._eventsCount = 0), this;
+    }, o.prototype.off = o.prototype.removeListener, o.prototype.addListener = o.prototype.on, o.prefixed = t, o.EventEmitter = o, e.exports = o;
+  })(eventemitter3)), eventemitter3.exports;
+}
+var errors = {}, hasRequiredErrors;
+function requireErrors() {
+  if (hasRequiredErrors) return errors;
+  hasRequiredErrors = 1, Object.defineProperty(errors, "__esModule", { value: !0 }), errors.XRPLFaucetError = errors.NotFoundError = errors.ValidationError = errors.ResponseFormatError = errors.TimeoutError = errors.RippledNotInitializedError = errors.DisconnectedError = errors.NotConnectedError = errors.RippledError = errors.ConnectionError = errors.UnexpectedError = errors.XrplError = void 0;
+  class e extends Error {
+    constructor(p = "", w) {
+      super(p), this.name = this.constructor.name, this.message = p, this.data = w, Error.captureStackTrace != null && Error.captureStackTrace(this, this.constructor);
+    }
+    toString() {
+      let p = `[${this.name}(${this.message}`;
+      return this.data && (p += `, ${JSON.stringify(this.data)}`), p += ")]", p;
+    }
+    inspect() {
+      return this.toString();
+    }
+  }
+  errors.XrplError = e;
+  class r extends e {
+  }
+  errors.RippledError = r;
+  class t extends e {
+  }
+  errors.UnexpectedError = t;
+  class i extends e {
+  }
+  errors.ConnectionError = i;
+  class n extends i {
+  }
+  errors.NotConnectedError = n;
+  class s extends i {
+  }
+  errors.DisconnectedError = s;
+  class a extends i {
+  }
+  errors.RippledNotInitializedError = a;
+  class o extends i {
+  }
+  errors.TimeoutError = o;
+  class d extends i {
+  }
+  errors.ResponseFormatError = d;
+  class u extends e {
+  }
+  errors.ValidationError = u;
+  class b extends e {
+  }
+  errors.XRPLFaucetError = b;
+  class l extends e {
+    constructor(p = "Not found") {
+      super(p);
+    }
+  }
+  return errors.NotFoundError = l, errors;
+}
+var common$1 = {}, hasRequiredCommon$1;
+function requireCommon$1() {
+  return hasRequiredCommon$1 || (hasRequiredCommon$1 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.DEFAULT_API_VERSION = e.RIPPLED_API_V2 = e.RIPPLED_API_V1 = void 0, e.RIPPLED_API_V1 = 1, e.RIPPLED_API_V2 = 2, e.DEFAULT_API_VERSION = e.RIPPLED_API_V2;
+  })(common$1)), common$1;
+}
+var flags = {}, AccountRoot = {}, hasRequiredAccountRoot;
+function requireAccountRoot() {
+  if (hasRequiredAccountRoot) return AccountRoot;
+  hasRequiredAccountRoot = 1, Object.defineProperty(AccountRoot, "__esModule", { value: !0 }), AccountRoot.AccountRootFlags = void 0;
+  var e;
+  return (function(r) {
+    r[r.lsfPasswordSpent = 65536] = "lsfPasswordSpent", r[r.lsfRequireDestTag = 131072] = "lsfRequireDestTag", r[r.lsfRequireAuth = 262144] = "lsfRequireAuth", r[r.lsfDisallowXRP = 524288] = "lsfDisallowXRP", r[r.lsfDisableMaster = 1048576] = "lsfDisableMaster", r[r.lsfNoFreeze = 2097152] = "lsfNoFreeze", r[r.lsfGlobalFreeze = 4194304] = "lsfGlobalFreeze", r[r.lsfDefaultRipple = 8388608] = "lsfDefaultRipple", r[r.lsfDepositAuth = 16777216] = "lsfDepositAuth", r[r.lsfAMM = 33554432] = "lsfAMM", r[r.lsfDisallowIncomingNFTokenOffer = 67108864] = "lsfDisallowIncomingNFTokenOffer", r[r.lsfDisallowIncomingCheck = 134217728] = "lsfDisallowIncomingCheck", r[r.lsfDisallowIncomingPayChan = 268435456] = "lsfDisallowIncomingPayChan", r[r.lsfDisallowIncomingTrustline = 536870912] = "lsfDisallowIncomingTrustline", r[r.lsfAllowTrustLineClawback = 2147483648] = "lsfAllowTrustLineClawback", r[r.lsfAllowTrustLineLocking = 1073741824] = "lsfAllowTrustLineLocking";
+  })(e || (AccountRoot.AccountRootFlags = e = {})), AccountRoot;
+}
+var accountSet = {}, common = {}, browser$4 = {}, utils$b = {}, crypto$1 = {}, hasRequiredCrypto;
+function requireCrypto() {
+  return hasRequiredCrypto || (hasRequiredCrypto = 1, Object.defineProperty(crypto$1, "__esModule", { value: !0 }), crypto$1.crypto = void 0, crypto$1.crypto = typeof globalThis == "object" && "crypto" in globalThis ? globalThis.crypto : void 0), crypto$1;
+}
+var _assert = {}, hasRequired_assert;
+function require_assert() {
+  if (hasRequired_assert) return _assert;
+  hasRequired_assert = 1, Object.defineProperty(_assert, "__esModule", { value: !0 }), _assert.output = _assert.exists = _assert.hash = _assert.bytes = _assert.bool = _assert.number = _assert.isBytes = void 0;
+  function e(d) {
+    if (!Number.isSafeInteger(d) || d < 0)
+      throw new Error(`positive integer expected, not ${d}`);
+  }
+  _assert.number = e;
+  function r(d) {
+    if (typeof d != "boolean")
+      throw new Error(`boolean expected, not ${d}`);
+  }
+  _assert.bool = r;
+  function t(d) {
+    return d instanceof Uint8Array || d != null && typeof d == "object" && d.constructor.name === "Uint8Array";
+  }
+  _assert.isBytes = t;
+  function i(d, ...u) {
+    if (!t(d))
+      throw new Error("Uint8Array expected");
+    if (u.length > 0 && !u.includes(d.length))
+      throw new Error(`Uint8Array expected of length ${u}, not of length=${d.length}`);
+  }
+  _assert.bytes = i;
+  function n(d) {
+    if (typeof d != "function" || typeof d.create != "function")
+      throw new Error("Hash should be wrapped by utils.wrapConstructor");
+    e(d.outputLen), e(d.blockLen);
+  }
+  _assert.hash = n;
+  function s(d, u = !0) {
+    if (d.destroyed)
+      throw new Error("Hash instance has been destroyed");
+    if (u && d.finished)
+      throw new Error("Hash#digest() has already been called");
+  }
+  _assert.exists = s;
+  function a(d, u) {
+    i(d);
+    const b = u.outputLen;
+    if (d.length < b)
+      throw new Error(`digestInto() expects output buffer of length at least ${b}`);
+  }
+  _assert.output = a;
+  const o = { number: e, bool: r, bytes: i, hash: n, exists: s, output: a };
+  return _assert.default = o, _assert;
+}
+var hasRequiredUtils$b;
+function requireUtils$b() {
+  return hasRequiredUtils$b || (hasRequiredUtils$b = 1, (function(e) {
+    /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.randomBytes = e.wrapXOFConstructorWithOpts = e.wrapConstructorWithOpts = e.wrapConstructor = e.checkOpts = e.Hash = e.concatBytes = e.toBytes = e.utf8ToBytes = e.asyncLoop = e.nextTick = e.hexToBytes = e.bytesToHex = e.byteSwap32 = e.byteSwapIfBE = e.byteSwap = e.isLE = e.rotl = e.rotr = e.createView = e.u32 = e.u8 = e.isBytes = void 0;
+    const r = /* @__PURE__ */ requireCrypto(), t = /* @__PURE__ */ require_assert();
+    function i(A) {
+      return A instanceof Uint8Array || A != null && typeof A == "object" && A.constructor.name === "Uint8Array";
+    }
+    e.isBytes = i;
+    const n = (A) => new Uint8Array(A.buffer, A.byteOffset, A.byteLength);
+    e.u8 = n;
+    const s = (A) => new Uint32Array(A.buffer, A.byteOffset, Math.floor(A.byteLength / 4));
+    e.u32 = s;
+    const a = (A) => new DataView(A.buffer, A.byteOffset, A.byteLength);
+    e.createView = a;
+    const o = (A, E) => A << 32 - E | A >>> E;
+    e.rotr = o;
+    const d = (A, E) => A << E | A >>> 32 - E >>> 0;
+    e.rotl = d, e.isLE = new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68;
+    const u = (A) => A << 24 & 4278190080 | A << 8 & 16711680 | A >>> 8 & 65280 | A >>> 24 & 255;
+    e.byteSwap = u, e.byteSwapIfBE = e.isLE ? (A) => A : (A) => (0, e.byteSwap)(A);
+    function b(A) {
+      for (let E = 0; E < A.length; E++)
+        A[E] = (0, e.byteSwap)(A[E]);
+    }
+    e.byteSwap32 = b;
+    const l = /* @__PURE__ */ Array.from({ length: 256 }, (A, E) => E.toString(16).padStart(2, "0"));
+    function g(A) {
+      (0, t.bytes)(A);
+      let E = "";
+      for (let S = 0; S < A.length; S++)
+        E += l[A[S]];
+      return E;
+    }
+    e.bytesToHex = g;
+    const p = { _0: 48, _9: 57, _A: 65, _F: 70, _a: 97, _f: 102 };
+    function w(A) {
+      if (A >= p._0 && A <= p._9)
+        return A - p._0;
+      if (A >= p._A && A <= p._F)
+        return A - (p._A - 10);
+      if (A >= p._a && A <= p._f)
+        return A - (p._a - 10);
+    }
+    function I(A) {
+      if (typeof A != "string")
+        throw new Error("hex string expected, got " + typeof A);
+      const E = A.length, S = E / 2;
+      if (E % 2)
+        throw new Error("padded hex string expected, got unpadded hex of length " + E);
+      const L = new Uint8Array(S);
+      for (let U = 0, H = 0; U < S; U++, H += 2) {
+        const K = w(A.charCodeAt(H)), $ = w(A.charCodeAt(H + 1));
+        if (K === void 0 || $ === void 0) {
+          const W = A[H] + A[H + 1];
+          throw new Error('hex string expected, got non-hex character "' + W + '" at index ' + H);
+        }
+        L[U] = K * 16 + $;
+      }
+      return L;
+    }
+    e.hexToBytes = I;
+    const m = async () => {
+    };
+    e.nextTick = m;
+    async function v(A, E, S) {
+      let L = Date.now();
+      for (let U = 0; U < A; U++) {
+        S(U);
+        const H = Date.now() - L;
+        H >= 0 && H < E || (await (0, e.nextTick)(), L += H);
+      }
+    }
+    e.asyncLoop = v;
+    function h(A) {
+      if (typeof A != "string")
+        throw new Error(`utf8ToBytes expected string, got ${typeof A}`);
+      return new Uint8Array(new TextEncoder().encode(A));
+    }
+    e.utf8ToBytes = h;
+    function _(A) {
+      return typeof A == "string" && (A = h(A)), (0, t.bytes)(A), A;
+    }
+    e.toBytes = _;
+    function y(...A) {
+      let E = 0;
+      for (let L = 0; L < A.length; L++) {
+        const U = A[L];
+        (0, t.bytes)(U), E += U.length;
+      }
+      const S = new Uint8Array(E);
+      for (let L = 0, U = 0; L < A.length; L++) {
+        const H = A[L];
+        S.set(H, U), U += H.length;
+      }
+      return S;
+    }
+    e.concatBytes = y;
+    class c {
+      // Safe version that clones internal state
+      clone() {
+        return this._cloneInto();
+      }
+    }
+    e.Hash = c;
+    const R = {}.toString;
+    function D(A, E) {
+      if (E !== void 0 && R.call(E) !== "[object Object]")
+        throw new Error("Options should be object or undefined");
+      return Object.assign(A, E);
+    }
+    e.checkOpts = D;
+    function N(A) {
+      const E = (L) => A().update(_(L)).digest(), S = A();
+      return E.outputLen = S.outputLen, E.blockLen = S.blockLen, E.create = () => A(), E;
+    }
+    e.wrapConstructor = N;
+    function T(A) {
+      const E = (L, U) => A(U).update(_(L)).digest(), S = A({});
+      return E.outputLen = S.outputLen, E.blockLen = S.blockLen, E.create = (L) => A(L), E;
+    }
+    e.wrapConstructorWithOpts = T;
+    function f(A) {
+      const E = (L, U) => A(U).update(_(L)).digest(), S = A({});
+      return E.outputLen = S.outputLen, E.blockLen = S.blockLen, E.create = (L) => A(L), E;
+    }
+    e.wrapXOFConstructorWithOpts = f;
+    function C(A = 32) {
+      if (r.crypto && typeof r.crypto.getRandomValues == "function")
+        return r.crypto.getRandomValues(new Uint8Array(A));
+      throw new Error("crypto.getRandomValues must be defined");
+    }
+    e.randomBytes = C;
+  })(utils$b)), utils$b;
+}
+var shared = {}, hasRequiredShared;
+function requireShared() {
+  if (hasRequiredShared) return shared;
+  hasRequiredShared = 1, Object.defineProperty(shared, "__esModule", { value: !0 }), shared.equal = shared.concat = shared.HEX_REGEX = void 0;
+  const e = /* @__PURE__ */ requireUtils$b();
+  shared.HEX_REGEX = /^[A-F0-9]*$/iu;
+  function r(i) {
+    return (0, e.concatBytes)(...i);
+  }
+  shared.concat = r;
+  function t(i, n) {
+    if (i.byteLength !== n.byteLength)
+      return !1;
+    const s = new Int8Array(i), a = new Int8Array(n);
+    for (let o = 0; o !== i.byteLength; o++)
+      if (s[o] !== a[o])
+        return !1;
+    return !0;
+  }
+  return shared.equal = t, shared;
+}
+var hasRequiredBrowser$4;
+function requireBrowser$4() {
+  return hasRequiredBrowser$4 || (hasRequiredBrowser$4 = 1, (function(e) {
+    var r = browser$4 && browser$4.__createBinding || (Object.create ? (function(u, b, l, g) {
+      g === void 0 && (g = l);
+      var p = Object.getOwnPropertyDescriptor(b, l);
+      (!p || ("get" in p ? !b.__esModule : p.writable || p.configurable)) && (p = { enumerable: !0, get: function() {
+        return b[l];
+      } }), Object.defineProperty(u, g, p);
+    }) : (function(u, b, l, g) {
+      g === void 0 && (g = l), u[g] = b[l];
+    })), t = browser$4 && browser$4.__exportStar || function(u, b) {
+      for (var l in u) l !== "default" && !Object.prototype.hasOwnProperty.call(b, l) && r(b, u, l);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.randomBytes = e.stringToHex = e.hexToString = e.hexToBytes = e.bytesToHex = void 0;
+    const i = /* @__PURE__ */ requireUtils$b(), n = requireShared(), s = (u) => (0, i.bytesToHex)(u instanceof Uint8Array ? u : Uint8Array.from(u)).toUpperCase();
+    e.bytesToHex = s;
+    const a = (u) => {
+      const b = u.length, l = new Uint8Array(b / 2);
+      if (!n.HEX_REGEX.test(u))
+        throw new Error("Invalid hex string");
+      for (let g = 0; g < l.length; g++) {
+        const p = g * 2, w = u.slice(p, p + 2), I = Number.parseInt(w, 16);
+        if (Number.isNaN(I) || I < 0)
+          throw new Error("Invalid byte sequence");
+        l[g] = I;
+      }
+      return l;
+    };
+    e.hexToBytes = a;
+    const o = (u, b = "utf8") => new TextDecoder(b).decode((0, e.hexToBytes)(u));
+    e.hexToString = o;
+    const d = (u) => (0, e.bytesToHex)(new TextEncoder().encode(u));
+    e.stringToHex = d, e.randomBytes = i.randomBytes, t(requireShared(), e);
+  })(browser$4)), browser$4;
+}
+var dist$3 = {}, xrpCodec = {}, lib$2 = {}, hasRequiredLib$2;
+function requireLib$2() {
+  return hasRequiredLib$2 || (hasRequiredLib$2 = 1, (function(e) {
+    /*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.bytes = e.stringToBytes = e.str = e.bytesToString = e.hex = e.utf8 = e.bech32m = e.bech32 = e.base58check = e.createBase58check = e.base58xmr = e.base58xrp = e.base58flickr = e.base58 = e.base64urlnopad = e.base64url = e.base64nopad = e.base64 = e.base32crockford = e.base32hex = e.base32 = e.base16 = e.utils = e.assertNumber = void 0;
+    // @__NO_SIDE_EFFECTS__
+    function r(A) {
+      if (!Number.isSafeInteger(A))
+        throw new Error(`Wrong integer: ${A}`);
+    }
+    e.assertNumber = r;
+    function t(A) {
+      return A instanceof Uint8Array || A != null && typeof A == "object" && A.constructor.name === "Uint8Array";
+    }
+    // @__NO_SIDE_EFFECTS__
+    function i(...A) {
+      const E = (H) => H, S = (H, K) => ($) => H(K($)), L = A.map((H) => H.encode).reduceRight(S, E), U = A.map((H) => H.decode).reduce(S, E);
+      return { encode: L, decode: U };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function n(A) {
+      return {
+        encode: (E) => {
+          if (!Array.isArray(E) || E.length && typeof E[0] != "number")
+            throw new Error("alphabet.encode input should be an array of numbers");
+          return E.map((S) => {
+            if (S < 0 || S >= A.length)
+              throw new Error(`Digit index outside alphabet: ${S} (alphabet: ${A.length})`);
+            return A[S];
+          });
+        },
+        decode: (E) => {
+          if (!Array.isArray(E) || E.length && typeof E[0] != "string")
+            throw new Error("alphabet.decode input should be array of strings");
+          return E.map((S) => {
+            if (typeof S != "string")
+              throw new Error(`alphabet.decode: not string element=${S}`);
+            const L = A.indexOf(S);
+            if (L === -1)
+              throw new Error(`Unknown letter: "${S}". Allowed: ${A}`);
+            return L;
+          });
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function s(A = "") {
+      if (typeof A != "string")
+        throw new Error("join separator should be string");
+      return {
+        encode: (E) => {
+          if (!Array.isArray(E) || E.length && typeof E[0] != "string")
+            throw new Error("join.encode input should be array of strings");
+          for (let S of E)
+            if (typeof S != "string")
+              throw new Error(`join.encode: non-string input=${S}`);
+          return E.join(A);
+        },
+        decode: (E) => {
+          if (typeof E != "string")
+            throw new Error("join.decode input should be string");
+          return E.split(A);
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function a(A, E = "=") {
+      if (typeof E != "string")
+        throw new Error("padding chr should be string");
+      return {
+        encode(S) {
+          if (!Array.isArray(S) || S.length && typeof S[0] != "string")
+            throw new Error("padding.encode input should be array of strings");
+          for (let L of S)
+            if (typeof L != "string")
+              throw new Error(`padding.encode: non-string input=${L}`);
+          for (; S.length * A % 8; )
+            S.push(E);
+          return S;
+        },
+        decode(S) {
+          if (!Array.isArray(S) || S.length && typeof S[0] != "string")
+            throw new Error("padding.encode input should be array of strings");
+          for (let U of S)
+            if (typeof U != "string")
+              throw new Error(`padding.decode: non-string input=${U}`);
+          let L = S.length;
+          if (L * A % 8)
+            throw new Error("Invalid padding: string should have whole number of bytes");
+          for (; L > 0 && S[L - 1] === E; L--)
+            if (!((L - 1) * A % 8))
+              throw new Error("Invalid padding: string has too much padding");
+          return S.slice(0, L);
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function o(A) {
+      if (typeof A != "function")
+        throw new Error("normalize fn should be function");
+      return { encode: (E) => E, decode: (E) => A(E) };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function d(A, E, S) {
+      if (E < 2)
+        throw new Error(`convertRadix: wrong from=${E}, base cannot be less than 2`);
+      if (S < 2)
+        throw new Error(`convertRadix: wrong to=${S}, base cannot be less than 2`);
+      if (!Array.isArray(A))
+        throw new Error("convertRadix: data should be array");
+      if (!A.length)
+        return [];
+      let L = 0;
+      const U = [], H = Array.from(A);
+      for (H.forEach((K) => {
+        if (K < 0 || K >= E)
+          throw new Error(`Wrong integer: ${K}`);
+      }); ; ) {
+        let K = 0, $ = !0;
+        for (let W = L; W < H.length; W++) {
+          const G = H[W], J = E * K + G;
+          if (!Number.isSafeInteger(J) || E * K / E !== K || J - G !== E * K)
+            throw new Error("convertRadix: carry overflow");
+          K = J % S;
+          const re = Math.floor(J / S);
+          if (H[W] = re, !Number.isSafeInteger(re) || re * S + K !== J)
+            throw new Error("convertRadix: carry overflow");
+          if ($)
+            re ? $ = !1 : L = W;
+          else continue;
+        }
+        if (U.push(K), $)
+          break;
+      }
+      for (let K = 0; K < A.length - 1 && A[K] === 0; K++)
+        U.push(0);
+      return U.reverse();
+    }
+    const u = /* @__NO_SIDE_EFFECTS__ */ (A, E) => E ? /* @__PURE__ */ u(E, A % E) : A, b = /* @__NO_SIDE_EFFECTS__ */ (A, E) => A + (E - /* @__PURE__ */ u(A, E));
+    // @__NO_SIDE_EFFECTS__
+    function l(A, E, S, L) {
+      if (!Array.isArray(A))
+        throw new Error("convertRadix2: data should be array");
+      if (E <= 0 || E > 32)
+        throw new Error(`convertRadix2: wrong from=${E}`);
+      if (S <= 0 || S > 32)
+        throw new Error(`convertRadix2: wrong to=${S}`);
+      if (/* @__PURE__ */ b(E, S) > 32)
+        throw new Error(`convertRadix2: carry overflow from=${E} to=${S} carryBits=${/* @__PURE__ */ b(E, S)}`);
+      let U = 0, H = 0;
+      const K = 2 ** S - 1, $ = [];
+      for (const W of A) {
+        if (W >= 2 ** E)
+          throw new Error(`convertRadix2: invalid data word=${W} from=${E}`);
+        if (U = U << E | W, H + E > 32)
+          throw new Error(`convertRadix2: carry overflow pos=${H} from=${E}`);
+        for (H += E; H >= S; H -= S)
+          $.push((U >> H - S & K) >>> 0);
+        U &= 2 ** H - 1;
+      }
+      if (U = U << S - H & K, !L && H >= E)
+        throw new Error("Excess padding");
+      if (!L && U)
+        throw new Error(`Non-zero padding: ${U}`);
+      return L && H > 0 && $.push(U >>> 0), $;
+    }
+    // @__NO_SIDE_EFFECTS__
+    function g(A) {
+      return {
+        encode: (E) => {
+          if (!t(E))
+            throw new Error("radix.encode input should be Uint8Array");
+          return /* @__PURE__ */ d(Array.from(E), 2 ** 8, A);
+        },
+        decode: (E) => {
+          if (!Array.isArray(E) || E.length && typeof E[0] != "number")
+            throw new Error("radix.decode input should be array of numbers");
+          return Uint8Array.from(/* @__PURE__ */ d(E, A, 2 ** 8));
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function p(A, E = !1) {
+      if (A <= 0 || A > 32)
+        throw new Error("radix2: bits should be in (0..32]");
+      if (/* @__PURE__ */ b(8, A) > 32 || /* @__PURE__ */ b(A, 8) > 32)
+        throw new Error("radix2: carry overflow");
+      return {
+        encode: (S) => {
+          if (!t(S))
+            throw new Error("radix2.encode input should be Uint8Array");
+          return /* @__PURE__ */ l(Array.from(S), 8, A, !E);
+        },
+        decode: (S) => {
+          if (!Array.isArray(S) || S.length && typeof S[0] != "number")
+            throw new Error("radix2.decode input should be array of numbers");
+          return Uint8Array.from(/* @__PURE__ */ l(S, A, 8, E));
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function w(A) {
+      if (typeof A != "function")
+        throw new Error("unsafeWrapper fn should be function");
+      return function(...E) {
+        try {
+          return A.apply(null, E);
+        } catch {
+        }
+      };
+    }
+    // @__NO_SIDE_EFFECTS__
+    function I(A, E) {
+      if (typeof E != "function")
+        throw new Error("checksum fn should be function");
+      return {
+        encode(S) {
+          if (!t(S))
+            throw new Error("checksum.encode: input should be Uint8Array");
+          const L = E(S).slice(0, A), U = new Uint8Array(S.length + A);
+          return U.set(S), U.set(L, S.length), U;
+        },
+        decode(S) {
+          if (!t(S))
+            throw new Error("checksum.decode: input should be Uint8Array");
+          const L = S.slice(0, -A), U = E(L).slice(0, A), H = S.slice(-A);
+          for (let K = 0; K < A; K++)
+            if (U[K] !== H[K])
+              throw new Error("Invalid checksum");
+          return L;
+        }
+      };
+    }
+    e.utils = {
+      alphabet: n,
+      chain: i,
+      checksum: I,
+      convertRadix: d,
+      convertRadix2: l,
+      radix: g,
+      radix2: p,
+      join: s,
+      padding: a
+    }, e.base16 = /* @__PURE__ */ i(/* @__PURE__ */ p(4), /* @__PURE__ */ n("0123456789ABCDEF"), /* @__PURE__ */ s("")), e.base32 = /* @__PURE__ */ i(/* @__PURE__ */ p(5), /* @__PURE__ */ n("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"), /* @__PURE__ */ a(5), /* @__PURE__ */ s("")), e.base32hex = /* @__PURE__ */ i(/* @__PURE__ */ p(5), /* @__PURE__ */ n("0123456789ABCDEFGHIJKLMNOPQRSTUV"), /* @__PURE__ */ a(5), /* @__PURE__ */ s("")), e.base32crockford = /* @__PURE__ */ i(/* @__PURE__ */ p(5), /* @__PURE__ */ n("0123456789ABCDEFGHJKMNPQRSTVWXYZ"), /* @__PURE__ */ s(""), /* @__PURE__ */ o((A) => A.toUpperCase().replace(/O/g, "0").replace(/[IL]/g, "1"))), e.base64 = /* @__PURE__ */ i(/* @__PURE__ */ p(6), /* @__PURE__ */ n("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), /* @__PURE__ */ a(6), /* @__PURE__ */ s("")), e.base64nopad = /* @__PURE__ */ i(/* @__PURE__ */ p(6), /* @__PURE__ */ n("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), /* @__PURE__ */ s("")), e.base64url = /* @__PURE__ */ i(/* @__PURE__ */ p(6), /* @__PURE__ */ n("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"), /* @__PURE__ */ a(6), /* @__PURE__ */ s("")), e.base64urlnopad = /* @__PURE__ */ i(/* @__PURE__ */ p(6), /* @__PURE__ */ n("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"), /* @__PURE__ */ s(""));
+    const m = (A) => /* @__PURE__ */ i(/* @__PURE__ */ g(58), /* @__PURE__ */ n(A), /* @__PURE__ */ s(""));
+    e.base58 = m("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"), e.base58flickr = m("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"), e.base58xrp = m("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz");
+    const v = [0, 2, 3, 5, 6, 7, 9, 10, 11];
+    e.base58xmr = {
+      encode(A) {
+        let E = "";
+        for (let S = 0; S < A.length; S += 8) {
+          const L = A.subarray(S, S + 8);
+          E += e.base58.encode(L).padStart(v[L.length], "1");
+        }
+        return E;
+      },
+      decode(A) {
+        let E = [];
+        for (let S = 0; S < A.length; S += 11) {
+          const L = A.slice(S, S + 11), U = v.indexOf(L.length), H = e.base58.decode(L);
+          for (let K = 0; K < H.length - U; K++)
+            if (H[K] !== 0)
+              throw new Error("base58xmr: wrong padding");
+          E = E.concat(Array.from(H.slice(H.length - U)));
+        }
+        return Uint8Array.from(E);
+      }
+    };
+    const h = (A) => /* @__PURE__ */ i(/* @__PURE__ */ I(4, (E) => A(A(E))), e.base58);
+    e.createBase58check = h, e.base58check = e.createBase58check;
+    const _ = /* @__PURE__ */ i(/* @__PURE__ */ n("qpzry9x8gf2tvdw0s3jn54khce6mua7l"), /* @__PURE__ */ s("")), y = [996825010, 642813549, 513874426, 1027748829, 705979059];
+    // @__NO_SIDE_EFFECTS__
+    function c(A) {
+      const E = A >> 25;
+      let S = (A & 33554431) << 5;
+      for (let L = 0; L < y.length; L++)
+        (E >> L & 1) === 1 && (S ^= y[L]);
+      return S;
+    }
+    // @__NO_SIDE_EFFECTS__
+    function R(A, E, S = 1) {
+      const L = A.length;
+      let U = 1;
+      for (let H = 0; H < L; H++) {
+        const K = A.charCodeAt(H);
+        if (K < 33 || K > 126)
+          throw new Error(`Invalid prefix (${A})`);
+        U = /* @__PURE__ */ c(U) ^ K >> 5;
+      }
+      U = /* @__PURE__ */ c(U);
+      for (let H = 0; H < L; H++)
+        U = /* @__PURE__ */ c(U) ^ A.charCodeAt(H) & 31;
+      for (let H of E)
+        U = /* @__PURE__ */ c(U) ^ H;
+      for (let H = 0; H < 6; H++)
+        U = /* @__PURE__ */ c(U);
+      return U ^= S, _.encode(/* @__PURE__ */ l([U % 2 ** 30], 30, 5, !1));
+    }
+    // @__NO_SIDE_EFFECTS__
+    function D(A) {
+      const E = A === "bech32" ? 1 : 734539939, S = /* @__PURE__ */ p(5), L = S.decode, U = S.encode, H = /* @__PURE__ */ w(L);
+      function K(J, re, x = 90) {
+        if (typeof J != "string")
+          throw new Error(`bech32.encode prefix should be string, not ${typeof J}`);
+        if (!Array.isArray(re) || re.length && typeof re[0] != "number")
+          throw new Error(`bech32.encode words should be array of numbers, not ${typeof re}`);
+        if (J.length === 0)
+          throw new TypeError(`Invalid prefix length ${J.length}`);
+        const Q = J.length + 7 + re.length;
+        if (x !== !1 && Q > x)
+          throw new TypeError(`Length ${Q} exceeds limit ${x}`);
+        const se = J.toLowerCase(), ue = /* @__PURE__ */ R(se, re, E);
+        return `${se}1${_.encode(re)}${ue}`;
+      }
+      function $(J, re = 90) {
+        if (typeof J != "string")
+          throw new Error(`bech32.decode input should be string, not ${typeof J}`);
+        if (J.length < 8 || re !== !1 && J.length > re)
+          throw new TypeError(`Wrong string length: ${J.length} (${J}). Expected (8..${re})`);
+        const x = J.toLowerCase();
+        if (J !== x && J !== J.toUpperCase())
+          throw new Error("String must be lowercase or uppercase");
+        const Q = x.lastIndexOf("1");
+        if (Q === 0 || Q === -1)
+          throw new Error('Letter "1" must be present between prefix and data only');
+        const se = x.slice(0, Q), ue = x.slice(Q + 1);
+        if (ue.length < 6)
+          throw new Error("Data must be at least 6 characters long");
+        const oe = _.decode(ue).slice(0, -6), Z = /* @__PURE__ */ R(se, oe, E);
+        if (!ue.endsWith(Z))
+          throw new Error(`Invalid checksum in ${J}: expected "${Z}"`);
+        return { prefix: se, words: oe };
+      }
+      const W = /* @__PURE__ */ w($);
+      function G(J) {
+        const { prefix: re, words: x } = $(J, !1);
+        return { prefix: re, words: x, bytes: L(x) };
+      }
+      return { encode: K, decode: $, decodeToBytes: G, decodeUnsafe: W, fromWords: L, fromWordsUnsafe: H, toWords: U };
+    }
+    e.bech32 = /* @__PURE__ */ D("bech32"), e.bech32m = /* @__PURE__ */ D("bech32m"), e.utf8 = {
+      encode: (A) => new TextDecoder().decode(A),
+      decode: (A) => new TextEncoder().encode(A)
+    }, e.hex = /* @__PURE__ */ i(/* @__PURE__ */ p(4), /* @__PURE__ */ n("0123456789abcdef"), /* @__PURE__ */ s(""), /* @__PURE__ */ o((A) => {
+      if (typeof A != "string" || A.length % 2)
+        throw new TypeError(`hex.decode: expected string, got ${typeof A} with length ${A.length}`);
+      return A.toLowerCase();
+    }));
+    const N = {
+      utf8: e.utf8,
+      hex: e.hex,
+      base16: e.base16,
+      base32: e.base32,
+      base64: e.base64,
+      base64url: e.base64url,
+      base58: e.base58,
+      base58xmr: e.base58xmr
+    }, T = "Invalid encoding type. Available types: utf8, hex, base16, base32, base64, base64url, base58, base58xmr", f = (A, E) => {
+      if (typeof A != "string" || !N.hasOwnProperty(A))
+        throw new TypeError(T);
+      if (!t(E))
+        throw new TypeError("bytesToString() expects Uint8Array");
+      return N[A].encode(E);
+    };
+    e.bytesToString = f, e.str = e.bytesToString;
+    const C = (A, E) => {
+      if (!N.hasOwnProperty(A))
+        throw new TypeError(T);
+      if (typeof E != "string")
+        throw new TypeError("stringToBytes() expects string");
+      return N[A].decode(E);
+    };
+    e.stringToBytes = C, e.bytes = e.stringToBytes;
+  })(lib$2)), lib$2;
+}
+var browser$3 = {}, sha256 = {}, _md = {}, hasRequired_md;
+function require_md() {
+  if (hasRequired_md) return _md;
+  hasRequired_md = 1, Object.defineProperty(_md, "__esModule", { value: !0 }), _md.HashMD = _md.Maj = _md.Chi = void 0;
+  const e = /* @__PURE__ */ require_assert(), r = /* @__PURE__ */ requireUtils$b();
+  function t(a, o, d, u) {
+    if (typeof a.setBigUint64 == "function")
+      return a.setBigUint64(o, d, u);
+    const b = BigInt(32), l = BigInt(4294967295), g = Number(d >> b & l), p = Number(d & l), w = u ? 4 : 0, I = u ? 0 : 4;
+    a.setUint32(o + w, g, u), a.setUint32(o + I, p, u);
+  }
+  const i = (a, o, d) => a & o ^ ~a & d;
+  _md.Chi = i;
+  const n = (a, o, d) => a & o ^ a & d ^ o & d;
+  _md.Maj = n;
+  class s extends r.Hash {
+    constructor(o, d, u, b) {
+      super(), this.blockLen = o, this.outputLen = d, this.padOffset = u, this.isLE = b, this.finished = !1, this.length = 0, this.pos = 0, this.destroyed = !1, this.buffer = new Uint8Array(o), this.view = (0, r.createView)(this.buffer);
+    }
+    update(o) {
+      (0, e.exists)(this);
+      const { view: d, buffer: u, blockLen: b } = this;
+      o = (0, r.toBytes)(o);
+      const l = o.length;
+      for (let g = 0; g < l; ) {
+        const p = Math.min(b - this.pos, l - g);
+        if (p === b) {
+          const w = (0, r.createView)(o);
+          for (; b <= l - g; g += b)
+            this.process(w, g);
+          continue;
+        }
+        u.set(o.subarray(g, g + p), this.pos), this.pos += p, g += p, this.pos === b && (this.process(d, 0), this.pos = 0);
+      }
+      return this.length += o.length, this.roundClean(), this;
+    }
+    digestInto(o) {
+      (0, e.exists)(this), (0, e.output)(o, this), this.finished = !0;
+      const { buffer: d, view: u, blockLen: b, isLE: l } = this;
+      let { pos: g } = this;
+      d[g++] = 128, this.buffer.subarray(g).fill(0), this.padOffset > b - g && (this.process(u, 0), g = 0);
+      for (let v = g; v < b; v++)
+        d[v] = 0;
+      t(u, b - 8, BigInt(this.length * 8), l), this.process(u, 0);
+      const p = (0, r.createView)(o), w = this.outputLen;
+      if (w % 4)
+        throw new Error("_sha2: outputLen should be aligned to 32bit");
+      const I = w / 4, m = this.get();
+      if (I > m.length)
+        throw new Error("_sha2: outputLen bigger than state");
+      for (let v = 0; v < I; v++)
+        p.setUint32(4 * v, m[v], l);
+    }
+    digest() {
+      const { buffer: o, outputLen: d } = this;
+      this.digestInto(o);
+      const u = o.slice(0, d);
+      return this.destroy(), u;
+    }
+    _cloneInto(o) {
+      o || (o = new this.constructor()), o.set(...this.get());
+      const { blockLen: d, buffer: u, length: b, finished: l, destroyed: g, pos: p } = this;
+      return o.length = b, o.pos = p, o.finished = l, o.destroyed = g, b % d && o.buffer.set(u), o;
+    }
+  }
+  return _md.HashMD = s, _md;
+}
+var hasRequiredSha256;
+function requireSha256() {
+  if (hasRequiredSha256) return sha256;
+  hasRequiredSha256 = 1, Object.defineProperty(sha256, "__esModule", { value: !0 }), sha256.sha224 = sha256.sha256 = void 0;
+  const e = /* @__PURE__ */ require_md(), r = /* @__PURE__ */ requireUtils$b(), t = /* @__PURE__ */ new Uint32Array([
+    1116352408,
+    1899447441,
+    3049323471,
+    3921009573,
+    961987163,
+    1508970993,
+    2453635748,
+    2870763221,
+    3624381080,
+    310598401,
+    607225278,
+    1426881987,
+    1925078388,
+    2162078206,
+    2614888103,
+    3248222580,
+    3835390401,
+    4022224774,
+    264347078,
+    604807628,
+    770255983,
+    1249150122,
+    1555081692,
+    1996064986,
+    2554220882,
+    2821834349,
+    2952996808,
+    3210313671,
+    3336571891,
+    3584528711,
+    113926993,
+    338241895,
+    666307205,
+    773529912,
+    1294757372,
+    1396182291,
+    1695183700,
+    1986661051,
+    2177026350,
+    2456956037,
+    2730485921,
+    2820302411,
+    3259730800,
+    3345764771,
+    3516065817,
+    3600352804,
+    4094571909,
+    275423344,
+    430227734,
+    506948616,
+    659060556,
+    883997877,
+    958139571,
+    1322822218,
+    1537002063,
+    1747873779,
+    1955562222,
+    2024104815,
+    2227730452,
+    2361852424,
+    2428436474,
+    2756734187,
+    3204031479,
+    3329325298
+  ]), i = /* @__PURE__ */ new Uint32Array([
+    1779033703,
+    3144134277,
+    1013904242,
+    2773480762,
+    1359893119,
+    2600822924,
+    528734635,
+    1541459225
+  ]), n = /* @__PURE__ */ new Uint32Array(64);
+  class s extends e.HashMD {
+    constructor() {
+      super(64, 32, 8, !1), this.A = i[0] | 0, this.B = i[1] | 0, this.C = i[2] | 0, this.D = i[3] | 0, this.E = i[4] | 0, this.F = i[5] | 0, this.G = i[6] | 0, this.H = i[7] | 0;
+    }
+    get() {
+      const { A: d, B: u, C: b, D: l, E: g, F: p, G: w, H: I } = this;
+      return [d, u, b, l, g, p, w, I];
+    }
+    // prettier-ignore
+    set(d, u, b, l, g, p, w, I) {
+      this.A = d | 0, this.B = u | 0, this.C = b | 0, this.D = l | 0, this.E = g | 0, this.F = p | 0, this.G = w | 0, this.H = I | 0;
+    }
+    process(d, u) {
+      for (let h = 0; h < 16; h++, u += 4)
+        n[h] = d.getUint32(u, !1);
+      for (let h = 16; h < 64; h++) {
+        const _ = n[h - 15], y = n[h - 2], c = (0, r.rotr)(_, 7) ^ (0, r.rotr)(_, 18) ^ _ >>> 3, R = (0, r.rotr)(y, 17) ^ (0, r.rotr)(y, 19) ^ y >>> 10;
+        n[h] = R + n[h - 7] + c + n[h - 16] | 0;
+      }
+      let { A: b, B: l, C: g, D: p, E: w, F: I, G: m, H: v } = this;
+      for (let h = 0; h < 64; h++) {
+        const _ = (0, r.rotr)(w, 6) ^ (0, r.rotr)(w, 11) ^ (0, r.rotr)(w, 25), y = v + _ + (0, e.Chi)(w, I, m) + t[h] + n[h] | 0, R = ((0, r.rotr)(b, 2) ^ (0, r.rotr)(b, 13) ^ (0, r.rotr)(b, 22)) + (0, e.Maj)(b, l, g) | 0;
+        v = m, m = I, I = w, w = p + y | 0, p = g, g = l, l = b, b = y + R | 0;
+      }
+      b = b + this.A | 0, l = l + this.B | 0, g = g + this.C | 0, p = p + this.D | 0, w = w + this.E | 0, I = I + this.F | 0, m = m + this.G | 0, v = v + this.H | 0, this.set(b, l, g, p, w, I, m, v);
+    }
+    roundClean() {
+      n.fill(0);
+    }
+    destroy() {
+      this.set(0, 0, 0, 0, 0, 0, 0, 0), this.buffer.fill(0);
+    }
+  }
+  class a extends s {
+    constructor() {
+      super(), this.A = -1056596264, this.B = 914150663, this.C = 812702999, this.D = -150054599, this.E = -4191439, this.F = 1750603025, this.G = 1694076839, this.H = -1090891868, this.outputLen = 28;
+    }
+  }
+  return sha256.sha256 = (0, r.wrapConstructor)(() => new s()), sha256.sha224 = (0, r.wrapConstructor)(() => new a()), sha256;
+}
+var wrapNoble = {}, normalizeInput = {}, hasRequiredNormalizeInput;
+function requireNormalizeInput() {
+  if (hasRequiredNormalizeInput) return normalizeInput;
+  hasRequiredNormalizeInput = 1, Object.defineProperty(normalizeInput, "__esModule", { value: !0 });
+  function e(r) {
+    return Array.isArray(r) ? new Uint8Array(r) : r;
+  }
+  return normalizeInput.default = e, normalizeInput;
+}
+var hasRequiredWrapNoble;
+function requireWrapNoble() {
+  if (hasRequiredWrapNoble) return wrapNoble;
+  hasRequiredWrapNoble = 1;
+  var e = wrapNoble && wrapNoble.__importDefault || function(i) {
+    return i && i.__esModule ? i : { default: i };
+  };
+  Object.defineProperty(wrapNoble, "__esModule", { value: !0 });
+  const r = e(requireNormalizeInput());
+  function t(i) {
+    function n(s) {
+      return i((0, r.default)(s));
+    }
+    return n.create = () => {
+      const s = i.create();
+      return {
+        update(a) {
+          return s.update((0, r.default)(a)), this;
+        },
+        digest() {
+          return s.digest();
+        }
+      };
+    }, n;
+  }
+  return wrapNoble.default = t, wrapNoble;
+}
+var hasRequiredBrowser$3;
+function requireBrowser$3() {
+  if (hasRequiredBrowser$3) return browser$3;
+  hasRequiredBrowser$3 = 1;
+  var e = browser$3 && browser$3.__importDefault || function(i) {
+    return i && i.__esModule ? i : { default: i };
+  };
+  Object.defineProperty(browser$3, "__esModule", { value: !0 }), browser$3.sha256 = void 0;
+  const r = /* @__PURE__ */ requireSha256(), t = e(requireWrapNoble());
+  return browser$3.sha256 = (0, t.default)(r.sha256), browser$3;
+}
+var utils$a = {}, hasRequiredUtils$a;
+function requireUtils$a() {
+  if (hasRequiredUtils$a) return utils$a;
+  hasRequiredUtils$a = 1, Object.defineProperty(utils$a, "__esModule", { value: !0 }), utils$a.concatArgs = utils$a.arrayEqual = void 0;
+  function e(i, n) {
+    return i.length !== n.length ? !1 : i.every((s, a) => s === n[a]);
+  }
+  utils$a.arrayEqual = e;
+  function r(i) {
+    return typeof i == "number";
+  }
+  function t(...i) {
+    return i.flatMap((n) => r(n) ? [n] : Array.from(n));
+  }
+  return utils$a.concatArgs = t, utils$a;
+}
+var hasRequiredXrpCodec;
+function requireXrpCodec() {
+  if (hasRequiredXrpCodec) return xrpCodec;
+  hasRequiredXrpCodec = 1, Object.defineProperty(xrpCodec, "__esModule", { value: !0 }), xrpCodec.isValidClassicAddress = xrpCodec.decodeAccountPublic = xrpCodec.encodeAccountPublic = xrpCodec.encodeNodePublic = xrpCodec.decodeNodePublic = xrpCodec.decodeAddress = xrpCodec.decodeAccountID = xrpCodec.encodeAddress = xrpCodec.encodeAccountID = xrpCodec.decodeSeed = xrpCodec.encodeSeed = xrpCodec.codec = void 0;
+  const e = /* @__PURE__ */ requireLib$2(), r = requireBrowser$3(), t = requireUtils$a();
+  class i {
+    constructor(R) {
+      this._sha256 = R.sha256, this._codec = e.base58xrp;
+    }
+    /**
+     * Encoder.
+     *
+     * @param bytes - Uint8Array of data to encode.
+     * @param opts - Options object including the version bytes and the expected length of the data to encode.
+     */
+    encode(R, D) {
+      const N = D.versions;
+      return this._encodeVersioned(R, N, D.expectedLength);
+    }
+    /**
+     * Decoder.
+     *
+     * @param base58string - Base58Check-encoded string to decode.
+     * @param opts - Options object including the version byte(s) and the expected length of the data after decoding.
+     */
+    /* eslint-disable max-lines-per-function --
+     * TODO refactor */
+    decode(R, D) {
+      var N;
+      const T = D.versions, f = D.versionTypes, C = this.decodeChecked(R);
+      if (T.length > 1 && !D.expectedLength)
+        throw new Error("expectedLength is required because there are >= 2 possible versions");
+      const A = typeof T[0] == "number" ? 1 : T[0].length, E = (N = D.expectedLength) !== null && N !== void 0 ? N : C.length - A, S = C.slice(0, -E), L = C.slice(-E);
+      for (let U = 0; U < T.length; U++) {
+        const H = Array.isArray(T[U]) ? T[U] : [T[U]];
+        if ((0, t.arrayEqual)(S, H))
+          return {
+            version: H,
+            bytes: L,
+            type: f ? f[U] : null
+          };
+      }
+      throw new Error("version_invalid: version bytes do not match any of the provided version(s)");
+    }
+    encodeChecked(R) {
+      const D = this._sha256(this._sha256(R)).slice(0, 4);
+      return this._encodeRaw(Uint8Array.from((0, t.concatArgs)(R, D)));
+    }
+    decodeChecked(R) {
+      const D = this._decodeRaw(R);
+      if (D.byteLength < 5)
+        throw new Error("invalid_input_size: decoded data must have length >= 5");
+      if (!this._verifyCheckSum(D))
+        throw new Error("checksum_invalid");
+      return D.slice(0, -4);
+    }
+    _encodeVersioned(R, D, N) {
+      if (!y(R, N))
+        throw new Error("unexpected_payload_length: bytes.length does not match expectedLength. Ensure that the bytes are a Uint8Array.");
+      return this.encodeChecked((0, t.concatArgs)(D, R));
+    }
+    _encodeRaw(R) {
+      return this._codec.encode(Uint8Array.from(R));
+    }
+    /* eslint-enable max-lines-per-function */
+    _decodeRaw(R) {
+      return this._codec.decode(R);
+    }
+    _verifyCheckSum(R) {
+      const D = this._sha256(this._sha256(R.slice(0, -4))).slice(0, 4), N = R.slice(-4);
+      return (0, t.arrayEqual)(D, N);
+    }
+  }
+  const n = 0, s = 35, a = 33, o = 28, d = [1, 225, 75], u = {
+    sha256: r.sha256
+  }, b = new i(u);
+  xrpCodec.codec = b;
+  function l(c, R) {
+    if (!y(c, 16))
+      throw new Error("entropy must have length 16");
+    const D = {
+      expectedLength: 16,
+      // for secp256k1, use `FAMILY_SEED`
+      versions: R === "ed25519" ? d : [a]
+    };
+    return b.encode(c, D);
+  }
+  xrpCodec.encodeSeed = l;
+  function g(c, R = {
+    versionTypes: ["ed25519", "secp256k1"],
+    versions: [d, a],
+    expectedLength: 16
+  }) {
+    return b.decode(c, R);
+  }
+  xrpCodec.decodeSeed = g;
+  function p(c) {
+    const R = { versions: [n], expectedLength: 20 };
+    return b.encode(c, R);
+  }
+  xrpCodec.encodeAccountID = p, xrpCodec.encodeAddress = p;
+  function w(c) {
+    const R = { versions: [n], expectedLength: 20 };
+    return b.decode(c, R).bytes;
+  }
+  xrpCodec.decodeAccountID = w, xrpCodec.decodeAddress = w;
+  function I(c) {
+    const R = { versions: [o], expectedLength: 33 };
+    return b.decode(c, R).bytes;
+  }
+  xrpCodec.decodeNodePublic = I;
+  function m(c) {
+    const R = { versions: [o], expectedLength: 33 };
+    return b.encode(c, R);
+  }
+  xrpCodec.encodeNodePublic = m;
+  function v(c) {
+    const R = { versions: [s], expectedLength: 33 };
+    return b.encode(c, R);
+  }
+  xrpCodec.encodeAccountPublic = v;
+  function h(c) {
+    const R = { versions: [s], expectedLength: 33 };
+    return b.decode(c, R).bytes;
+  }
+  xrpCodec.decodeAccountPublic = h;
+  function _(c) {
+    try {
+      w(c);
+    } catch {
+      return !1;
+    }
+    return !0;
+  }
+  xrpCodec.isValidClassicAddress = _;
+  function y(c, R) {
+    return "byteLength" in c ? c.byteLength === R : c.length === R;
+  }
+  return xrpCodec;
+}
+var hasRequiredDist$3;
+function requireDist$3() {
+  return hasRequiredDist$3 || (hasRequiredDist$3 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.isValidXAddress = e.decodeXAddress = e.xAddressToClassicAddress = e.encodeXAddress = e.classicAddressToXAddress = e.isValidClassicAddress = e.decodeAccountPublic = e.encodeAccountPublic = e.decodeNodePublic = e.encodeNodePublic = e.decodeAccountID = e.encodeAccountID = e.decodeSeed = e.encodeSeed = e.codec = void 0;
+    const r = requireBrowser$4(), t = requireXrpCodec();
+    Object.defineProperty(e, "codec", { enumerable: !0, get: function() {
+      return t.codec;
+    } }), Object.defineProperty(e, "encodeSeed", { enumerable: !0, get: function() {
+      return t.encodeSeed;
+    } }), Object.defineProperty(e, "decodeSeed", { enumerable: !0, get: function() {
+      return t.decodeSeed;
+    } }), Object.defineProperty(e, "encodeAccountID", { enumerable: !0, get: function() {
+      return t.encodeAccountID;
+    } }), Object.defineProperty(e, "decodeAccountID", { enumerable: !0, get: function() {
+      return t.decodeAccountID;
+    } }), Object.defineProperty(e, "encodeNodePublic", { enumerable: !0, get: function() {
+      return t.encodeNodePublic;
+    } }), Object.defineProperty(e, "decodeNodePublic", { enumerable: !0, get: function() {
+      return t.decodeNodePublic;
+    } }), Object.defineProperty(e, "encodeAccountPublic", { enumerable: !0, get: function() {
+      return t.encodeAccountPublic;
+    } }), Object.defineProperty(e, "decodeAccountPublic", { enumerable: !0, get: function() {
+      return t.decodeAccountPublic;
+    } }), Object.defineProperty(e, "isValidClassicAddress", { enumerable: !0, get: function() {
+      return t.isValidClassicAddress;
+    } });
+    const i = {
+      // 5, 68
+      main: Uint8Array.from([5, 68]),
+      // 4, 147
+      test: Uint8Array.from([4, 147])
+    }, n = 4294967295;
+    function s(g, p, w) {
+      const I = (0, t.decodeAccountID)(g);
+      return a(I, p, w);
+    }
+    e.classicAddressToXAddress = s;
+    function a(g, p, w) {
+      if (g.length !== 20)
+        throw new Error("Account ID must be 20 bytes");
+      if (p !== !1 && p > n)
+        throw new Error("Invalid tag");
+      const I = p || 0, m = p === !1 || p == null ? 0 : 1, v = (0, r.concat)([
+        w ? i.test : i.main,
+        g,
+        Uint8Array.from([
+          // 0x00 if no tag, 0x01 if 32-bit tag
+          m,
+          // first byte
+          I & 255,
+          // second byte
+          I >> 8 & 255,
+          // third byte
+          I >> 16 & 255,
+          // fourth byte
+          I >> 24 & 255,
+          0,
+          0,
+          0,
+          // four zero bytes (reserved for 64-bit tags)
+          0
+        ])
+      ]);
+      return t.codec.encodeChecked(v);
+    }
+    e.encodeXAddress = a;
+    function o(g) {
+      const { accountId: p, tag: w, test: I } = d(g);
+      return {
+        classicAddress: (0, t.encodeAccountID)(p),
+        tag: w,
+        test: I
+      };
+    }
+    e.xAddressToClassicAddress = o;
+    function d(g) {
+      const p = t.codec.decodeChecked(g), w = u(p), I = p.slice(2, 22), m = b(p);
+      return {
+        accountId: I,
+        tag: m,
+        test: w
+      };
+    }
+    e.decodeXAddress = d;
+    function u(g) {
+      const p = g.slice(0, 2);
+      if ((0, r.equal)(i.main, p))
+        return !1;
+      if ((0, r.equal)(i.test, p))
+        return !0;
+      throw new Error("Invalid X-address: bad prefix");
+    }
+    function b(g) {
+      const p = g[22];
+      if (p >= 2)
+        throw new Error("Unsupported X-address");
+      if (p === 1)
+        return g[23] + g[24] * 256 + g[25] * 65536 + g[26] * 16777216;
+      if (p !== 0)
+        throw new Error("flag must be zero to indicate no tag");
+      if (!(0, r.equal)((0, r.hexToBytes)("0000000000000000"), g.slice(23, 31)))
+        throw new Error("remaining bytes must be zero");
+      return !1;
+    }
+    function l(g) {
+      try {
+        d(g);
+      } catch {
+        return !1;
+      }
+      return !0;
+    }
+    e.isValidXAddress = l;
+  })(dist$3)), dist$3;
+}
+var dist$2 = {}, coretypes = {}, enums = {};
+const FIELDS = /* @__PURE__ */ JSON.parse('[["Generic",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":0,"type":"Unknown"}],["Invalid",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":-1,"type":"Unknown"}],["ObjectEndMarker",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"STObject"}],["ArrayEndMarker",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"STArray"}],["taker_gets_funded",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":258,"type":"Amount"}],["taker_pays_funded",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":259,"type":"Amount"}],["LedgerEntryType",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"UInt16"}],["TransactionType",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"UInt16"}],["SignerWeight",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"UInt16"}],["TransferFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"UInt16"}],["TradingFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"UInt16"}],["DiscountedFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"UInt16"}],["Version",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"UInt16"}],["HookStateChangeCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"UInt16"}],["HookEmitCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"UInt16"}],["HookExecutionIndex",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"UInt16"}],["HookApiVersion",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"UInt16"}],["LedgerFixType",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"UInt16"}],["NetworkID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"UInt32"}],["Flags",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"UInt32"}],["SourceTag",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"UInt32"}],["Sequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"UInt32"}],["PreviousTxnLgrSeq",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"UInt32"}],["LedgerSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"UInt32"}],["CloseTime",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"UInt32"}],["ParentCloseTime",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"UInt32"}],["SigningTime",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"UInt32"}],["Expiration",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"UInt32"}],["TransferRate",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"UInt32"}],["WalletSize",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"UInt32"}],["OwnerCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"UInt32"}],["DestinationTag",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":14,"type":"UInt32"}],["LastUpdateTime",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":15,"type":"UInt32"}],["HighQualityIn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"UInt32"}],["HighQualityOut",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"UInt32"}],["LowQualityIn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"UInt32"}],["LowQualityOut",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"UInt32"}],["QualityIn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"UInt32"}],["QualityOut",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"UInt32"}],["StampEscrow",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"UInt32"}],["BondAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":23,"type":"UInt32"}],["LoadFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"UInt32"}],["OfferSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"UInt32"}],["FirstLedgerSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"UInt32"}],["LastLedgerSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"UInt32"}],["TransactionIndex",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"UInt32"}],["OperationLimit",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"UInt32"}],["ReferenceFeeUnits",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":30,"type":"UInt32"}],["ReserveBase",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":31,"type":"UInt32"}],["ReserveIncrement",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":32,"type":"UInt32"}],["SetFlag",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":33,"type":"UInt32"}],["ClearFlag",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":34,"type":"UInt32"}],["SignerQuorum",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":35,"type":"UInt32"}],["CancelAfter",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":36,"type":"UInt32"}],["FinishAfter",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":37,"type":"UInt32"}],["SignerListID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":38,"type":"UInt32"}],["SettleDelay",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":39,"type":"UInt32"}],["TicketCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":40,"type":"UInt32"}],["TicketSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":41,"type":"UInt32"}],["NFTokenTaxon",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":42,"type":"UInt32"}],["MintedNFTokens",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":43,"type":"UInt32"}],["BurnedNFTokens",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":44,"type":"UInt32"}],["HookStateCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":45,"type":"UInt32"}],["EmitGeneration",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":46,"type":"UInt32"}],["VoteWeight",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":48,"type":"UInt32"}],["FirstNFTokenSequence",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":50,"type":"UInt32"}],["OracleDocumentID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":51,"type":"UInt32"}],["PermissionValue",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":52,"type":"UInt32"}],["IndexNext",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"UInt64"}],["IndexPrevious",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"UInt64"}],["BookNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"UInt64"}],["OwnerNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"UInt64"}],["BaseFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"UInt64"}],["ExchangeRate",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"UInt64"}],["LowNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"UInt64"}],["HighNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"UInt64"}],["DestinationNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"UInt64"}],["Cookie",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"UInt64"}],["ServerVersion",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"UInt64"}],["NFTokenOfferNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"UInt64"}],["EmitBurden",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"UInt64"}],["HookOn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"UInt64"}],["HookInstructionCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"UInt64"}],["HookReturnCode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"UInt64"}],["ReferenceCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"UInt64"}],["XChainClaimID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"UInt64"}],["XChainAccountCreateCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"UInt64"}],["XChainAccountClaimCount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"UInt64"}],["AssetPrice",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":23,"type":"UInt64"}],["MaximumAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"UInt64"}],["OutstandingAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"UInt64"}],["MPTAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"UInt64"}],["IssuerNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"UInt64"}],["SubjectNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"UInt64"}],["LockedAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"UInt64"}],["EmailHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Hash128"}],["LedgerHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Hash256"}],["ParentHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Hash256"}],["TransactionHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"Hash256"}],["AccountHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"Hash256"}],["PreviousTxnID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"Hash256"}],["LedgerIndex",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"Hash256"}],["WalletLocator",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"Hash256"}],["RootIndex",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"Hash256"}],["AccountTxnID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"Hash256"}],["NFTokenID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"Hash256"}],["EmitParentTxnID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"Hash256"}],["EmitNonce",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"Hash256"}],["EmitHookHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"Hash256"}],["AMMID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":14,"type":"Hash256"}],["BookDirectory",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"Hash256"}],["InvoiceID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"Hash256"}],["Nickname",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"Hash256"}],["Amendment",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"Hash256"}],["Digest",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"Hash256"}],["Channel",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"Hash256"}],["ConsensusHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":23,"type":"Hash256"}],["CheckID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"Hash256"}],["ValidatedHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"Hash256"}],["PreviousPageMin",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"Hash256"}],["NextPageMin",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"Hash256"}],["NFTokenBuyOffer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"Hash256"}],["NFTokenSellOffer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"Hash256"}],["HookStateKey",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":30,"type":"Hash256"}],["HookHash",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":31,"type":"Hash256"}],["HookNamespace",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":32,"type":"Hash256"}],["HookSetTxnID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":33,"type":"Hash256"}],["DomainID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":34,"type":"Hash256"}],["VaultID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":35,"type":"Hash256"}],["ParentBatchID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":36,"type":"Hash256"}],["hash",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":257,"type":"Hash256"}],["index",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":258,"type":"Hash256"}],["Amount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Amount"}],["Balance",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Amount"}],["LimitAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"Amount"}],["TakerPays",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"Amount"}],["TakerGets",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"Amount"}],["LowLimit",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"Amount"}],["HighLimit",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"Amount"}],["Fee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"Amount"}],["SendMax",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"Amount"}],["DeliverMin",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"Amount"}],["Amount2",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"Amount"}],["BidMin",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"Amount"}],["BidMax",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"Amount"}],["MinimumOffer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"Amount"}],["RippleEscrow",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"Amount"}],["DeliveredAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"Amount"}],["NFTokenBrokerFee",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"Amount"}],["BaseFeeDrops",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"Amount"}],["ReserveBaseDrops",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":23,"type":"Amount"}],["ReserveIncrementDrops",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"Amount"}],["LPTokenOut",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"Amount"}],["LPTokenIn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"Amount"}],["EPrice",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"Amount"}],["Price",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"Amount"}],["SignatureReward",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"Amount"}],["MinAccountCreateAmount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":30,"type":"Amount"}],["LPTokenBalance",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":31,"type":"Amount"}],["PublicKey",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":1,"type":"Blob"}],["MessageKey",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":2,"type":"Blob"}],["SigningPubKey",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":3,"type":"Blob"}],["TxnSignature",{"isSerialized":true,"isSigningField":false,"isVLEncoded":true,"nth":4,"type":"Blob"}],["URI",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":5,"type":"Blob"}],["Signature",{"isSerialized":true,"isSigningField":false,"isVLEncoded":true,"nth":6,"type":"Blob"}],["Domain",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":7,"type":"Blob"}],["FundCode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":8,"type":"Blob"}],["RemoveCode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":9,"type":"Blob"}],["ExpireCode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":10,"type":"Blob"}],["CreateCode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":11,"type":"Blob"}],["MemoType",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":12,"type":"Blob"}],["MemoData",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":13,"type":"Blob"}],["MemoFormat",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":14,"type":"Blob"}],["Fulfillment",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":16,"type":"Blob"}],["Condition",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":17,"type":"Blob"}],["MasterSignature",{"isSerialized":true,"isSigningField":false,"isVLEncoded":true,"nth":18,"type":"Blob"}],["UNLModifyValidator",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":19,"type":"Blob"}],["ValidatorToDisable",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":20,"type":"Blob"}],["ValidatorToReEnable",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":21,"type":"Blob"}],["HookStateData",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":22,"type":"Blob"}],["HookReturnString",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":23,"type":"Blob"}],["HookParameterName",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":24,"type":"Blob"}],["HookParameterValue",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":25,"type":"Blob"}],["DIDDocument",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":26,"type":"Blob"}],["Data",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":27,"type":"Blob"}],["AssetClass",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":28,"type":"Blob"}],["Provider",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":29,"type":"Blob"}],["MPTokenMetadata",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":30,"type":"Blob"}],["CredentialType",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":31,"type":"Blob"}],["Account",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":1,"type":"AccountID"}],["Owner",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":2,"type":"AccountID"}],["Destination",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":3,"type":"AccountID"}],["Issuer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":4,"type":"AccountID"}],["Authorize",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":5,"type":"AccountID"}],["Unauthorize",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":6,"type":"AccountID"}],["RegularKey",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":8,"type":"AccountID"}],["NFTokenMinter",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":9,"type":"AccountID"}],["EmitCallback",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":10,"type":"AccountID"}],["Holder",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":11,"type":"AccountID"}],["Delegate",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":12,"type":"AccountID"}],["HookAccount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":16,"type":"AccountID"}],["OtherChainSource",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":18,"type":"AccountID"}],["OtherChainDestination",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":19,"type":"AccountID"}],["AttestationSignerAccount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":20,"type":"AccountID"}],["AttestationRewardAccount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":21,"type":"AccountID"}],["LockingChainDoor",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":22,"type":"AccountID"}],["IssuingChainDoor",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":23,"type":"AccountID"}],["Subject",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":24,"type":"AccountID"}],["Number",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Number"}],["AssetsAvailable",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Number"}],["AssetsMaximum",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"Number"}],["AssetsTotal",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"Number"}],["LossUnrealized",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"Number"}],["TransactionMetaData",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"STObject"}],["CreatedNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"STObject"}],["DeletedNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"STObject"}],["ModifiedNode",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"STObject"}],["PreviousFields",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"STObject"}],["FinalFields",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"STObject"}],["NewFields",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"STObject"}],["TemplateEntry",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"STObject"}],["Memo",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"STObject"}],["SignerEntry",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"STObject"}],["NFToken",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"STObject"}],["EmitDetails",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"STObject"}],["Hook",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":14,"type":"STObject"}],["Permission",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":15,"type":"STObject"}],["Signer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"STObject"}],["Majority",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"STObject"}],["DisabledValidator",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"STObject"}],["EmittedTxn",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"STObject"}],["HookExecution",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"STObject"}],["HookDefinition",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"STObject"}],["HookParameter",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":23,"type":"STObject"}],["HookGrant",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"STObject"}],["VoteEntry",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"STObject"}],["AuctionSlot",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"STObject"}],["AuthAccount",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"STObject"}],["XChainClaimProofSig",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"STObject"}],["XChainCreateAccountProofSig",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"STObject"}],["XChainClaimAttestationCollectionElement",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":30,"type":"STObject"}],["XChainCreateAccountAttestationCollectionElement",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":31,"type":"STObject"}],["PriceData",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":32,"type":"STObject"}],["Credential",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":33,"type":"STObject"}],["RawTransaction",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":34,"type":"STObject"}],["BatchSigner",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":35,"type":"STObject"}],["Book",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":36,"type":"STObject"}],["Signers",{"isSerialized":true,"isSigningField":false,"isVLEncoded":false,"nth":3,"type":"STArray"}],["SignerEntries",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"STArray"}],["Template",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"STArray"}],["Necessary",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":6,"type":"STArray"}],["Sufficient",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":7,"type":"STArray"}],["AffectedNodes",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":8,"type":"STArray"}],["Memos",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":9,"type":"STArray"}],["NFTokens",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":10,"type":"STArray"}],["Hooks",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":11,"type":"STArray"}],["VoteSlots",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":12,"type":"STArray"}],["AdditionalBooks",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":13,"type":"STArray"}],["Majorities",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"STArray"}],["DisabledValidators",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"STArray"}],["HookExecutions",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"STArray"}],["HookParameters",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"STArray"}],["HookGrants",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"STArray"}],["XChainClaimAttestations",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":21,"type":"STArray"}],["XChainCreateAccountAttestations",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":22,"type":"STArray"}],["PriceDataSeries",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":24,"type":"STArray"}],["AuthAccounts",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":25,"type":"STArray"}],["AuthorizeCredentials",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":26,"type":"STArray"}],["UnauthorizeCredentials",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":27,"type":"STArray"}],["AcceptedCredentials",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":28,"type":"STArray"}],["Permissions",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":29,"type":"STArray"}],["RawTransactions",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":30,"type":"STArray"}],["BatchSigners",{"isSerialized":true,"isSigningField":false,"isVLEncoded":false,"nth":31,"type":"STArray"}],["CloseResolution",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"UInt8"}],["Method",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"UInt8"}],["TransactionResult",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"UInt8"}],["Scale",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"UInt8"}],["AssetScale",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":5,"type":"UInt8"}],["TickSize",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":16,"type":"UInt8"}],["UNLModifyDisabling",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":17,"type":"UInt8"}],["HookResult",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":18,"type":"UInt8"}],["WasLockingChainSend",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":19,"type":"UInt8"}],["WithdrawalPolicy",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":20,"type":"UInt8"}],["TakerPaysCurrency",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Hash160"}],["TakerPaysIssuer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Hash160"}],["TakerGetsCurrency",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"Hash160"}],["TakerGetsIssuer",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"Hash160"}],["Paths",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"PathSet"}],["Indexes",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":1,"type":"Vector256"}],["Hashes",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":2,"type":"Vector256"}],["Amendments",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":3,"type":"Vector256"}],["NFTokenOffers",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":4,"type":"Vector256"}],["CredentialIDs",{"isSerialized":true,"isSigningField":true,"isVLEncoded":true,"nth":5,"type":"Vector256"}],["MPTokenIssuanceID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Hash192"}],["ShareMPTID",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Hash192"}],["LockingChainIssue",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Issue"}],["IssuingChainIssue",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Issue"}],["Asset",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":3,"type":"Issue"}],["Asset2",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":4,"type":"Issue"}],["XChainBridge",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"XChainBridge"}],["BaseAsset",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":1,"type":"Currency"}],["QuoteAsset",{"isSerialized":true,"isSigningField":true,"isVLEncoded":false,"nth":2,"type":"Currency"}],["Transaction",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":257,"type":"Transaction"}],["LedgerEntry",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":257,"type":"LedgerEntry"}],["Validation",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":257,"type":"Validation"}],["Metadata",{"isSerialized":false,"isSigningField":false,"isVLEncoded":false,"nth":257,"type":"Metadata"}]]'), LEDGER_ENTRY_TYPES = { AMM: 121, AccountRoot: 97, Amendments: 102, Bridge: 105, Check: 67, Credential: 129, DID: 73, Delegate: 131, DepositPreauth: 112, DirectoryNode: 100, Escrow: 117, FeeSettings: 115, Invalid: -1, LedgerHashes: 104, MPToken: 127, MPTokenIssuance: 126, NFTokenOffer: 55, NFTokenPage: 80, NegativeUNL: 78, Offer: 111, Oracle: 128, PayChannel: 120, PermissionedDomain: 130, RippleState: 114, SignerList: 83, Ticket: 84, Vault: 132, XChainOwnedClaimID: 113, XChainOwnedCreateAccountClaimID: 116 }, TRANSACTION_RESULTS = { tecAMM_ACCOUNT: 168, tecAMM_BALANCE: 163, tecAMM_EMPTY: 166, tecAMM_FAILED: 164, tecAMM_INVALID_TOKENS: 165, tecAMM_NOT_EMPTY: 167, tecARRAY_EMPTY: 190, tecARRAY_TOO_LARGE: 191, tecBAD_CREDENTIALS: 193, tecCANT_ACCEPT_OWN_NFTOKEN_OFFER: 158, tecCLAIM: 100, tecCRYPTOCONDITION_ERROR: 146, tecDIR_FULL: 121, tecDST_TAG_NEEDED: 143, tecDUPLICATE: 149, tecEMPTY_DID: 187, tecEXPIRED: 148, tecFAILED_PROCESSING: 105, tecFROZEN: 137, tecHAS_OBLIGATIONS: 151, tecHOOK_REJECTED: 153, tecINCOMPLETE: 169, tecINSUFFICIENT_FUNDS: 159, tecINSUFFICIENT_PAYMENT: 161, tecINSUFFICIENT_RESERVE: 141, tecINSUFF_FEE: 136, tecINSUF_RESERVE_LINE: 122, tecINSUF_RESERVE_OFFER: 123, tecINTERNAL: 144, tecINVALID_UPDATE_TIME: 188, tecINVARIANT_FAILED: 147, tecKILLED: 150, tecLIMIT_EXCEEDED: 195, tecLOCKED: 192, tecMAX_SEQUENCE_REACHED: 154, tecNEED_MASTER_KEY: 142, tecNFTOKEN_BUY_SELL_MISMATCH: 156, tecNFTOKEN_OFFER_TYPE_MISMATCH: 157, tecNO_ALTERNATIVE_KEY: 130, tecNO_AUTH: 134, tecNO_DELEGATE_PERMISSION: 198, tecNO_DST: 124, tecNO_DST_INSUF_XRP: 125, tecNO_ENTRY: 140, tecNO_ISSUER: 133, tecNO_LINE: 135, tecNO_LINE_INSUF_RESERVE: 126, tecNO_LINE_REDUNDANT: 127, tecNO_PERMISSION: 139, tecNO_REGULAR_KEY: 131, tecNO_SUITABLE_NFTOKEN_PAGE: 155, tecNO_TARGET: 138, tecOBJECT_NOT_FOUND: 160, tecOVERSIZE: 145, tecOWNERS: 132, tecPATH_DRY: 128, tecPATH_PARTIAL: 101, tecPRECISION_LOSS: 197, tecPSEUDO_ACCOUNT: 196, tecTOKEN_PAIR_NOT_FOUND: 189, tecTOO_SOON: 152, tecUNFUNDED: 129, tecUNFUNDED_ADD: 102, tecUNFUNDED_AMM: 162, tecUNFUNDED_OFFER: 103, tecUNFUNDED_PAYMENT: 104, tecWRONG_ASSET: 194, tecXCHAIN_ACCOUNT_CREATE_PAST: 181, tecXCHAIN_ACCOUNT_CREATE_TOO_MANY: 182, tecXCHAIN_BAD_CLAIM_ID: 172, tecXCHAIN_BAD_PUBLIC_KEY_ACCOUNT_PAIR: 185, tecXCHAIN_BAD_TRANSFER_ISSUE: 170, tecXCHAIN_CLAIM_NO_QUORUM: 173, tecXCHAIN_CREATE_ACCOUNT_DISABLED: 186, tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE: 175, tecXCHAIN_INSUFF_CREATE_AMOUNT: 180, tecXCHAIN_NO_CLAIM_ID: 171, tecXCHAIN_NO_SIGNERS_LIST: 178, tecXCHAIN_PAYMENT_FAILED: 183, tecXCHAIN_PROOF_UNKNOWN_KEY: 174, tecXCHAIN_REWARD_MISMATCH: 177, tecXCHAIN_SELF_COMMIT: 184, tecXCHAIN_SENDING_ACCOUNT_MISMATCH: 179, tecXCHAIN_WRONG_CHAIN: 176, tefALREADY: -198, tefBAD_ADD_AUTH: -197, tefBAD_AUTH: -196, tefBAD_AUTH_MASTER: -183, tefBAD_LEDGER: -195, tefBAD_QUORUM: -185, tefBAD_SIGNATURE: -186, tefCREATED: -194, tefEXCEPTION: -193, tefFAILURE: -199, tefINTERNAL: -192, tefINVALID_LEDGER_FIX_TYPE: -178, tefINVARIANT_FAILED: -182, tefMASTER_DISABLED: -188, tefMAX_LEDGER: -187, tefNFTOKEN_IS_NOT_TRANSFERABLE: -179, tefNOT_MULTI_SIGNING: -184, tefNO_AUTH_REQUIRED: -191, tefNO_TICKET: -180, tefPAST_SEQ: -190, tefTOO_BIG: -181, tefWRONG_PRIOR: -189, telBAD_DOMAIN: -398, telBAD_PATH_COUNT: -397, telBAD_PUBLIC_KEY: -396, telCAN_NOT_QUEUE: -392, telCAN_NOT_QUEUE_BALANCE: -391, telCAN_NOT_QUEUE_BLOCKED: -389, telCAN_NOT_QUEUE_BLOCKS: -390, telCAN_NOT_QUEUE_FEE: -388, telCAN_NOT_QUEUE_FULL: -387, telENV_RPC_FAILED: -383, telFAILED_PROCESSING: -395, telINSUF_FEE_P: -394, telLOCAL_ERROR: -399, telNETWORK_ID_MAKES_TX_NON_CANONICAL: -384, telNO_DST_PARTIAL: -393, telREQUIRES_NETWORK_ID: -385, telWRONG_NETWORK: -386, temARRAY_EMPTY: -253, temARRAY_TOO_LARGE: -252, temBAD_AMM_TOKENS: -261, temBAD_AMOUNT: -298, temBAD_CURRENCY: -297, temBAD_EXPIRATION: -296, temBAD_FEE: -295, temBAD_ISSUER: -294, temBAD_LIMIT: -293, temBAD_NFTOKEN_TRANSFER_FEE: -262, temBAD_OFFER: -292, temBAD_PATH: -291, temBAD_PATH_LOOP: -290, temBAD_QUORUM: -271, temBAD_REGKEY: -289, temBAD_SEND_XRP_LIMIT: -288, temBAD_SEND_XRP_MAX: -287, temBAD_SEND_XRP_NO_DIRECT: -286, temBAD_SEND_XRP_PARTIAL: -285, temBAD_SEND_XRP_PATHS: -284, temBAD_SEQUENCE: -283, temBAD_SIGNATURE: -282, temBAD_SIGNER: -272, temBAD_SRC_ACCOUNT: -281, temBAD_TICK_SIZE: -269, temBAD_TRANSFER_FEE: -251, temBAD_TRANSFER_RATE: -280, temBAD_WEIGHT: -270, temCANNOT_PREAUTH_SELF: -267, temDISABLED: -273, temDST_IS_SRC: -279, temDST_NEEDED: -278, temEMPTY_DID: -254, temINVALID: -277, temINVALID_ACCOUNT_ID: -268, temINVALID_COUNT: -266, temINVALID_FLAG: -276, temINVALID_INNER_BATCH: -250, temMALFORMED: -299, temREDUNDANT: -275, temRIPPLE_EMPTY: -274, temSEQ_AND_TICKET: -263, temUNCERTAIN: -265, temUNKNOWN: -264, temXCHAIN_BAD_PROOF: -259, temXCHAIN_BRIDGE_BAD_ISSUES: -258, temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT: -256, temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT: -255, temXCHAIN_BRIDGE_NONDOOR_OWNER: -257, temXCHAIN_EQUAL_DOOR_ACCOUNTS: -260, terADDRESS_COLLISION: -86, terFUNDS_SPENT: -98, terINSUF_FEE_B: -97, terLAST: -91, terNO_ACCOUNT: -96, terNO_AMM: -87, terNO_AUTH: -95, terNO_LINE: -94, terNO_RIPPLE: -90, terOWNERS: -93, terPRE_SEQ: -92, terPRE_TICKET: -88, terQUEUED: -89, terRETRY: -99, tesSUCCESS: 0 }, TRANSACTION_TYPES = { AMMBid: 39, AMMClawback: 31, AMMCreate: 35, AMMDelete: 40, AMMDeposit: 36, AMMVote: 38, AMMWithdraw: 37, AccountDelete: 21, AccountSet: 3, Batch: 71, CheckCancel: 18, CheckCash: 17, CheckCreate: 16, Clawback: 30, CredentialAccept: 59, CredentialCreate: 58, CredentialDelete: 60, DIDDelete: 50, DIDSet: 49, DelegateSet: 64, DepositPreauth: 19, EnableAmendment: 100, EscrowCancel: 4, EscrowCreate: 1, EscrowFinish: 2, Invalid: -1, LedgerStateFix: 53, MPTokenAuthorize: 57, MPTokenIssuanceCreate: 54, MPTokenIssuanceDestroy: 55, MPTokenIssuanceSet: 56, NFTokenAcceptOffer: 29, NFTokenBurn: 26, NFTokenCancelOffer: 28, NFTokenCreateOffer: 27, NFTokenMint: 25, NFTokenModify: 61, OfferCancel: 8, OfferCreate: 7, OracleDelete: 52, OracleSet: 51, Payment: 0, PaymentChannelClaim: 15, PaymentChannelCreate: 13, PaymentChannelFund: 14, PermissionedDomainDelete: 63, PermissionedDomainSet: 62, SetFee: 101, SetRegularKey: 5, SignerListSet: 12, TicketCreate: 10, TrustSet: 20, UNLModify: 102, VaultClawback: 70, VaultCreate: 65, VaultDelete: 67, VaultDeposit: 68, VaultSet: 66, VaultWithdraw: 69, XChainAccountCreateCommit: 44, XChainAddAccountCreateAttestation: 46, XChainAddClaimAttestation: 45, XChainClaim: 43, XChainCommit: 42, XChainCreateBridge: 48, XChainCreateClaimID: 41, XChainModifyBridge: 47 }, TYPES = { AccountID: 8, Amount: 6, Blob: 7, Currency: 26, Done: -1, Hash128: 4, Hash160: 17, Hash192: 21, Hash256: 5, Issue: 24, LedgerEntry: 10002, Metadata: 10004, NotPresent: 0, Number: 9, PathSet: 18, STArray: 15, STObject: 14, Transaction: 10001, UInt16: 1, UInt32: 2, UInt384: 22, UInt512: 23, UInt64: 3, UInt8: 16, UInt96: 20, Unknown: -2, Validation: 10003, Vector256: 19, XChainBridge: 25 }, require$$0 = {
+  FIELDS,
+  LEDGER_ENTRY_TYPES,
+  TRANSACTION_RESULTS,
+  TRANSACTION_TYPES,
+  TYPES
+};
+var xrplDefinitionsBase = {}, bytes = {}, hasRequiredBytes;
+function requireBytes() {
+  if (hasRequiredBytes) return bytes;
+  hasRequiredBytes = 1, Object.defineProperty(bytes, "__esModule", { value: !0 }), bytes.BytesLookup = bytes.Bytes = void 0;
+  class e {
+    constructor(i, n, s) {
+      this.name = i, this.ordinal = n, this.ordinalWidth = s, this.bytes = new Uint8Array(s);
+      for (let a = 0; a < s; a++)
+        this.bytes[s - a - 1] = n >>> a * 8 & 255;
+    }
+    toJSON() {
+      return this.name;
+    }
+    toBytesSink(i) {
+      i.put(this.bytes);
+    }
+    toBytes() {
+      return this.bytes;
+    }
+  }
+  bytes.Bytes = e;
+  class r {
+    constructor(i, n) {
+      this.ordinalWidth = n, Object.entries(i).forEach(([s, a]) => {
+        this.add(s, a);
+      });
+    }
+    /**
+     * Add a new name value pair to the BytesLookup.
+     *
+     * @param name - A human readable name for the field.
+     * @param value - The numeric value for the field.
+     * @throws if the name or value already exist in the lookup because it's unclear how to decode.
+     */
+    add(i, n) {
+      if (this[i])
+        throw new SyntaxError(`Attempted to add a value with a duplicate name "${i}". This is not allowed because it is unclear how to decode.`);
+      if (this[n.toString()])
+        throw new SyntaxError(`Attempted to add a duplicate value under a different name (Given name: "${i}" and previous name: "${this[n.toString()]}. This is not allowed because it is unclear how to decode.
+Given value: ${n.toString()}`);
+      this[i] = new e(i, n, this.ordinalWidth), this[n.toString()] = this[i];
+    }
+    from(i) {
+      return i instanceof e ? i : this[i];
+    }
+    fromParser(i) {
+      return this.from(i.readUIntN(this.ordinalWidth).toString());
+    }
+  }
+  return bytes.BytesLookup = r, bytes;
+}
+var field = {}, serializedType = {}, binarySerializer = {}, hasRequiredBinarySerializer;
+function requireBinarySerializer() {
+  if (hasRequiredBinarySerializer) return binarySerializer;
+  hasRequiredBinarySerializer = 1, Object.defineProperty(binarySerializer, "__esModule", { value: !0 }), binarySerializer.BinarySerializer = binarySerializer.BytesList = void 0;
+  const e = requireBrowser$4();
+  class r {
+    constructor() {
+      this.bytesArray = [];
+    }
+    /**
+     * Get the total number of bytes in the BytesList
+     *
+     * @return the number of bytes
+     */
+    getLength() {
+      return (0, e.concat)(this.bytesArray).byteLength;
+    }
+    /**
+     * Put bytes in the BytesList
+     *
+     * @param bytesArg A Uint8Array
+     * @return this BytesList
+     */
+    put(n) {
+      const s = Uint8Array.from(n);
+      return this.bytesArray.push(s), this;
+    }
+    /**
+     * Write this BytesList to the back of another bytes list
+     *
+     *  @param list The BytesList to write to
+     */
+    toBytesSink(n) {
+      n.put(this.toBytes());
+    }
+    toBytes() {
+      return (0, e.concat)(this.bytesArray);
+    }
+    toHex() {
+      return (0, e.bytesToHex)(this.toBytes());
+    }
+  }
+  binarySerializer.BytesList = r;
+  class t {
+    constructor(n) {
+      this.sink = new r(), this.sink = n;
+    }
+    /**
+     * Write a value to this BinarySerializer
+     *
+     * @param value a SerializedType value
+     */
+    write(n) {
+      n.toBytesSink(this.sink);
+    }
+    /**
+     * Write bytes to this BinarySerializer
+     *
+     * @param bytes the bytes to write
+     */
+    put(n) {
+      this.sink.put(n);
+    }
+    /**
+     * Write a value of a given type to this BinarySerializer
+     *
+     * @param type the type to write
+     * @param value a value of that type
+     */
+    writeType(n, s) {
+      this.write(n.from(s));
+    }
+    /**
+     * Write BytesList to this BinarySerializer
+     *
+     * @param bl BytesList to write to BinarySerializer
+     */
+    writeBytesList(n) {
+      n.toBytesSink(this.sink);
+    }
+    /**
+     * Calculate the header of Variable Length encoded bytes
+     *
+     * @param length the length of the bytes
+     */
+    encodeVariableLength(n) {
+      const s = new Uint8Array(3);
+      if (n <= 192)
+        return s[0] = n, s.slice(0, 1);
+      if (n <= 12480)
+        return n -= 193, s[0] = 193 + (n >>> 8), s[1] = n & 255, s.slice(0, 2);
+      if (n <= 918744)
+        return n -= 12481, s[0] = 241 + (n >>> 16), s[1] = n >> 8 & 255, s[2] = n & 255, s.slice(0, 3);
+      throw new Error("Overflow error");
+    }
+    /**
+     * Write field and value to BinarySerializer
+     *
+     * @param field field to write to BinarySerializer
+     * @param value value to write to BinarySerializer
+     */
+    writeFieldAndValue(n, s, a = !1) {
+      const o = n.associatedType.from(s);
+      if (o.toBytesSink === void 0 || n.name === void 0)
+        throw new Error();
+      this.sink.put(n.header), n.isVariableLengthEncoded ? this.writeLengthEncoded(o, a) : o.toBytesSink(this.sink);
+    }
+    /**
+     * Write a variable length encoded value to the BinarySerializer
+     *
+     * @param value length encoded value to write to BytesList
+     */
+    writeLengthEncoded(n, s = !1) {
+      const a = new r();
+      s || n.toBytesSink(a), this.put(this.encodeVariableLength(a.getLength())), this.writeBytesList(a);
+    }
+  }
+  return binarySerializer.BinarySerializer = t, binarySerializer;
+}
+var hasRequiredSerializedType;
+function requireSerializedType() {
+  if (hasRequiredSerializedType) return serializedType;
+  hasRequiredSerializedType = 1, Object.defineProperty(serializedType, "__esModule", { value: !0 }), serializedType.Comparable = serializedType.SerializedType = void 0;
+  const e = requireBinarySerializer(), r = requireBrowser$4();
+  class t {
+    constructor(s) {
+      this.bytes = new Uint8Array(0), this.bytes = s ?? new Uint8Array(0);
+    }
+    static fromParser(s, a) {
+      throw new Error("fromParser not implemented");
+    }
+    static from(s) {
+      throw new Error("from not implemented");
+    }
+    /**
+     * Write the bytes representation of a SerializedType to a BytesList
+     *
+     * @param list The BytesList to write SerializedType bytes to
+     */
+    toBytesSink(s) {
+      s.put(this.bytes);
+    }
+    /**
+     * Get the hex representation of a SerializedType's bytes
+     *
+     * @returns hex String of this.bytes
+     */
+    toHex() {
+      return (0, r.bytesToHex)(this.toBytes());
+    }
+    /**
+     * Get the bytes representation of a SerializedType
+     *
+     * @returns A Uint8Array of the bytes
+     */
+    toBytes() {
+      if (this.bytes)
+        return this.bytes;
+      const s = new e.BytesList();
+      return this.toBytesSink(s), s.toBytes();
+    }
+    /**
+     * Return the JSON representation of a SerializedType
+     *
+     * @param _definitions rippled definitions used to parse the values of transaction types and such.
+     *                          Unused in default, but used in STObject, STArray
+     *                          Can be customized for sidechains and amendments.
+     * @returns any type, if not overloaded returns hexString representation of bytes
+     */
+    toJSON(s, a) {
+      return this.toHex();
+    }
+    /**
+     * @returns hexString representation of this.bytes
+     */
+    toString() {
+      return this.toHex();
+    }
+  }
+  serializedType.SerializedType = t;
+  class i extends t {
+    lt(s) {
+      return this.compareTo(s) < 0;
+    }
+    eq(s) {
+      return this.compareTo(s) === 0;
+    }
+    gt(s) {
+      return this.compareTo(s) > 0;
+    }
+    gte(s) {
+      return this.compareTo(s) > -1;
+    }
+    lte(s) {
+      return this.compareTo(s) < 1;
+    }
+    /**
+     * Overload this method to define how two Comparable SerializedTypes are compared
+     *
+     * @param other The comparable object to compare this to
+     * @returns A number denoting the relationship of this and other
+     */
+    compareTo(s) {
+      throw new Error(`cannot compare ${this.toString()} and ${s.toString()}`);
+    }
+  }
+  return serializedType.Comparable = i, serializedType;
+}
+var constants = {}, hasRequiredConstants;
+function requireConstants() {
+  return hasRequiredConstants || (hasRequiredConstants = 1, Object.defineProperty(constants, "__esModule", { value: !0 }), constants.DELEGATABLE_PERMISSIONS_WIDTH = constants.TRANSACTION_RESULT_WIDTH = constants.TRANSACTION_TYPE_WIDTH = constants.LEDGER_ENTRY_WIDTH = constants.TYPE_WIDTH = void 0, constants.TYPE_WIDTH = 2, constants.LEDGER_ENTRY_WIDTH = 2, constants.TRANSACTION_TYPE_WIDTH = 2, constants.TRANSACTION_RESULT_WIDTH = 1, constants.DELEGATABLE_PERMISSIONS_WIDTH = 4), constants;
+}
+var hasRequiredField;
+function requireField() {
+  if (hasRequiredField) return field;
+  hasRequiredField = 1, Object.defineProperty(field, "__esModule", { value: !0 }), field.FieldLookup = void 0;
+  const e = requireBytes(), r = requireSerializedType(), t = requireConstants();
+  function i(a, o) {
+    const d = [];
+    return a < 16 ? o < 16 ? d.push(a << 4 | o) : d.push(a << 4, o) : o < 16 ? d.push(o, a) : d.push(0, a, o), Uint8Array.from(d);
+  }
+  function n([a, o], d) {
+    const u = i(d, o.nth);
+    return {
+      name: a,
+      nth: o.nth,
+      isVariableLengthEncoded: o.isVLEncoded,
+      isSerialized: o.isSerialized,
+      isSigningField: o.isSigningField,
+      ordinal: d << 16 | o.nth,
+      type: new e.Bytes(o.type, d, t.TYPE_WIDTH),
+      header: u,
+      associatedType: r.SerializedType
+      // For later assignment in ./types/index.js or Definitions.updateAll(...)
+    };
+  }
+  class s {
+    constructor(o, d) {
+      o.forEach(([u, b]) => {
+        const l = d[b.type];
+        this[u] = n([u, b], l), this[this[u].ordinal.toString()] = this[u];
+      });
+    }
+    fromString(o) {
+      return this[o];
+    }
+  }
+  return field.FieldLookup = s, field;
+}
+var hasRequiredXrplDefinitionsBase;
+function requireXrplDefinitionsBase() {
+  return hasRequiredXrplDefinitionsBase || (hasRequiredXrplDefinitionsBase = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.BytesLookup = e.Bytes = e.FieldLookup = e.XrplDefinitionsBase = void 0;
+    const r = requireBytes();
+    Object.defineProperty(e, "Bytes", { enumerable: !0, get: function() {
+      return r.Bytes;
+    } }), Object.defineProperty(e, "BytesLookup", { enumerable: !0, get: function() {
+      return r.BytesLookup;
+    } });
+    const t = requireField();
+    Object.defineProperty(e, "FieldLookup", { enumerable: !0, get: function() {
+      return t.FieldLookup;
+    } });
+    const i = requireConstants();
+    class n {
+      /**
+       * Present rippled types in a typed and updatable format.
+       * For an example of the input format see `definitions.json`.
+       * To generate a new definitions file from rippled source code, use the tool at
+       * `packages/ripple-binary-codec/tools/generateDefinitions.js`.
+       *
+       * See the definitions.test.js file for examples of how to create your own updated definitions.json.
+       *
+       * @param enums - A json encoding of the core types, transaction types, transaction results, transaction names, and fields.
+       * @param types - A list of type objects with the same name as the fields defined.
+       *              You can use the coreTypes object if you are not adding new types.
+       */
+      constructor(a, o) {
+        this.type = new r.BytesLookup(a.TYPES, i.TYPE_WIDTH), this.ledgerEntryType = new r.BytesLookup(a.LEDGER_ENTRY_TYPES, i.LEDGER_ENTRY_WIDTH), this.transactionType = new r.BytesLookup(a.TRANSACTION_TYPES, i.TRANSACTION_TYPE_WIDTH), this.transactionResult = new r.BytesLookup(a.TRANSACTION_RESULTS, i.TRANSACTION_RESULT_WIDTH), this.field = new t.FieldLookup(a.FIELDS, a.TYPES), this.transactionNames = Object.entries(a.TRANSACTION_TYPES).filter(([b, l]) => l >= 0).map(([b, l]) => b), this.dataTypes = {}, this.associateTypes(o), this.granularPermissions = {
+          TrustlineAuthorize: 65537,
+          TrustlineFreeze: 65538,
+          TrustlineUnfreeze: 65539,
+          AccountDomainSet: 65540,
+          AccountEmailHashSet: 65541,
+          AccountMessageKeySet: 65542,
+          AccountTransferRateSet: 65543,
+          AccountTickSizeSet: 65544,
+          PaymentMint: 65545,
+          PaymentBurn: 65546,
+          MPTokenIssuanceLock: 65547,
+          MPTokenIssuanceUnlock: 65548
+        };
+        const d = Object.fromEntries(Object.entries(a.TRANSACTION_TYPES).map(([b, l]) => [
+          b,
+          l + 1
+        ])), u = Object.assign(Object.assign({}, this.granularPermissions), d);
+        this.delegatablePermissions = new r.BytesLookup(u, i.DELEGATABLE_PERMISSIONS_WIDTH);
+      }
+      /**
+       * Associates each Field to a corresponding class that TypeScript can recognize.
+       *
+       * @param types a list of type objects with the same name as the fields defined.
+       *              Defaults to xrpl.js's core type definitions.
+       */
+      associateTypes(a) {
+        this.dataTypes = Object.assign({}, this.dataTypes, a), Object.values(this.field).forEach((o) => {
+          o.associatedType = this.dataTypes[o.type.name];
+        }), this.field.TransactionType.associatedType = this.transactionType, this.field.TransactionResult.associatedType = this.transactionResult, this.field.LedgerEntryType.associatedType = this.ledgerEntryType, this.field.PermissionValue && (this.field.PermissionValue.associatedType = this.delegatablePermissions);
+      }
+      getAssociatedTypes() {
+        return this.dataTypes;
+      }
+    }
+    e.XrplDefinitionsBase = n;
+  })(xrplDefinitionsBase)), xrplDefinitionsBase;
+}
+var hasRequiredEnums;
+function requireEnums() {
+  return hasRequiredEnums || (hasRequiredEnums = 1, (function(e) {
+    var r = enums && enums.__importDefault || function(l) {
+      return l && l.__esModule ? l : { default: l };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.TRANSACTION_TYPES = e.TransactionType = e.TransactionResult = e.LedgerEntryType = e.Type = e.Field = e.DEFAULT_DEFINITIONS = e.XrplDefinitionsBase = e.Bytes = void 0;
+    const t = r(require$$0), i = requireXrplDefinitionsBase();
+    Object.defineProperty(e, "XrplDefinitionsBase", { enumerable: !0, get: function() {
+      return i.XrplDefinitionsBase;
+    } }), Object.defineProperty(e, "Bytes", { enumerable: !0, get: function() {
+      return i.Bytes;
+    } });
+    const n = new i.XrplDefinitionsBase(t.default, {});
+    e.DEFAULT_DEFINITIONS = n;
+    const s = n.type;
+    e.Type = s;
+    const a = n.ledgerEntryType;
+    e.LedgerEntryType = a;
+    const o = n.transactionType;
+    e.TransactionType = o;
+    const d = n.transactionResult;
+    e.TransactionResult = d;
+    const u = n.field;
+    e.Field = u;
+    const b = n.transactionNames;
+    e.TRANSACTION_TYPES = b;
+  })(enums)), enums;
+}
+var types$1 = {}, accountId = {}, hash160 = {}, hash = {}, utils$9 = {}, hasRequiredUtils$9;
+function requireUtils$9() {
+  if (hasRequiredUtils$9) return utils$9;
+  hasRequiredUtils$9 = 1, Object.defineProperty(utils$9, "__esModule", { value: !0 }), utils$9.compare = utils$9.equal = utils$9.readInt64BE = utils$9.readInt32BE = utils$9.readUInt32BE = utils$9.readUInt16BE = utils$9.writeInt64BE = utils$9.writeInt32BE = utils$9.writeUInt32BE = utils$9.writeUInt16BE = utils$9.writeUInt8 = void 0;
+  function e(m, v, h) {
+    v = Number(v), m[h] = v;
+  }
+  utils$9.writeUInt8 = e;
+  function r(m, v, h) {
+    v = Number(v), m[h] = v >>> 8, m[h + 1] = v;
+  }
+  utils$9.writeUInt16BE = r;
+  function t(m, v, h) {
+    m[h] = v >>> 24 & 255, m[h + 1] = v >>> 16 & 255, m[h + 2] = v >>> 8 & 255, m[h + 3] = v & 255;
+  }
+  utils$9.writeUInt32BE = t;
+  function i(m, v, h) {
+    new DataView(m.buffer, m.byteOffset, m.byteLength).setInt32(h, v, !1);
+  }
+  utils$9.writeInt32BE = i;
+  function n(m, v, h) {
+    new DataView(m.buffer, m.byteOffset, m.byteLength).setBigInt64(h, v, !1);
+  }
+  utils$9.writeInt64BE = n;
+  function s(m, v) {
+    return new DataView(m.buffer).getUint16(v, !1).toString(10);
+  }
+  utils$9.readUInt16BE = s;
+  function a(m, v) {
+    return new DataView(m.buffer).getUint32(v, !1).toString(10);
+  }
+  utils$9.readUInt32BE = a;
+  function o(m, v) {
+    return new DataView(m.buffer, m.byteOffset, m.byteLength).getInt32(v, !1);
+  }
+  utils$9.readInt32BE = o;
+  function d(m, v) {
+    return new DataView(m.buffer, m.byteOffset, m.byteLength).getBigInt64(v, !1);
+  }
+  utils$9.readInt64BE = d;
+  function u(m, v) {
+    const h = m instanceof ArrayBuffer ? new Uint8Array(m, 0) : m, _ = v instanceof ArrayBuffer ? new Uint8Array(v, 0) : v;
+    return h.byteLength != _.byteLength ? !1 : I(h) && I(_) ? g(h, _) === 0 : w(h) && w(_) ? l(h, _) === 0 : b(h, _) === 0;
+  }
+  utils$9.equal = u;
+  function b(m, v) {
+    const h = new Uint8Array(m.buffer, m.byteOffset, m.byteLength), _ = new Uint8Array(v.buffer, v.byteOffset, v.byteLength);
+    return p(h, _);
+  }
+  function l(m, v) {
+    const h = new Uint16Array(m.buffer, m.byteOffset, m.byteLength / 2), _ = new Uint16Array(v.buffer, v.byteOffset, v.byteLength / 2);
+    return p(h, _);
+  }
+  function g(m, v) {
+    const h = new Uint32Array(m.buffer, m.byteOffset, m.byteLength / 4), _ = new Uint32Array(v.buffer, v.byteOffset, v.byteLength / 4);
+    return p(h, _);
+  }
+  function p(m, v) {
+    if (m.byteLength !== v.byteLength)
+      throw new Error("Cannot compare arrays of different length");
+    for (let h = 0; h < m.length - 1; h += 1) {
+      if (m[h] > v[h])
+        return 1;
+      if (m[h] < v[h])
+        return -1;
+    }
+    return 0;
+  }
+  utils$9.compare = p;
+  function w(m) {
+    return m.byteOffset % 2 === 0 && m.byteLength % 2 === 0;
+  }
+  function I(m) {
+    return m.byteOffset % 4 === 0 && m.byteLength % 4 === 0;
+  }
+  return utils$9;
+}
+var hasRequiredHash;
+function requireHash() {
+  if (hasRequiredHash) return hash;
+  hasRequiredHash = 1, Object.defineProperty(hash, "__esModule", { value: !0 }), hash.Hash = void 0;
+  const e = requireSerializedType(), r = requireBrowser$4(), t = requireUtils$9();
+  class i extends e.Comparable {
+    constructor(s) {
+      if (super(s), this.bytes.length !== this.constructor.width)
+        throw new Error(`Invalid Hash length ${this.bytes.byteLength}`);
+    }
+    /**
+     * Construct a Hash object from an existing Hash object or a hex-string
+     *
+     * @param value A hash object or hex-string of a hash
+     */
+    static from(s) {
+      if (s instanceof this)
+        return s;
+      if (typeof s == "string") {
+        if (!r.HEX_REGEX.test(s))
+          throw new Error(`Invalid hash string ${s}`);
+        return new this((0, r.hexToBytes)(s));
+      }
+      throw new Error("Cannot construct Hash from given value");
+    }
+    /**
+     * Read a Hash object from a BinaryParser
+     *
+     * @param parser BinaryParser to read the hash from
+     * @param hint length of the bytes to read, optional
+     */
+    static fromParser(s, a) {
+      return new this(s.read(a ?? this.width));
+    }
+    /**
+     * Overloaded operator for comparing two hash objects
+     *
+     * @param other The Hash to compare this to
+     */
+    compareTo(s) {
+      return (0, t.compare)(this.bytes, this.constructor.from(s).bytes);
+    }
+    /**
+     * @returns the hex-string representation of this Hash
+     */
+    toString() {
+      return this.toHex();
+    }
+    /**
+     * Returns four bits at the specified depth within a hash
+     *
+     * @param depth The depth of the four bits
+     * @returns The number represented by the four bits
+     */
+    nibblet(s) {
+      const a = s > 0 ? s / 2 | 0 : 0;
+      let o = this.bytes[a];
+      return s % 2 === 0 ? o = (o & 240) >>> 4 : o = o & 15, o;
+    }
+  }
+  return hash.Hash = i, hash;
+}
+var hasRequiredHash160;
+function requireHash160() {
+  if (hasRequiredHash160) return hash160;
+  hasRequiredHash160 = 1, Object.defineProperty(hash160, "__esModule", { value: !0 }), hash160.Hash160 = void 0;
+  const e = requireHash();
+  class r extends e.Hash {
+    constructor(i) {
+      i && i.byteLength === 0 && (i = r.ZERO_160.bytes), super(i ?? r.ZERO_160.bytes);
+    }
+  }
+  return hash160.Hash160 = r, r.width = 20, r.ZERO_160 = new r(new Uint8Array(r.width)), hash160;
+}
+var hasRequiredAccountId;
+function requireAccountId() {
+  if (hasRequiredAccountId) return accountId;
+  hasRequiredAccountId = 1, Object.defineProperty(accountId, "__esModule", { value: !0 }), accountId.AccountID = void 0;
+  const e = requireDist$3(), r = requireHash160(), t = requireBrowser$4(), i = /^[A-F0-9]{40}$/;
+  class n extends r.Hash160 {
+    constructor(a) {
+      super(a ?? n.defaultAccountID.bytes);
+    }
+    /**
+     * Defines how to construct an AccountID
+     *
+     * @param value either an existing AccountID, a hex-string, or a base58 r-Address
+     * @returns an AccountID object
+     */
+    static from(a) {
+      if (a instanceof n)
+        return a;
+      if (typeof a == "string")
+        return a === "" ? new n() : i.test(a) ? new n((0, t.hexToBytes)(a)) : this.fromBase58(a);
+      throw new Error("Cannot construct AccountID from value given");
+    }
+    /**
+     * Defines how to build an AccountID from a base58 r-Address
+     *
+     * @param value a base58 r-Address
+     * @returns an AccountID object
+     */
+    static fromBase58(a) {
+      if ((0, e.isValidXAddress)(a)) {
+        const o = (0, e.xAddressToClassicAddress)(a);
+        if (o.tag !== !1)
+          throw new Error("Only allowed to have tag on Account or Destination");
+        a = o.classicAddress;
+      }
+      return new n(Uint8Array.from((0, e.decodeAccountID)(a)));
+    }
+    /**
+     * Overload of toJSON
+     *
+     * @returns the base58 string for this AccountID
+     */
+    toJSON() {
+      return this.toBase58();
+    }
+    /**
+     * Defines how to encode AccountID into a base58 address
+     *
+     * @returns the base58 string defined by this.bytes
+     */
+    toBase58() {
+      return (0, e.encodeAccountID)(this.bytes);
+    }
+  }
+  return accountId.AccountID = n, n.defaultAccountID = new n(new Uint8Array(20)), accountId;
+}
+var amount = {}, binaryParser = {}, hasRequiredBinaryParser;
+function requireBinaryParser() {
+  if (hasRequiredBinaryParser) return binaryParser;
+  hasRequiredBinaryParser = 1, Object.defineProperty(binaryParser, "__esModule", { value: !0 }), binaryParser.BinaryParser = void 0;
+  const e = requireEnums(), r = requireBrowser$4();
+  class t {
+    /**
+     * Initialize bytes to a hex string
+     *
+     * @param hexBytes a hex string
+     * @param definitions Rippled definitions used to parse the values of transaction types and such.
+     *                          Can be customized for sidechains and amendments.
+     */
+    constructor(n, s = e.DEFAULT_DEFINITIONS) {
+      this.bytes = (0, r.hexToBytes)(n), this.definitions = s;
+    }
+    /**
+     * Peek the first byte of the BinaryParser
+     *
+     * @returns The first byte of the BinaryParser
+     */
+    peek() {
+      if (this.bytes.byteLength === 0)
+        throw new Error();
+      return this.bytes[0];
+    }
+    /**
+     * Consume the first n bytes of the BinaryParser
+     *
+     * @param n the number of bytes to skip
+     */
+    skip(n) {
+      if (n > this.bytes.byteLength)
+        throw new Error();
+      this.bytes = this.bytes.slice(n);
+    }
+    /**
+     * read the first n bytes from the BinaryParser
+     *
+     * @param n The number of bytes to read
+     * @return The bytes
+     */
+    read(n) {
+      if (n > this.bytes.byteLength)
+        throw new Error();
+      const s = this.bytes.slice(0, n);
+      return this.skip(n), s;
+    }
+    /**
+     * Read an integer of given size
+     *
+     * @param n The number of bytes to read
+     * @return The number represented by those bytes
+     */
+    readUIntN(n) {
+      if (0 >= n || n > 4)
+        throw new Error("invalid n");
+      return this.read(n).reduce((s, a) => s << 8 | a) >>> 0;
+    }
+    readUInt8() {
+      return this.readUIntN(1);
+    }
+    readUInt16() {
+      return this.readUIntN(2);
+    }
+    readUInt32() {
+      return this.readUIntN(4);
+    }
+    size() {
+      return this.bytes.byteLength;
+    }
+    end(n) {
+      const s = this.bytes.byteLength;
+      return s === 0 || n !== void 0 && s <= n;
+    }
+    /**
+     * Reads variable length encoded bytes
+     *
+     * @return The variable length bytes
+     */
+    readVariableLength() {
+      return this.read(this.readVariableLengthLength());
+    }
+    /**
+     * Reads the length of the variable length encoded bytes
+     *
+     * @return The length of the variable length encoded bytes
+     */
+    readVariableLengthLength() {
+      const n = this.readUInt8();
+      if (n <= 192)
+        return n;
+      if (n <= 240) {
+        const s = this.readUInt8();
+        return 193 + (n - 193) * 256 + s;
+      } else if (n <= 254) {
+        const s = this.readUInt8(), a = this.readUInt8();
+        return 12481 + (n - 241) * 65536 + s * 256 + a;
+      }
+      throw new Error("Invalid variable length indicator");
+    }
+    /**
+     * Reads the field ordinal from the BinaryParser
+     *
+     * @return Field ordinal
+     */
+    readFieldOrdinal() {
+      let n = this.readUInt8(), s = n & 15;
+      if (n >>= 4, n === 0 && (n = this.readUInt8(), n === 0 || n < 16))
+        throw new Error(`Cannot read FieldOrdinal, type_code ${n} out of range`);
+      if (s === 0 && (s = this.readUInt8(), s === 0 || s < 16))
+        throw new Error(`Cannot read FieldOrdinal, field_code ${s} out of range`);
+      return n << 16 | s;
+    }
+    /**
+     * Read the field from the BinaryParser
+     *
+     * @return The field represented by the bytes at the head of the BinaryParser
+     */
+    readField() {
+      return this.definitions.field.fromString(this.readFieldOrdinal().toString());
+    }
+    /**
+     * Read a given type from the BinaryParser
+     *
+     * @param type The type that you want to read from the BinaryParser
+     * @return The instance of that type read from the BinaryParser
+     */
+    readType(n) {
+      return n.fromParser(this);
+    }
+    /**
+     * Get the type associated with a given field
+     *
+     * @param field The field that you wan to get the type of
+     * @return The type associated with the given field
+     */
+    typeForField(n) {
+      return n.associatedType;
+    }
+    /**
+     * Read value of the type specified by field from the BinaryParser
+     *
+     * @param field The field that you want to get the associated value for
+     * @return The value associated with the given field
+     */
+    readFieldValue(n) {
+      const s = this.typeForField(n);
+      if (!s)
+        throw new Error(`unsupported: (${n.name}, ${n.type.name})`);
+      const a = n.isVariableLengthEncoded ? this.readVariableLengthLength() : void 0, o = s.fromParser(this, a);
+      if (o === void 0)
+        throw new Error(`fromParser for (${n.name}, ${n.type.name}) -> undefined `);
+      return o;
+    }
+    /**
+     * Get the next field and value from the BinaryParser
+     *
+     * @return The field and value
+     */
+    readFieldAndValue() {
+      const n = this.readField();
+      return [n, this.readFieldValue(n)];
+    }
+  }
+  return binaryParser.BinaryParser = t, binaryParser;
+}
+var currency = {}, hasRequiredCurrency;
+function requireCurrency() {
+  if (hasRequiredCurrency) return currency;
+  hasRequiredCurrency = 1, Object.defineProperty(currency, "__esModule", { value: !0 }), currency.Currency = void 0;
+  const e = requireHash160(), r = requireBrowser$4(), t = /^0{40}$/, i = /^[A-Z0-9a-z?!@#$%^&*(){}[\]|]{3}$/, n = /^[A-F0-9]{40}$/, s = /^0{24}[\x00-\x7F]{6}0{10}$/;
+  function a(I) {
+    const m = new Uint8Array(20);
+    if (I !== "XRP") {
+      const v = I.split("").map((h) => h.charCodeAt(0));
+      m.set(v, 12);
+    }
+    return m;
+  }
+  function o(I) {
+    return i.test(I);
+  }
+  function d(I) {
+    const m = (0, r.hexToString)((0, r.bytesToHex)(I));
+    return m === "XRP" ? null : o(m) ? m : null;
+  }
+  function u(I) {
+    return n.test(I);
+  }
+  function b(I) {
+    return I.length === 3 || u(I);
+  }
+  function l(I) {
+    return I.byteLength === 20;
+  }
+  function g(I) {
+    return I instanceof Uint8Array ? l(I) : b(I);
+  }
+  function p(I) {
+    if (!g(I))
+      throw new Error(`Unsupported Currency representation: ${I}`);
+    return I.length === 3 ? a(I) : (0, r.hexToBytes)(I);
+  }
+  class w extends e.Hash160 {
+    constructor(m) {
+      super(m ?? w.XRP.bytes);
+      const v = (0, r.bytesToHex)(this.bytes);
+      t.test(v) ? this._iso = "XRP" : s.test(v) ? this._iso = d(this.bytes.slice(12, 15)) : this._iso = null;
+    }
+    /**
+     * Return the ISO code of this currency
+     *
+     * @returns ISO code if it exists, else null
+     */
+    iso() {
+      return this._iso;
+    }
+    /**
+     * Constructs a Currency object
+     *
+     * @param val Currency object or a string representation of a currency
+     */
+    static from(m) {
+      if (m instanceof w)
+        return m;
+      if (typeof m == "string")
+        return new w(p(m));
+      throw new Error("Cannot construct Currency from value given");
+    }
+    /**
+     * Gets the JSON representation of a currency
+     *
+     * @returns JSON representation
+     */
+    toJSON() {
+      const m = this.iso();
+      return m !== null ? m : (0, r.bytesToHex)(this.bytes);
+    }
+  }
+  return currency.Currency = w, w.XRP = new w(new Uint8Array(20)), currency;
+}
+var bignumber$1 = { exports: {} }, bignumber = bignumber$1.exports, hasRequiredBignumber;
+function requireBignumber() {
+  return hasRequiredBignumber || (hasRequiredBignumber = 1, (function(e) {
+    (function(r) {
+      var t, i = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i, n = Math.ceil, s = Math.floor, a = "[BigNumber Error] ", o = a + "Number primitive has more than 15 significant digits: ", d = 1e14, u = 14, b = 9007199254740991, l = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13], g = 1e7, p = 1e9;
+      function w(R) {
+        var D, N, T, f = x.prototype = { constructor: x, toString: null, valueOf: null }, C = new x(1), A = 20, E = 4, S = -7, L = 21, U = -1e7, H = 1e7, K = !1, $ = 1, W = 0, G = {
+          prefix: "",
+          groupSize: 3,
+          secondaryGroupSize: 0,
+          groupSeparator: ",",
+          decimalSeparator: ".",
+          fractionGroupSize: 0,
+          fractionGroupSeparator: " ",
+          // non-breaking space
+          suffix: ""
+        }, J = "0123456789abcdefghijklmnopqrstuvwxyz", re = !0;
+        function x(B, q) {
+          var M, k, F, V, X, O, P, z, j = this;
+          if (!(j instanceof x)) return new x(B, q);
+          if (q == null) {
+            if (B && B._isBigNumber === !0) {
+              j.s = B.s, !B.c || B.e > H ? j.c = j.e = null : B.e < U ? j.c = [j.e = 0] : (j.e = B.e, j.c = B.c.slice());
+              return;
+            }
+            if ((O = typeof B == "number") && B * 0 == 0) {
+              if (j.s = 1 / B < 0 ? (B = -B, -1) : 1, B === ~~B) {
+                for (V = 0, X = B; X >= 10; X /= 10, V++) ;
+                V > H ? j.c = j.e = null : (j.e = V, j.c = [B]);
+                return;
+              }
+              z = String(B);
+            } else {
+              if (!i.test(z = String(B))) return T(j, z, O);
+              j.s = z.charCodeAt(0) == 45 ? (z = z.slice(1), -1) : 1;
+            }
+            (V = z.indexOf(".")) > -1 && (z = z.replace(".", "")), (X = z.search(/e/i)) > 0 ? (V < 0 && (V = X), V += +z.slice(X + 1), z = z.substring(0, X)) : V < 0 && (V = z.length);
+          } else {
+            if (h(q, 2, J.length, "Base"), q == 10 && re)
+              return j = new x(B), oe(j, A + j.e + 1, E);
+            if (z = String(B), O = typeof B == "number") {
+              if (B * 0 != 0) return T(j, z, O, q);
+              if (j.s = 1 / B < 0 ? (z = z.slice(1), -1) : 1, x.DEBUG && z.replace(/^0\.0*|\./, "").length > 15)
+                throw Error(o + B);
+            } else
+              j.s = z.charCodeAt(0) === 45 ? (z = z.slice(1), -1) : 1;
+            for (M = J.slice(0, q), V = X = 0, P = z.length; X < P; X++)
+              if (M.indexOf(k = z.charAt(X)) < 0) {
+                if (k == ".") {
+                  if (X > V) {
+                    V = P;
+                    continue;
+                  }
+                } else if (!F && (z == z.toUpperCase() && (z = z.toLowerCase()) || z == z.toLowerCase() && (z = z.toUpperCase()))) {
+                  F = !0, X = -1, V = 0;
+                  continue;
+                }
+                return T(j, String(B), O, q);
+              }
+            O = !1, z = N(z, q, 10, j.s), (V = z.indexOf(".")) > -1 ? z = z.replace(".", "") : V = z.length;
+          }
+          for (X = 0; z.charCodeAt(X) === 48; X++) ;
+          for (P = z.length; z.charCodeAt(--P) === 48; ) ;
+          if (z = z.slice(X, ++P)) {
+            if (P -= X, O && x.DEBUG && P > 15 && (B > b || B !== s(B)))
+              throw Error(o + j.s * B);
+            if ((V = V - X - 1) > H)
+              j.c = j.e = null;
+            else if (V < U)
+              j.c = [j.e = 0];
+            else {
+              if (j.e = V, j.c = [], X = (V + 1) % u, V < 0 && (X += u), X < P) {
+                for (X && j.c.push(+z.slice(0, X)), P -= u; X < P; )
+                  j.c.push(+z.slice(X, X += u));
+                X = u - (z = z.slice(X)).length;
+              } else
+                X -= P;
+              for (; X--; z += "0") ;
+              j.c.push(+z);
+            }
+          } else
+            j.c = [j.e = 0];
+        }
+        x.clone = w, x.ROUND_UP = 0, x.ROUND_DOWN = 1, x.ROUND_CEIL = 2, x.ROUND_FLOOR = 3, x.ROUND_HALF_UP = 4, x.ROUND_HALF_DOWN = 5, x.ROUND_HALF_EVEN = 6, x.ROUND_HALF_CEIL = 7, x.ROUND_HALF_FLOOR = 8, x.EUCLID = 9, x.config = x.set = function(B) {
+          var q, M;
+          if (B != null)
+            if (typeof B == "object") {
+              if (B.hasOwnProperty(q = "DECIMAL_PLACES") && (M = B[q], h(M, 0, p, q), A = M), B.hasOwnProperty(q = "ROUNDING_MODE") && (M = B[q], h(M, 0, 8, q), E = M), B.hasOwnProperty(q = "EXPONENTIAL_AT") && (M = B[q], M && M.pop ? (h(M[0], -p, 0, q), h(M[1], 0, p, q), S = M[0], L = M[1]) : (h(M, -p, p, q), S = -(L = M < 0 ? -M : M))), B.hasOwnProperty(q = "RANGE"))
+                if (M = B[q], M && M.pop)
+                  h(M[0], -p, -1, q), h(M[1], 1, p, q), U = M[0], H = M[1];
+                else if (h(M, -p, p, q), M)
+                  U = -(H = M < 0 ? -M : M);
+                else
+                  throw Error(a + q + " cannot be zero: " + M);
+              if (B.hasOwnProperty(q = "CRYPTO"))
+                if (M = B[q], M === !!M)
+                  if (M)
+                    if (typeof crypto < "u" && crypto && (crypto.getRandomValues || crypto.randomBytes))
+                      K = M;
+                    else
+                      throw K = !M, Error(a + "crypto unavailable");
+                  else
+                    K = M;
+                else
+                  throw Error(a + q + " not true or false: " + M);
+              if (B.hasOwnProperty(q = "MODULO_MODE") && (M = B[q], h(M, 0, 9, q), $ = M), B.hasOwnProperty(q = "POW_PRECISION") && (M = B[q], h(M, 0, p, q), W = M), B.hasOwnProperty(q = "FORMAT"))
+                if (M = B[q], typeof M == "object") G = M;
+                else throw Error(a + q + " not an object: " + M);
+              if (B.hasOwnProperty(q = "ALPHABET"))
+                if (M = B[q], typeof M == "string" && !/^.?$|[+\-.\s]|(.).*\1/.test(M))
+                  re = M.slice(0, 10) == "0123456789", J = M;
+                else
+                  throw Error(a + q + " invalid: " + M);
+            } else
+              throw Error(a + "Object expected: " + B);
+          return {
+            DECIMAL_PLACES: A,
+            ROUNDING_MODE: E,
+            EXPONENTIAL_AT: [S, L],
+            RANGE: [U, H],
+            CRYPTO: K,
+            MODULO_MODE: $,
+            POW_PRECISION: W,
+            FORMAT: G,
+            ALPHABET: J
+          };
+        }, x.isBigNumber = function(B) {
+          if (!B || B._isBigNumber !== !0) return !1;
+          if (!x.DEBUG) return !0;
+          var q, M, k = B.c, F = B.e, V = B.s;
+          e: if ({}.toString.call(k) == "[object Array]") {
+            if ((V === 1 || V === -1) && F >= -p && F <= p && F === s(F)) {
+              if (k[0] === 0) {
+                if (F === 0 && k.length === 1) return !0;
+                break e;
+              }
+              if (q = (F + 1) % u, q < 1 && (q += u), String(k[0]).length == q) {
+                for (q = 0; q < k.length; q++)
+                  if (M = k[q], M < 0 || M >= d || M !== s(M)) break e;
+                if (M !== 0) return !0;
+              }
+            }
+          } else if (k === null && F === null && (V === null || V === 1 || V === -1))
+            return !0;
+          throw Error(a + "Invalid BigNumber: " + B);
+        }, x.maximum = x.max = function() {
+          return se(arguments, -1);
+        }, x.minimum = x.min = function() {
+          return se(arguments, 1);
+        }, x.random = (function() {
+          var B = 9007199254740992, q = Math.random() * B & 2097151 ? function() {
+            return s(Math.random() * B);
+          } : function() {
+            return (Math.random() * 1073741824 | 0) * 8388608 + (Math.random() * 8388608 | 0);
+          };
+          return function(M) {
+            var k, F, V, X, O, P = 0, z = [], j = new x(C);
+            if (M == null ? M = A : h(M, 0, p), X = n(M / u), K)
+              if (crypto.getRandomValues) {
+                for (k = crypto.getRandomValues(new Uint32Array(X *= 2)); P < X; )
+                  O = k[P] * 131072 + (k[P + 1] >>> 11), O >= 9e15 ? (F = crypto.getRandomValues(new Uint32Array(2)), k[P] = F[0], k[P + 1] = F[1]) : (z.push(O % 1e14), P += 2);
+                P = X / 2;
+              } else if (crypto.randomBytes) {
+                for (k = crypto.randomBytes(X *= 7); P < X; )
+                  O = (k[P] & 31) * 281474976710656 + k[P + 1] * 1099511627776 + k[P + 2] * 4294967296 + k[P + 3] * 16777216 + (k[P + 4] << 16) + (k[P + 5] << 8) + k[P + 6], O >= 9e15 ? crypto.randomBytes(7).copy(k, P) : (z.push(O % 1e14), P += 7);
+                P = X / 7;
+              } else
+                throw K = !1, Error(a + "crypto unavailable");
+            if (!K)
+              for (; P < X; )
+                O = q(), O < 9e15 && (z[P++] = O % 1e14);
+            for (X = z[--P], M %= u, X && M && (O = l[u - M], z[P] = s(X / O) * O); z[P] === 0; z.pop(), P--) ;
+            if (P < 0)
+              z = [V = 0];
+            else {
+              for (V = -1; z[0] === 0; z.splice(0, 1), V -= u) ;
+              for (P = 1, O = z[0]; O >= 10; O /= 10, P++) ;
+              P < u && (V -= u - P);
+            }
+            return j.e = V, j.c = z, j;
+          };
+        })(), x.sum = function() {
+          for (var B = 1, q = arguments, M = new x(q[0]); B < q.length; ) M = M.plus(q[B++]);
+          return M;
+        }, N = /* @__PURE__ */ (function() {
+          var B = "0123456789";
+          function q(M, k, F, V) {
+            for (var X, O = [0], P, z = 0, j = M.length; z < j; ) {
+              for (P = O.length; P--; O[P] *= k) ;
+              for (O[0] += V.indexOf(M.charAt(z++)), X = 0; X < O.length; X++)
+                O[X] > F - 1 && (O[X + 1] == null && (O[X + 1] = 0), O[X + 1] += O[X] / F | 0, O[X] %= F);
+            }
+            return O.reverse();
+          }
+          return function(M, k, F, V, X) {
+            var O, P, z, j, Y, te, ne, ae, le = M.indexOf("."), fe = A, ce = E;
+            for (le >= 0 && (j = W, W = 0, M = M.replace(".", ""), ae = new x(k), te = ae.pow(M.length - le), W = j, ae.c = q(
+              c(m(te.c), te.e, "0"),
+              10,
+              F,
+              B
+            ), ae.e = ae.c.length), ne = q(M, k, F, X ? (O = J, B) : (O = B, J)), z = j = ne.length; ne[--j] == 0; ne.pop()) ;
+            if (!ne[0]) return O.charAt(0);
+            if (le < 0 ? --z : (te.c = ne, te.e = z, te.s = V, te = D(te, ae, fe, ce, F), ne = te.c, Y = te.r, z = te.e), P = z + fe + 1, le = ne[P], j = F / 2, Y = Y || P < 0 || ne[P + 1] != null, Y = ce < 4 ? (le != null || Y) && (ce == 0 || ce == (te.s < 0 ? 3 : 2)) : le > j || le == j && (ce == 4 || Y || ce == 6 && ne[P - 1] & 1 || ce == (te.s < 0 ? 8 : 7)), P < 1 || !ne[0])
+              M = Y ? c(O.charAt(1), -fe, O.charAt(0)) : O.charAt(0);
+            else {
+              if (ne.length = P, Y)
+                for (--F; ++ne[--P] > F; )
+                  ne[P] = 0, P || (++z, ne = [1].concat(ne));
+              for (j = ne.length; !ne[--j]; ) ;
+              for (le = 0, M = ""; le <= j; M += O.charAt(ne[le++])) ;
+              M = c(M, z, O.charAt(0));
+            }
+            return M;
+          };
+        })(), D = /* @__PURE__ */ (function() {
+          function B(k, F, V) {
+            var X, O, P, z, j = 0, Y = k.length, te = F % g, ne = F / g | 0;
+            for (k = k.slice(); Y--; )
+              P = k[Y] % g, z = k[Y] / g | 0, X = ne * P + z * te, O = te * P + X % g * g + j, j = (O / V | 0) + (X / g | 0) + ne * z, k[Y] = O % V;
+            return j && (k = [j].concat(k)), k;
+          }
+          function q(k, F, V, X) {
+            var O, P;
+            if (V != X)
+              P = V > X ? 1 : -1;
+            else
+              for (O = P = 0; O < V; O++)
+                if (k[O] != F[O]) {
+                  P = k[O] > F[O] ? 1 : -1;
+                  break;
+                }
+            return P;
+          }
+          function M(k, F, V, X) {
+            for (var O = 0; V--; )
+              k[V] -= O, O = k[V] < F[V] ? 1 : 0, k[V] = O * X + k[V] - F[V];
+            for (; !k[0] && k.length > 1; k.splice(0, 1)) ;
+          }
+          return function(k, F, V, X, O) {
+            var P, z, j, Y, te, ne, ae, le, fe, ce, de, he, me, ie, Ae, Ee, be, ye = k.s == F.s ? 1 : -1, pe = k.c, ge = F.c;
+            if (!pe || !pe[0] || !ge || !ge[0])
+              return new x(
+                // Return NaN if either NaN, or both Infinity or 0.
+                !k.s || !F.s || (pe ? ge && pe[0] == ge[0] : !ge) ? NaN : (
+                  // Return ±0 if x is ±0 or y is ±Infinity, or return ±Infinity as y is ±0.
+                  pe && pe[0] == 0 || !ge ? ye * 0 : ye / 0
+                )
+              );
+            for (le = new x(ye), fe = le.c = [], z = k.e - F.e, ye = V + z + 1, O || (O = d, z = I(k.e / u) - I(F.e / u), ye = ye / u | 0), j = 0; ge[j] == (pe[j] || 0); j++) ;
+            if (ge[j] > (pe[j] || 0) && z--, ye < 0)
+              fe.push(1), Y = !0;
+            else {
+              for (ie = pe.length, Ee = ge.length, j = 0, ye += 2, te = s(O / (ge[0] + 1)), te > 1 && (ge = B(ge, te, O), pe = B(pe, te, O), Ee = ge.length, ie = pe.length), me = Ee, ce = pe.slice(0, Ee), de = ce.length; de < Ee; ce[de++] = 0) ;
+              be = ge.slice(), be = [0].concat(be), Ae = ge[0], ge[1] >= O / 2 && Ae++;
+              do {
+                if (te = 0, P = q(ge, ce, Ee, de), P < 0) {
+                  if (he = ce[0], Ee != de && (he = he * O + (ce[1] || 0)), te = s(he / Ae), te > 1)
+                    for (te >= O && (te = O - 1), ne = B(ge, te, O), ae = ne.length, de = ce.length; q(ne, ce, ae, de) == 1; )
+                      te--, M(ne, Ee < ae ? be : ge, ae, O), ae = ne.length, P = 1;
+                  else
+                    te == 0 && (P = te = 1), ne = ge.slice(), ae = ne.length;
+                  if (ae < de && (ne = [0].concat(ne)), M(ce, ne, de, O), de = ce.length, P == -1)
+                    for (; q(ge, ce, Ee, de) < 1; )
+                      te++, M(ce, Ee < de ? be : ge, de, O), de = ce.length;
+                } else P === 0 && (te++, ce = [0]);
+                fe[j++] = te, ce[0] ? ce[de++] = pe[me] || 0 : (ce = [pe[me]], de = 1);
+              } while ((me++ < ie || ce[0] != null) && ye--);
+              Y = ce[0] != null, fe[0] || fe.splice(0, 1);
+            }
+            if (O == d) {
+              for (j = 1, ye = fe[0]; ye >= 10; ye /= 10, j++) ;
+              oe(le, V + (le.e = j + z * u - 1) + 1, X, Y);
+            } else
+              le.e = z, le.r = +Y;
+            return le;
+          };
+        })();
+        function Q(B, q, M, k) {
+          var F, V, X, O, P;
+          if (M == null ? M = E : h(M, 0, 8), !B.c) return B.toString();
+          if (F = B.c[0], X = B.e, q == null)
+            P = m(B.c), P = k == 1 || k == 2 && (X <= S || X >= L) ? y(P, X) : c(P, X, "0");
+          else if (B = oe(new x(B), q, M), V = B.e, P = m(B.c), O = P.length, k == 1 || k == 2 && (q <= V || V <= S)) {
+            for (; O < q; P += "0", O++) ;
+            P = y(P, V);
+          } else if (q -= X, P = c(P, V, "0"), V + 1 > O) {
+            if (--q > 0) for (P += "."; q--; P += "0") ;
+          } else if (q += V - O, q > 0)
+            for (V + 1 == O && (P += "."); q--; P += "0") ;
+          return B.s < 0 && F ? "-" + P : P;
+        }
+        function se(B, q) {
+          for (var M, k, F = 1, V = new x(B[0]); F < B.length; F++)
+            k = new x(B[F]), (!k.s || (M = v(V, k)) === q || M === 0 && V.s === q) && (V = k);
+          return V;
+        }
+        function ue(B, q, M) {
+          for (var k = 1, F = q.length; !q[--F]; q.pop()) ;
+          for (F = q[0]; F >= 10; F /= 10, k++) ;
+          return (M = k + M * u - 1) > H ? B.c = B.e = null : M < U ? B.c = [B.e = 0] : (B.e = M, B.c = q), B;
+        }
+        T = /* @__PURE__ */ (function() {
+          var B = /^(-?)0([xbo])(?=\w[\w.]*$)/i, q = /^([^.]+)\.$/, M = /^\.([^.]+)$/, k = /^-?(Infinity|NaN)$/, F = /^\s*\+(?=[\w.])|^\s+|\s+$/g;
+          return function(V, X, O, P) {
+            var z, j = O ? X : X.replace(F, "");
+            if (k.test(j))
+              V.s = isNaN(j) ? null : j < 0 ? -1 : 1;
+            else {
+              if (!O && (j = j.replace(B, function(Y, te, ne) {
+                return z = (ne = ne.toLowerCase()) == "x" ? 16 : ne == "b" ? 2 : 8, !P || P == z ? te : Y;
+              }), P && (z = P, j = j.replace(q, "$1").replace(M, "0.$1")), X != j))
+                return new x(j, z);
+              if (x.DEBUG)
+                throw Error(a + "Not a" + (P ? " base " + P : "") + " number: " + X);
+              V.s = null;
+            }
+            V.c = V.e = null;
+          };
+        })();
+        function oe(B, q, M, k) {
+          var F, V, X, O, P, z, j, Y = B.c, te = l;
+          if (Y) {
+            e: {
+              for (F = 1, O = Y[0]; O >= 10; O /= 10, F++) ;
+              if (V = q - F, V < 0)
+                V += u, X = q, P = Y[z = 0], j = s(P / te[F - X - 1] % 10);
+              else if (z = n((V + 1) / u), z >= Y.length)
+                if (k) {
+                  for (; Y.length <= z; Y.push(0)) ;
+                  P = j = 0, F = 1, V %= u, X = V - u + 1;
+                } else
+                  break e;
+              else {
+                for (P = O = Y[z], F = 1; O >= 10; O /= 10, F++) ;
+                V %= u, X = V - u + F, j = X < 0 ? 0 : s(P / te[F - X - 1] % 10);
+              }
+              if (k = k || q < 0 || // Are there any non-zero digits after the rounding digit?
+              // The expression  n % pows10[d - j - 1]  returns all digits of n to the right
+              // of the digit at j, e.g. if n is 908714 and j is 2, the expression gives 714.
+              Y[z + 1] != null || (X < 0 ? P : P % te[F - X - 1]), k = M < 4 ? (j || k) && (M == 0 || M == (B.s < 0 ? 3 : 2)) : j > 5 || j == 5 && (M == 4 || k || M == 6 && // Check whether the digit to the left of the rounding digit is odd.
+              (V > 0 ? X > 0 ? P / te[F - X] : 0 : Y[z - 1]) % 10 & 1 || M == (B.s < 0 ? 8 : 7)), q < 1 || !Y[0])
+                return Y.length = 0, k ? (q -= B.e + 1, Y[0] = te[(u - q % u) % u], B.e = -q || 0) : Y[0] = B.e = 0, B;
+              if (V == 0 ? (Y.length = z, O = 1, z--) : (Y.length = z + 1, O = te[u - V], Y[z] = X > 0 ? s(P / te[F - X] % te[X]) * O : 0), k)
+                for (; ; )
+                  if (z == 0) {
+                    for (V = 1, X = Y[0]; X >= 10; X /= 10, V++) ;
+                    for (X = Y[0] += O, O = 1; X >= 10; X /= 10, O++) ;
+                    V != O && (B.e++, Y[0] == d && (Y[0] = 1));
+                    break;
+                  } else {
+                    if (Y[z] += O, Y[z] != d) break;
+                    Y[z--] = 0, O = 1;
+                  }
+              for (V = Y.length; Y[--V] === 0; Y.pop()) ;
+            }
+            B.e > H ? B.c = B.e = null : B.e < U && (B.c = [B.e = 0]);
+          }
+          return B;
+        }
+        function Z(B) {
+          var q, M = B.e;
+          return M === null ? B.toString() : (q = m(B.c), q = M <= S || M >= L ? y(q, M) : c(q, M, "0"), B.s < 0 ? "-" + q : q);
+        }
+        return f.absoluteValue = f.abs = function() {
+          var B = new x(this);
+          return B.s < 0 && (B.s = 1), B;
+        }, f.comparedTo = function(B, q) {
+          return v(this, new x(B, q));
+        }, f.decimalPlaces = f.dp = function(B, q) {
+          var M, k, F, V = this;
+          if (B != null)
+            return h(B, 0, p), q == null ? q = E : h(q, 0, 8), oe(new x(V), B + V.e + 1, q);
+          if (!(M = V.c)) return null;
+          if (k = ((F = M.length - 1) - I(this.e / u)) * u, F = M[F]) for (; F % 10 == 0; F /= 10, k--) ;
+          return k < 0 && (k = 0), k;
+        }, f.dividedBy = f.div = function(B, q) {
+          return D(this, new x(B, q), A, E);
+        }, f.dividedToIntegerBy = f.idiv = function(B, q) {
+          return D(this, new x(B, q), 0, 1);
+        }, f.exponentiatedBy = f.pow = function(B, q) {
+          var M, k, F, V, X, O, P, z, j, Y = this;
+          if (B = new x(B), B.c && !B.isInteger())
+            throw Error(a + "Exponent not an integer: " + Z(B));
+          if (q != null && (q = new x(q)), O = B.e > 14, !Y.c || !Y.c[0] || Y.c[0] == 1 && !Y.e && Y.c.length == 1 || !B.c || !B.c[0])
+            return j = new x(Math.pow(+Z(Y), O ? B.s * (2 - _(B)) : +Z(B))), q ? j.mod(q) : j;
+          if (P = B.s < 0, q) {
+            if (q.c ? !q.c[0] : !q.s) return new x(NaN);
+            k = !P && Y.isInteger() && q.isInteger(), k && (Y = Y.mod(q));
+          } else {
+            if (B.e > 9 && (Y.e > 0 || Y.e < -1 || (Y.e == 0 ? Y.c[0] > 1 || O && Y.c[1] >= 24e7 : Y.c[0] < 8e13 || O && Y.c[0] <= 9999975e7)))
+              return V = Y.s < 0 && _(B) ? -0 : 0, Y.e > -1 && (V = 1 / V), new x(P ? 1 / V : V);
+            W && (V = n(W / u + 2));
+          }
+          for (O ? (M = new x(0.5), P && (B.s = 1), z = _(B)) : (F = Math.abs(+Z(B)), z = F % 2), j = new x(C); ; ) {
+            if (z) {
+              if (j = j.times(Y), !j.c) break;
+              V ? j.c.length > V && (j.c.length = V) : k && (j = j.mod(q));
+            }
+            if (F) {
+              if (F = s(F / 2), F === 0) break;
+              z = F % 2;
+            } else if (B = B.times(M), oe(B, B.e + 1, 1), B.e > 14)
+              z = _(B);
+            else {
+              if (F = +Z(B), F === 0) break;
+              z = F % 2;
+            }
+            Y = Y.times(Y), V ? Y.c && Y.c.length > V && (Y.c.length = V) : k && (Y = Y.mod(q));
+          }
+          return k ? j : (P && (j = C.div(j)), q ? j.mod(q) : V ? oe(j, W, E, X) : j);
+        }, f.integerValue = function(B) {
+          var q = new x(this);
+          return B == null ? B = E : h(B, 0, 8), oe(q, q.e + 1, B);
+        }, f.isEqualTo = f.eq = function(B, q) {
+          return v(this, new x(B, q)) === 0;
+        }, f.isFinite = function() {
+          return !!this.c;
+        }, f.isGreaterThan = f.gt = function(B, q) {
+          return v(this, new x(B, q)) > 0;
+        }, f.isGreaterThanOrEqualTo = f.gte = function(B, q) {
+          return (q = v(this, new x(B, q))) === 1 || q === 0;
+        }, f.isInteger = function() {
+          return !!this.c && I(this.e / u) > this.c.length - 2;
+        }, f.isLessThan = f.lt = function(B, q) {
+          return v(this, new x(B, q)) < 0;
+        }, f.isLessThanOrEqualTo = f.lte = function(B, q) {
+          return (q = v(this, new x(B, q))) === -1 || q === 0;
+        }, f.isNaN = function() {
+          return !this.s;
+        }, f.isNegative = function() {
+          return this.s < 0;
+        }, f.isPositive = function() {
+          return this.s > 0;
+        }, f.isZero = function() {
+          return !!this.c && this.c[0] == 0;
+        }, f.minus = function(B, q) {
+          var M, k, F, V, X = this, O = X.s;
+          if (B = new x(B, q), q = B.s, !O || !q) return new x(NaN);
+          if (O != q)
+            return B.s = -q, X.plus(B);
+          var P = X.e / u, z = B.e / u, j = X.c, Y = B.c;
+          if (!P || !z) {
+            if (!j || !Y) return j ? (B.s = -q, B) : new x(Y ? X : NaN);
+            if (!j[0] || !Y[0])
+              return Y[0] ? (B.s = -q, B) : new x(j[0] ? X : (
+                // IEEE 754 (2008) 6.3: n - n = -0 when rounding to -Infinity
+                E == 3 ? -0 : 0
+              ));
+          }
+          if (P = I(P), z = I(z), j = j.slice(), O = P - z) {
+            for ((V = O < 0) ? (O = -O, F = j) : (z = P, F = Y), F.reverse(), q = O; q--; F.push(0)) ;
+            F.reverse();
+          } else
+            for (k = (V = (O = j.length) < (q = Y.length)) ? O : q, O = q = 0; q < k; q++)
+              if (j[q] != Y[q]) {
+                V = j[q] < Y[q];
+                break;
+              }
+          if (V && (F = j, j = Y, Y = F, B.s = -B.s), q = (k = Y.length) - (M = j.length), q > 0) for (; q--; j[M++] = 0) ;
+          for (q = d - 1; k > O; ) {
+            if (j[--k] < Y[k]) {
+              for (M = k; M && !j[--M]; j[M] = q) ;
+              --j[M], j[k] += d;
+            }
+            j[k] -= Y[k];
+          }
+          for (; j[0] == 0; j.splice(0, 1), --z) ;
+          return j[0] ? ue(B, j, z) : (B.s = E == 3 ? -1 : 1, B.c = [B.e = 0], B);
+        }, f.modulo = f.mod = function(B, q) {
+          var M, k, F = this;
+          return B = new x(B, q), !F.c || !B.s || B.c && !B.c[0] ? new x(NaN) : !B.c || F.c && !F.c[0] ? new x(F) : ($ == 9 ? (k = B.s, B.s = 1, M = D(F, B, 0, 3), B.s = k, M.s *= k) : M = D(F, B, 0, $), B = F.minus(M.times(B)), !B.c[0] && $ == 1 && (B.s = F.s), B);
+        }, f.multipliedBy = f.times = function(B, q) {
+          var M, k, F, V, X, O, P, z, j, Y, te, ne, ae, le, fe, ce = this, de = ce.c, he = (B = new x(B, q)).c;
+          if (!de || !he || !de[0] || !he[0])
+            return !ce.s || !B.s || de && !de[0] && !he || he && !he[0] && !de ? B.c = B.e = B.s = null : (B.s *= ce.s, !de || !he ? B.c = B.e = null : (B.c = [0], B.e = 0)), B;
+          for (k = I(ce.e / u) + I(B.e / u), B.s *= ce.s, P = de.length, Y = he.length, P < Y && (ae = de, de = he, he = ae, F = P, P = Y, Y = F), F = P + Y, ae = []; F--; ae.push(0)) ;
+          for (le = d, fe = g, F = Y; --F >= 0; ) {
+            for (M = 0, te = he[F] % fe, ne = he[F] / fe | 0, X = P, V = F + X; V > F; )
+              z = de[--X] % fe, j = de[X] / fe | 0, O = ne * z + j * te, z = te * z + O % fe * fe + ae[V] + M, M = (z / le | 0) + (O / fe | 0) + ne * j, ae[V--] = z % le;
+            ae[V] = M;
+          }
+          return M ? ++k : ae.splice(0, 1), ue(B, ae, k);
+        }, f.negated = function() {
+          var B = new x(this);
+          return B.s = -B.s || null, B;
+        }, f.plus = function(B, q) {
+          var M, k = this, F = k.s;
+          if (B = new x(B, q), q = B.s, !F || !q) return new x(NaN);
+          if (F != q)
+            return B.s = -q, k.minus(B);
+          var V = k.e / u, X = B.e / u, O = k.c, P = B.c;
+          if (!V || !X) {
+            if (!O || !P) return new x(F / 0);
+            if (!O[0] || !P[0]) return P[0] ? B : new x(O[0] ? k : F * 0);
+          }
+          if (V = I(V), X = I(X), O = O.slice(), F = V - X) {
+            for (F > 0 ? (X = V, M = P) : (F = -F, M = O), M.reverse(); F--; M.push(0)) ;
+            M.reverse();
+          }
+          for (F = O.length, q = P.length, F - q < 0 && (M = P, P = O, O = M, q = F), F = 0; q; )
+            F = (O[--q] = O[q] + P[q] + F) / d | 0, O[q] = d === O[q] ? 0 : O[q] % d;
+          return F && (O = [F].concat(O), ++X), ue(B, O, X);
+        }, f.precision = f.sd = function(B, q) {
+          var M, k, F, V = this;
+          if (B != null && B !== !!B)
+            return h(B, 1, p), q == null ? q = E : h(q, 0, 8), oe(new x(V), B, q);
+          if (!(M = V.c)) return null;
+          if (F = M.length - 1, k = F * u + 1, F = M[F]) {
+            for (; F % 10 == 0; F /= 10, k--) ;
+            for (F = M[0]; F >= 10; F /= 10, k++) ;
+          }
+          return B && V.e + 1 > k && (k = V.e + 1), k;
+        }, f.shiftedBy = function(B) {
+          return h(B, -b, b), this.times("1e" + B);
+        }, f.squareRoot = f.sqrt = function() {
+          var B, q, M, k, F, V = this, X = V.c, O = V.s, P = V.e, z = A + 4, j = new x("0.5");
+          if (O !== 1 || !X || !X[0])
+            return new x(!O || O < 0 && (!X || X[0]) ? NaN : X ? V : 1 / 0);
+          if (O = Math.sqrt(+Z(V)), O == 0 || O == 1 / 0 ? (q = m(X), (q.length + P) % 2 == 0 && (q += "0"), O = Math.sqrt(+q), P = I((P + 1) / 2) - (P < 0 || P % 2), O == 1 / 0 ? q = "5e" + P : (q = O.toExponential(), q = q.slice(0, q.indexOf("e") + 1) + P), M = new x(q)) : M = new x(O + ""), M.c[0]) {
+            for (P = M.e, O = P + z, O < 3 && (O = 0); ; )
+              if (F = M, M = j.times(F.plus(D(V, F, z, 1))), m(F.c).slice(0, O) === (q = m(M.c)).slice(0, O))
+                if (M.e < P && --O, q = q.slice(O - 3, O + 1), q == "9999" || !k && q == "4999") {
+                  if (!k && (oe(F, F.e + A + 2, 0), F.times(F).eq(V))) {
+                    M = F;
+                    break;
+                  }
+                  z += 4, O += 4, k = 1;
+                } else {
+                  (!+q || !+q.slice(1) && q.charAt(0) == "5") && (oe(M, M.e + A + 2, 1), B = !M.times(M).eq(V));
+                  break;
+                }
+          }
+          return oe(M, M.e + A + 1, E, B);
+        }, f.toExponential = function(B, q) {
+          return B != null && (h(B, 0, p), B++), Q(this, B, q, 1);
+        }, f.toFixed = function(B, q) {
+          return B != null && (h(B, 0, p), B = B + this.e + 1), Q(this, B, q);
+        }, f.toFormat = function(B, q, M) {
+          var k, F = this;
+          if (M == null)
+            B != null && q && typeof q == "object" ? (M = q, q = null) : B && typeof B == "object" ? (M = B, B = q = null) : M = G;
+          else if (typeof M != "object")
+            throw Error(a + "Argument not an object: " + M);
+          if (k = F.toFixed(B, q), F.c) {
+            var V, X = k.split("."), O = +M.groupSize, P = +M.secondaryGroupSize, z = M.groupSeparator || "", j = X[0], Y = X[1], te = F.s < 0, ne = te ? j.slice(1) : j, ae = ne.length;
+            if (P && (V = O, O = P, P = V, ae -= V), O > 0 && ae > 0) {
+              for (V = ae % O || O, j = ne.substr(0, V); V < ae; V += O) j += z + ne.substr(V, O);
+              P > 0 && (j += z + ne.slice(V)), te && (j = "-" + j);
+            }
+            k = Y ? j + (M.decimalSeparator || "") + ((P = +M.fractionGroupSize) ? Y.replace(
+              new RegExp("\\d{" + P + "}\\B", "g"),
+              "$&" + (M.fractionGroupSeparator || "")
+            ) : Y) : j;
+          }
+          return (M.prefix || "") + k + (M.suffix || "");
+        }, f.toFraction = function(B) {
+          var q, M, k, F, V, X, O, P, z, j, Y, te, ne = this, ae = ne.c;
+          if (B != null && (O = new x(B), !O.isInteger() && (O.c || O.s !== 1) || O.lt(C)))
+            throw Error(a + "Argument " + (O.isInteger() ? "out of range: " : "not an integer: ") + Z(O));
+          if (!ae) return new x(ne);
+          for (q = new x(C), z = M = new x(C), k = P = new x(C), te = m(ae), V = q.e = te.length - ne.e - 1, q.c[0] = l[(X = V % u) < 0 ? u + X : X], B = !B || O.comparedTo(q) > 0 ? V > 0 ? q : z : O, X = H, H = 1 / 0, O = new x(te), P.c[0] = 0; j = D(O, q, 0, 1), F = M.plus(j.times(k)), F.comparedTo(B) != 1; )
+            M = k, k = F, z = P.plus(j.times(F = z)), P = F, q = O.minus(j.times(F = q)), O = F;
+          return F = D(B.minus(M), k, 0, 1), P = P.plus(F.times(z)), M = M.plus(F.times(k)), P.s = z.s = ne.s, V = V * 2, Y = D(z, k, V, E).minus(ne).abs().comparedTo(
+            D(P, M, V, E).minus(ne).abs()
+          ) < 1 ? [z, k] : [P, M], H = X, Y;
+        }, f.toNumber = function() {
+          return +Z(this);
+        }, f.toPrecision = function(B, q) {
+          return B != null && h(B, 1, p), Q(this, B, q, 2);
+        }, f.toString = function(B) {
+          var q, M = this, k = M.s, F = M.e;
+          return F === null ? k ? (q = "Infinity", k < 0 && (q = "-" + q)) : q = "NaN" : (B == null ? q = F <= S || F >= L ? y(m(M.c), F) : c(m(M.c), F, "0") : B === 10 && re ? (M = oe(new x(M), A + F + 1, E), q = c(m(M.c), M.e, "0")) : (h(B, 2, J.length, "Base"), q = N(c(m(M.c), F, "0"), 10, B, k, !0)), k < 0 && M.c[0] && (q = "-" + q)), q;
+        }, f.valueOf = f.toJSON = function() {
+          return Z(this);
+        }, f._isBigNumber = !0, R != null && x.set(R), x;
+      }
+      function I(R) {
+        var D = R | 0;
+        return R > 0 || R === D ? D : D - 1;
+      }
+      function m(R) {
+        for (var D, N, T = 1, f = R.length, C = R[0] + ""; T < f; ) {
+          for (D = R[T++] + "", N = u - D.length; N--; D = "0" + D) ;
+          C += D;
+        }
+        for (f = C.length; C.charCodeAt(--f) === 48; ) ;
+        return C.slice(0, f + 1 || 1);
+      }
+      function v(R, D) {
+        var N, T, f = R.c, C = D.c, A = R.s, E = D.s, S = R.e, L = D.e;
+        if (!A || !E) return null;
+        if (N = f && !f[0], T = C && !C[0], N || T) return N ? T ? 0 : -E : A;
+        if (A != E) return A;
+        if (N = A < 0, T = S == L, !f || !C) return T ? 0 : !f ^ N ? 1 : -1;
+        if (!T) return S > L ^ N ? 1 : -1;
+        for (E = (S = f.length) < (L = C.length) ? S : L, A = 0; A < E; A++) if (f[A] != C[A]) return f[A] > C[A] ^ N ? 1 : -1;
+        return S == L ? 0 : S > L ^ N ? 1 : -1;
+      }
+      function h(R, D, N, T) {
+        if (R < D || R > N || R !== s(R))
+          throw Error(a + (T || "Argument") + (typeof R == "number" ? R < D || R > N ? " out of range: " : " not an integer: " : " not a primitive number: ") + String(R));
+      }
+      function _(R) {
+        var D = R.c.length - 1;
+        return I(R.e / u) == D && R.c[D] % 2 != 0;
+      }
+      function y(R, D) {
+        return (R.length > 1 ? R.charAt(0) + "." + R.slice(1) : R) + (D < 0 ? "e" : "e+") + D;
+      }
+      function c(R, D, N) {
+        var T, f;
+        if (D < 0) {
+          for (f = N + "."; ++D; f += N) ;
+          R = f + R;
+        } else if (T = R.length, ++D > T) {
+          for (f = N, D -= T; --D; f += N) ;
+          R += f;
+        } else D < T && (R = R.slice(0, D) + "." + R.slice(D));
+        return R;
+      }
+      t = w(), t.default = t.BigNumber = t, e.exports ? e.exports = t : (r || (r = typeof self < "u" && self ? self : window), r.BigNumber = t);
+    })(bignumber);
+  })(bignumber$1)), bignumber$1.exports;
+}
+var hash192 = {}, hasRequiredHash192;
+function requireHash192() {
+  if (hasRequiredHash192) return hash192;
+  hasRequiredHash192 = 1, Object.defineProperty(hash192, "__esModule", { value: !0 }), hash192.Hash192 = void 0;
+  const e = requireHash();
+  class r extends e.Hash {
+    constructor(i) {
+      i && i.byteLength === 0 && (i = r.ZERO_192.bytes), super(i ?? r.ZERO_192.bytes);
+    }
+  }
+  return hash192.Hash192 = r, r.width = 24, r.ZERO_192 = new r(new Uint8Array(r.width)), hash192;
+}
+var hasRequiredAmount;
+function requireAmount() {
+  if (hasRequiredAmount) return amount;
+  hasRequiredAmount = 1;
+  var e = amount && amount.__importDefault || function(_) {
+    return _ && _.__esModule ? _ : { default: _ };
+  };
+  Object.defineProperty(amount, "__esModule", { value: !0 }), amount.Amount = void 0;
+  const r = requireBinaryParser(), t = requireAccountId(), i = requireCurrency(), n = requireSerializedType(), s = e(requireBignumber()), a = requireBrowser$4(), o = requireUtils$9(), d = requireHash192(), u = -96, b = 80, l = 16, g = new s.default("1e17"), p = new s.default("1e-6"), w = BigInt(4294967295), I = BigInt(9223372036854776e3);
+  s.default.config({
+    EXPONENTIAL_AT: [
+      u - l,
+      b + l
+    ]
+  });
+  function m(_) {
+    const y = Object.keys(_).sort();
+    return y.length === 3 && y[0] === "currency" && y[1] === "issuer" && y[2] === "value";
+  }
+  function v(_) {
+    const y = Object.keys(_).sort();
+    return y.length === 2 && y[0] === "mpt_issuance_id" && y[1] === "value";
+  }
+  class h extends n.SerializedType {
+    constructor(y) {
+      super(y ?? h.defaultAmount.bytes);
+    }
+    /**
+     * Construct an amount from an IOU, MPT or string amount
+     *
+     * @param value An Amount, object representing an IOU, or a string
+     *     representing an integer amount
+     * @returns An Amount object
+     */
+    static from(y) {
+      if (y instanceof h)
+        return y;
+      let c = new Uint8Array(8);
+      if (typeof y == "string") {
+        h.assertXrpIsValid(y);
+        const R = BigInt(y), D = [new Uint8Array(4), new Uint8Array(4)];
+        return (0, o.writeUInt32BE)(D[0], Number(R >> BigInt(32)), 0), (0, o.writeUInt32BE)(D[1], Number(R & BigInt(w)), 0), c = (0, a.concat)(D), c[0] |= 64, new h(c);
+      }
+      if (m(y)) {
+        const R = new s.default(y.value);
+        if (h.assertIouIsValid(R), R.isZero())
+          c[0] |= 128;
+        else {
+          const T = R.times(`1e${-((R.e || 0) - 15)}`).abs().toString(), f = BigInt(T), C = [new Uint8Array(4), new Uint8Array(4)];
+          (0, o.writeUInt32BE)(C[0], Number(f >> BigInt(32)), 0), (0, o.writeUInt32BE)(C[1], Number(f & BigInt(w)), 0), c = (0, a.concat)(C), c[0] |= 128, R.gt(new s.default(0)) && (c[0] |= 64);
+          const E = 97 + ((R.e || 0) - 15);
+          c[0] |= E >>> 2, c[1] |= (E & 3) << 6;
+        }
+        const D = i.Currency.from(y.currency).toBytes(), N = t.AccountID.from(y.issuer).toBytes();
+        return new h((0, a.concat)([c, D, N]));
+      }
+      if (v(y)) {
+        h.assertMptIsValid(y.value);
+        let R = new Uint8Array(1);
+        R[0] |= 96;
+        const D = BigInt(y.value), N = [new Uint8Array(4), new Uint8Array(4)];
+        (0, o.writeUInt32BE)(N[0], Number(D >> BigInt(32)), 0), (0, o.writeUInt32BE)(N[1], Number(D & BigInt(w)), 0), c = (0, a.concat)(N);
+        const T = d.Hash192.from(y.mpt_issuance_id).toBytes();
+        return new h((0, a.concat)([R, c, T]));
+      }
+      throw new Error("Invalid type to construct an Amount");
+    }
+    /**
+     * Read an amount from a BinaryParser
+     *
+     * @param parser BinaryParser to read the Amount from
+     * @returns An Amount object
+     */
+    static fromParser(y) {
+      if (y.peek() & 128)
+        return new h(y.read(48));
+      const D = y.peek() & 32 ? 33 : 8;
+      return new h(y.read(D));
+    }
+    /**
+     * Get the JSON representation of this Amount
+     *
+     * @returns the JSON interpretation of this.bytes
+     */
+    toJSON() {
+      if (this.isNative()) {
+        const y = this.bytes, R = y[0] & 64 ? "" : "-";
+        y[0] &= 63;
+        const D = BigInt((0, o.readUInt32BE)(y.slice(0, 4), 0)), N = BigInt((0, o.readUInt32BE)(y.slice(4), 0)), T = D << BigInt(32) | N;
+        return `${R}${T.toString()}`;
+      }
+      if (this.isIOU()) {
+        const y = new r.BinaryParser(this.toString()), c = y.read(8), R = i.Currency.fromParser(y), D = t.AccountID.fromParser(y), N = c[0], T = c[1], C = N & 64 ? "" : "-", A = ((N & 63) << 2) + ((T & 255) >> 6) - 97;
+        c[0] = 0, c[1] &= 63;
+        const E = new s.default(`${C}0x${(0, a.bytesToHex)(c)}`).times(`1e${A}`);
+        return h.assertIouIsValid(E), {
+          value: E.toString(),
+          currency: R.toJSON(),
+          issuer: D.toJSON()
+        };
+      }
+      if (this.isMPT()) {
+        const y = new r.BinaryParser(this.toString()), c = y.read(1), R = y.read(8), D = d.Hash192.fromParser(y), T = c[0] & 64 ? "" : "-", f = BigInt((0, o.readUInt32BE)(R.slice(0, 4), 0)), C = BigInt((0, o.readUInt32BE)(R.slice(4), 0)), A = f << BigInt(32) | C;
+        return {
+          value: `${T}${A.toString()}`,
+          mpt_issuance_id: D.toString()
+        };
+      }
+      throw new Error("Invalid amount to construct JSON");
+    }
+    /**
+     * Validate XRP amount
+     *
+     * @param amount String representing XRP amount
+     * @returns void, but will throw if invalid amount
+     */
+    static assertXrpIsValid(y) {
+      if (y.indexOf(".") !== -1)
+        throw new Error(`${y.toString()} is an illegal amount`);
+      const c = new s.default(y);
+      if (!c.isZero() && (c.lt(p) || c.gt(g)))
+        throw new Error(`${y.toString()} is an illegal amount`);
+    }
+    /**
+     * Validate IOU.value amount
+     *
+     * @param decimal BigNumber object representing IOU.value
+     * @returns void, but will throw if invalid amount
+     */
+    static assertIouIsValid(y) {
+      if (!y.isZero()) {
+        const c = y.precision(), R = (y.e || 0) - 15;
+        if (c > l || R > b || R < u)
+          throw new Error("Decimal precision out of range");
+        this.verifyNoDecimal(y);
+      }
+    }
+    /**
+     * Validate MPT.value amount
+     *
+     * @param decimal BigNumber object representing MPT.value
+     * @returns void, but will throw if invalid amount
+     */
+    static assertMptIsValid(y) {
+      if (y.indexOf(".") !== -1)
+        throw new Error(`${y.toString()} is an illegal amount`);
+      const c = new s.default(y);
+      if (!c.isZero()) {
+        if (c < (0, s.default)(0))
+          throw new Error(`${y.toString()} is an illegal amount`);
+        if (Number(BigInt(y) & BigInt(I)) != 0)
+          throw new Error(`${y.toString()} is an illegal amount`);
+      }
+    }
+    /**
+     * Ensure that the value after being multiplied by the exponent does not
+     * contain a decimal.
+     *
+     * @param decimal a Decimal object
+     * @returns a string of the object without a decimal
+     */
+    static verifyNoDecimal(y) {
+      if (y.times(`1e${-((y.e || 0) - 15)}`).abs().toString().indexOf(".") !== -1)
+        throw new Error("Decimal place found in integerNumberString");
+    }
+    /**
+     * Test if this amount is in units of Native Currency(XRP)
+     *
+     * @returns true if Native (XRP)
+     */
+    isNative() {
+      return (this.bytes[0] & 128) === 0 && (this.bytes[0] & 32) === 0;
+    }
+    /**
+     * Test if this amount is in units of MPT
+     *
+     * @returns true if MPT
+     */
+    isMPT() {
+      return (this.bytes[0] & 128) === 0 && (this.bytes[0] & 32) !== 0;
+    }
+    /**
+     * Test if this amount is in units of IOU
+     *
+     * @returns true if IOU
+     */
+    isIOU() {
+      return (this.bytes[0] & 128) !== 0;
+    }
+  }
+  return amount.Amount = h, h.defaultAmount = new h((0, a.hexToBytes)("4000000000000000")), amount;
+}
+var blob = {}, hasRequiredBlob;
+function requireBlob() {
+  if (hasRequiredBlob) return blob;
+  hasRequiredBlob = 1, Object.defineProperty(blob, "__esModule", { value: !0 }), blob.Blob = void 0;
+  const e = requireSerializedType(), r = requireBrowser$4();
+  class t extends e.SerializedType {
+    constructor(n) {
+      super(n);
+    }
+    /**
+     * Defines how to read a Blob from a BinaryParser
+     *
+     * @param parser The binary parser to read the Blob from
+     * @param hint The length of the blob, computed by readVariableLengthLength() and passed in
+     * @returns A Blob object
+     */
+    static fromParser(n, s) {
+      return new t(n.read(s));
+    }
+    /**
+     * Create a Blob object from a hex-string
+     *
+     * @param value existing Blob object or a hex-string
+     * @returns A Blob object
+     */
+    static from(n) {
+      if (n instanceof t)
+        return n;
+      if (typeof n == "string") {
+        if (!/^[A-F0-9]*$/iu.test(n))
+          throw new Error("Cannot construct Blob from a non-hex string");
+        return new t((0, r.hexToBytes)(n));
+      }
+      throw new Error("Cannot construct Blob from value given");
+    }
+  }
+  return blob.Blob = t, blob;
+}
+var hash128 = {}, hasRequiredHash128;
+function requireHash128() {
+  if (hasRequiredHash128) return hash128;
+  hasRequiredHash128 = 1, Object.defineProperty(hash128, "__esModule", { value: !0 }), hash128.Hash128 = void 0;
+  const e = requireHash(), r = requireBrowser$4();
+  class t extends e.Hash {
+    constructor(n) {
+      n && n.byteLength === 0 && (n = t.ZERO_128.bytes), super(n ?? t.ZERO_128.bytes);
+    }
+    /**
+     * Get the hex representation of a hash-128 bytes, allowing unset
+     *
+     * @returns hex String of this.bytes
+     */
+    toHex() {
+      const n = (0, r.bytesToHex)(this.toBytes());
+      return /^0+$/.exec(n) ? "" : n;
+    }
+  }
+  return hash128.Hash128 = t, t.width = 16, t.ZERO_128 = new t(new Uint8Array(t.width)), hash128;
+}
+var hash256 = {}, hasRequiredHash256;
+function requireHash256() {
+  if (hasRequiredHash256) return hash256;
+  hasRequiredHash256 = 1, Object.defineProperty(hash256, "__esModule", { value: !0 }), hash256.Hash256 = void 0;
+  const e = requireHash();
+  class r extends e.Hash {
+    constructor(i) {
+      super(i ?? r.ZERO_256.bytes);
+    }
+  }
+  return hash256.Hash256 = r, r.width = 32, r.ZERO_256 = new r(new Uint8Array(r.width)), hash256;
+}
+var issue = {}, hasRequiredIssue;
+function requireIssue() {
+  if (hasRequiredIssue) return issue;
+  hasRequiredIssue = 1, Object.defineProperty(issue, "__esModule", { value: !0 }), issue.Issue = void 0;
+  const e = requireBrowser$4(), r = requireBinaryParser(), t = requireAccountId(), i = requireCurrency(), n = requireSerializedType(), s = requireHash192();
+  function a(d) {
+    const u = Object.keys(d).sort(), b = u.length === 1 && u[0] === "currency", l = u.length === 2 && u[0] === "currency" && u[1] === "issuer", g = u.length === 1 && u[0] === "mpt_issuance_id";
+    return b || l || g;
+  }
+  class o extends n.SerializedType {
+    constructor(u) {
+      super(u ?? o.ZERO_ISSUED_CURRENCY.bytes);
+    }
+    /**
+     * Construct an amount from an IOU or string amount
+     *
+     * @param value An Amount, object representing an IOU, MPTAmount, or a string
+     *     representing an integer amount
+     * @returns An Issue object
+     */
+    static from(u) {
+      if (u instanceof o)
+        return u;
+      if (a(u)) {
+        if (u.currency) {
+          const b = i.Currency.from(u.currency.toString()).toBytes();
+          if (u.issuer) {
+            const l = t.AccountID.from(u.issuer.toString()).toBytes();
+            return new o((0, e.concat)([b, l]));
+          }
+          return new o(b);
+        }
+        if (u.mpt_issuance_id) {
+          const b = s.Hash192.from(u.mpt_issuance_id.toString()).toBytes();
+          return new o(b);
+        }
+      }
+      throw new Error("Invalid type to construct an Amount");
+    }
+    /**
+     * Read an amount from a BinaryParser
+     *
+     * @param parser BinaryParser to read the Amount from
+     * @param hint The number of bytes to consume from the parser.
+     * For an MPT amount, pass 24 (the fixed length for Hash192).
+     *
+     * @returns An Issue object
+     */
+    static fromParser(u, b) {
+      if (b === s.Hash192.width) {
+        const p = u.read(s.Hash192.width);
+        return new o(p);
+      }
+      const l = u.read(20);
+      if (new i.Currency(l).toJSON() === "XRP")
+        return new o(l);
+      const g = [l, u.read(20)];
+      return new o((0, e.concat)(g));
+    }
+    /**
+     * Get the JSON representation of this Amount
+     *
+     * @returns the JSON interpretation of this.bytes
+     */
+    toJSON() {
+      if (this.toBytes().length === s.Hash192.width)
+        return {
+          mpt_issuance_id: this.toHex().toUpperCase()
+        };
+      const u = new r.BinaryParser(this.toString()), b = i.Currency.fromParser(u);
+      if (b.toJSON() === "XRP")
+        return { currency: b.toJSON() };
+      const l = t.AccountID.fromParser(u);
+      return {
+        currency: b.toJSON(),
+        issuer: l.toJSON()
+      };
+    }
+  }
+  return issue.Issue = o, o.ZERO_ISSUED_CURRENCY = new o(new Uint8Array(20)), issue;
+}
+var stNumber = {}, hasRequiredStNumber;
+function requireStNumber() {
+  if (hasRequiredStNumber) return stNumber;
+  hasRequiredStNumber = 1, Object.defineProperty(stNumber, "__esModule", { value: !0 }), stNumber.STNumber = void 0;
+  const e = requireSerializedType(), r = requireUtils$9(), t = BigInt("1000000000000000"), i = BigInt("9999999999999999"), n = -32768, s = 32768, a = -2147483648;
+  function o(b) {
+    const g = /^([-+]?)([0-9]+)(?:\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$/.exec(b);
+    if (!g)
+      throw new Error(`Unable to parse number from string: ${b}`);
+    const [, p, w, I, m] = g;
+    let h = w.replace(/^0+(?=\d)/, "") || "0", _ = 0;
+    I && (h += I, _ -= I.length), m && (_ += parseInt(m, 10));
+    let y = BigInt(h);
+    p === "-" && (y = -y);
+    const c = y < BigInt(0);
+    return { mantissa: y, exponent: _, isNegative: c };
+  }
+  function d(b, l) {
+    let g = b < BigInt(0) ? -b : b;
+    const p = b < BigInt(0);
+    for (; g !== BigInt(0) && g < t && l > n; )
+      l -= 1, g *= BigInt(10);
+    for (; g > i; ) {
+      if (l >= s)
+        throw new Error("Mantissa and exponent are too large");
+      l += 1, g /= BigInt(10);
+    }
+    return p && (g = -g), { mantissa: g, exponent: l };
+  }
+  class u extends e.SerializedType {
+    /**
+     * Construct a STNumber from 12 bytes (8 for mantissa, 4 for exponent).
+     * @param bytes - 12-byte Uint8Array
+     * @throws Error if input is not a Uint8Array of length 12.
+     */
+    constructor(l) {
+      const g = l ?? u.defaultBytes;
+      if (!(g instanceof Uint8Array) || g.length !== 12)
+        throw new Error(`STNumber must be constructed from a 12-byte Uint8Array, got ${g?.length}`);
+      super(g);
+    }
+    /**
+     * Construct from a number string (or another STNumber).
+     *
+     * @param value - A string, or STNumber instance.
+     * @returns STNumber instance.
+     * @throws Error if not a string or STNumber.
+     */
+    static from(l) {
+      if (l instanceof u)
+        return l;
+      if (typeof l == "string")
+        return u.fromValue(l);
+      throw new Error("STNumber.from: Only string or STNumber instance is supported");
+    }
+    /**
+     * Construct from a number string (integer, decimal, or scientific notation).
+     * Handles normalization to XRPL Number constraints.
+     *
+     * @param val - The number as a string (e.g. '1.23', '-123e5').
+     * @returns STNumber instance
+     * @throws Error if val is not a valid number string.
+     */
+    static fromValue(l) {
+      const { mantissa: g, exponent: p, isNegative: w } = o(l);
+      let I, m;
+      g === BigInt(0) && p === 0 && !w ? (I = BigInt(0), m = a) : { mantissa: I, exponent: m } = d(g, p);
+      const v = new Uint8Array(12);
+      return (0, r.writeInt64BE)(v, I, 0), (0, r.writeInt32BE)(v, m, 8), new u(v);
+    }
+    /**
+     * Read a STNumber from a BinaryParser stream (12 bytes).
+     * @param parser - BinaryParser positioned at the start of a number
+     * @returns STNumber instance
+     */
+    static fromParser(l) {
+      return new u(l.read(12));
+    }
+    /**
+     * Convert this STNumber to a normalized string representation.
+     * The output is decimal or scientific notation, depending on exponent range.
+     * Follows XRPL convention: zero is "0", other values are normalized to a canonical string.
+     *
+     * @returns String representation of the value
+     */
+    // eslint-disable-next-line complexity -- required
+    toJSON() {
+      const l = this.bytes;
+      if (!l || l.length !== 12)
+        throw new Error("STNumber internal bytes not set or wrong length");
+      const g = (0, r.readInt64BE)(l, 0), p = (0, r.readInt32BE)(l, 8);
+      if (g === BigInt(0) && p === a)
+        return "0";
+      if (p === 0)
+        return g.toString();
+      if (p < -25 || p > -5)
+        return `${g}e${p}`;
+      const w = g < BigInt(0), I = g < BigInt(0) ? -g : g, m = 27, v = 23, h = I.toString(), _ = "0".repeat(m) + h + "0".repeat(v), y = p + 43, c = _.slice(0, y).replace(/^0+/, "") || "0", R = _.slice(y).replace(/0+$/, "");
+      return `${w ? "-" : ""}${c}${R ? "." + R : ""}`;
+    }
+  }
+  return stNumber.STNumber = u, u.defaultBytes = new Uint8Array(12), stNumber;
+}
+var pathSet = {}, hasRequiredPathSet;
+function requirePathSet() {
+  if (hasRequiredPathSet) return pathSet;
+  hasRequiredPathSet = 1, Object.defineProperty(pathSet, "__esModule", { value: !0 }), pathSet.PathSet = void 0;
+  const e = requireAccountId(), r = requireCurrency(), t = requireBinaryParser(), i = requireSerializedType(), n = requireBrowser$4(), s = 0, a = 255, o = 1, d = 16, u = 32;
+  function b(I) {
+    return I.issuer !== void 0 || I.account !== void 0 || I.currency !== void 0;
+  }
+  function l(I) {
+    return Array.isArray(I) && I.length === 0 || Array.isArray(I) && Array.isArray(I[0]) && I[0].length === 0 || Array.isArray(I) && Array.isArray(I[0]) && b(I[0][0]);
+  }
+  class g extends i.SerializedType {
+    /**
+     * Create a Hop from a HopObject
+     *
+     * @param value Either a hop or HopObject to create a hop with
+     * @returns a Hop
+     */
+    static from(m) {
+      if (m instanceof g)
+        return m;
+      const v = [Uint8Array.from([0])];
+      return m.account && (v.push(e.AccountID.from(m.account).toBytes()), v[0][0] |= o), m.currency && (v.push(r.Currency.from(m.currency).toBytes()), v[0][0] |= d), m.issuer && (v.push(e.AccountID.from(m.issuer).toBytes()), v[0][0] |= u), new g((0, n.concat)(v));
+    }
+    /**
+     * Construct a Hop from a BinaryParser
+     *
+     * @param parser BinaryParser to read the Hop from
+     * @returns a Hop
+     */
+    static fromParser(m) {
+      const v = m.readUInt8(), h = [Uint8Array.from([v])];
+      return v & o && h.push(m.read(e.AccountID.width)), v & d && h.push(m.read(r.Currency.width)), v & u && h.push(m.read(e.AccountID.width)), new g((0, n.concat)(h));
+    }
+    /**
+     * Get the JSON interpretation of this hop
+     *
+     * @returns a HopObject, an JS object with optional account, issuer, and currency
+     */
+    toJSON() {
+      const m = new t.BinaryParser((0, n.bytesToHex)(this.bytes)), v = m.readUInt8();
+      let h, _, y;
+      v & o && (h = e.AccountID.fromParser(m).toJSON()), v & d && (_ = r.Currency.fromParser(m).toJSON()), v & u && (y = e.AccountID.fromParser(m).toJSON());
+      const c = {};
+      return h && (c.account = h), y && (c.issuer = y), _ && (c.currency = _), c;
+    }
+    /**
+     * get a number representing the type of this hop
+     *
+     * @returns a number to be bitwise and-ed with TYPE_ constants to describe the types in the hop
+     */
+    type() {
+      return this.bytes[0];
+    }
+  }
+  class p extends i.SerializedType {
+    /**
+     * construct a Path from an array of Hops
+     *
+     * @param value Path or array of HopObjects to construct a Path
+     * @returns the Path
+     */
+    static from(m) {
+      if (m instanceof p)
+        return m;
+      const v = [];
+      return m.forEach((h) => {
+        v.push(g.from(h).toBytes());
+      }), new p((0, n.concat)(v));
+    }
+    /**
+     * Read a Path from a BinaryParser
+     *
+     * @param parser BinaryParser to read Path from
+     * @returns the Path represented by the bytes read from the BinaryParser
+     */
+    static fromParser(m) {
+      const v = [];
+      for (; !m.end() && (v.push(g.fromParser(m).toBytes()), !(m.peek() === s || m.peek() === a)); )
+        ;
+      return new p((0, n.concat)(v));
+    }
+    /**
+     * Get the JSON representation of this Path
+     *
+     * @returns an Array of HopObject constructed from this.bytes
+     */
+    toJSON() {
+      const m = [], v = new t.BinaryParser(this.toString());
+      for (; !v.end(); )
+        m.push(g.fromParser(v).toJSON());
+      return m;
+    }
+  }
+  class w extends i.SerializedType {
+    /**
+     * Construct a PathSet from an Array of Arrays representing paths
+     *
+     * @param value A PathSet or Array of Array of HopObjects
+     * @returns the PathSet constructed from value
+     */
+    static from(m) {
+      if (m instanceof w)
+        return m;
+      if (l(m)) {
+        const v = [];
+        return m.forEach((h) => {
+          v.push(p.from(h).toBytes()), v.push(Uint8Array.from([a]));
+        }), v[v.length - 1] = Uint8Array.from([s]), new w((0, n.concat)(v));
+      }
+      throw new Error("Cannot construct PathSet from given value");
+    }
+    /**
+     * Construct a PathSet from a BinaryParser
+     *
+     * @param parser A BinaryParser to read PathSet from
+     * @returns the PathSet read from parser
+     */
+    static fromParser(m) {
+      const v = [];
+      for (; !m.end() && (v.push(p.fromParser(m).toBytes()), v.push(m.read(1)), v[v.length - 1][0] != s); )
+        ;
+      return new w((0, n.concat)(v));
+    }
+    /**
+     * Get the JSON representation of this PathSet
+     *
+     * @returns an Array of Array of HopObjects, representing this PathSet
+     */
+    toJSON() {
+      const m = [], v = new t.BinaryParser(this.toString());
+      for (; !v.end(); )
+        m.push(p.fromParser(v).toJSON()), v.skip(1);
+      return m;
+    }
+  }
+  return pathSet.PathSet = w, pathSet;
+}
+var stArray = {}, stObject = {}, uint64 = {}, uint = {}, hasRequiredUint;
+function requireUint() {
+  if (hasRequiredUint) return uint;
+  hasRequiredUint = 1, Object.defineProperty(uint, "__esModule", { value: !0 }), uint.UInt = void 0;
+  const e = requireSerializedType();
+  function r(i, n) {
+    return i < n ? -1 : i == n ? 0 : 1;
+  }
+  class t extends e.Comparable {
+    constructor(n) {
+      super(n);
+    }
+    /**
+     * Overload of compareTo for Comparable
+     *
+     * @param other other UInt to compare this to
+     * @returns -1, 0, or 1 depending on how the objects relate to each other
+     */
+    compareTo(n) {
+      return r(this.valueOf(), n.valueOf());
+    }
+    /**
+     * Convert a UInt object to JSON
+     *
+     * @returns number or string represented by this.bytes
+     */
+    toJSON() {
+      const n = this.valueOf();
+      return typeof n == "number" ? n : n.toString();
+    }
+    static checkUintRange(n, s, a) {
+      if (n < s || n > a)
+        throw new Error(`Invalid ${this.constructor.name}: ${n} must be >= ${s} and <= ${a}`);
+    }
+  }
+  return uint.UInt = t, uint;
+}
+var hasRequiredUint64;
+function requireUint64() {
+  if (hasRequiredUint64) return uint64;
+  hasRequiredUint64 = 1, Object.defineProperty(uint64, "__esModule", { value: !0 }), uint64.UInt64 = void 0;
+  const e = requireUint(), r = requireBrowser$4(), t = requireUtils$9(), i = requireEnums(), n = /^[a-fA-F0-9]{1,16}$/, s = /^[0-9]{1,20}$/, a = BigInt(4294967295), o = /* @__PURE__ */ new Set([
+    "MaximumAmount",
+    "OutstandingAmount",
+    "MPTAmount",
+    "LockedAmount"
+  ]);
+  function d(b) {
+    return o.has(b);
+  }
+  class u extends e.UInt {
+    constructor(l) {
+      super(l ?? u.defaultUInt64.bytes);
+    }
+    static fromParser(l) {
+      return new u(l.read(u.width));
+    }
+    /**
+     * Construct a UInt64 object
+     *
+     * @param val A UInt64, hex-string, bigInt, or number
+     * @returns A UInt64 object
+     */
+    static from(l, g = "") {
+      if (l instanceof u)
+        return l;
+      let p = new Uint8Array(u.width);
+      if (typeof l == "number") {
+        if (l < 0)
+          throw new Error("value must be an unsigned integer");
+        const w = BigInt(l), I = [new Uint8Array(4), new Uint8Array(4)];
+        return (0, t.writeUInt32BE)(I[0], Number(w >> BigInt(32)), 0), (0, t.writeUInt32BE)(I[1], Number(w & BigInt(a)), 0), new u((0, r.concat)(I));
+      }
+      if (typeof l == "string") {
+        if (d(g)) {
+          if (!s.test(l))
+            throw new Error(`${g} ${l} is not a valid base 10 string`);
+          l = BigInt(l).toString(16);
+        }
+        if (typeof l == "string" && !n.test(l))
+          throw new Error(`${l} is not a valid hex-string`);
+        const w = l.padStart(16, "0");
+        return p = (0, r.hexToBytes)(w), new u(p);
+      }
+      if (typeof l == "bigint") {
+        const w = [new Uint8Array(4), new Uint8Array(4)];
+        return (0, t.writeUInt32BE)(w[0], Number(Number(l >> BigInt(32))), 0), (0, t.writeUInt32BE)(w[1], Number(l & BigInt(a)), 0), new u((0, r.concat)(w));
+      }
+      throw new Error("Cannot construct UInt64 from given value");
+    }
+    /**
+     * The JSON representation of a UInt64 object
+     *
+     * @returns a hex-string
+     */
+    toJSON(l = i.DEFAULT_DEFINITIONS, g = "") {
+      const p = (0, r.bytesToHex)(this.bytes);
+      return d(g) ? BigInt("0x" + p).toString(10) : p;
+    }
+    /**
+     * Get the value of the UInt64
+     *
+     * @returns the number represented buy this.bytes
+     */
+    valueOf() {
+      const l = BigInt((0, t.readUInt32BE)(this.bytes.slice(0, 4), 0)), g = BigInt((0, t.readUInt32BE)(this.bytes.slice(4), 0));
+      return l << BigInt(32) | g;
+    }
+    /**
+     * Get the bytes representation of the UInt64 object
+     *
+     * @returns 8 bytes representing the UInt64
+     */
+    toBytes() {
+      return this.bytes;
+    }
+  }
+  return uint64.UInt64 = u, u.width = 64 / 8, u.defaultUInt64 = new u(new Uint8Array(u.width)), uint64;
+}
+var hasRequiredStObject;
+function requireStObject() {
+  if (hasRequiredStObject) return stObject;
+  hasRequiredStObject = 1, Object.defineProperty(stObject, "__esModule", { value: !0 }), stObject.STObject = void 0;
+  const e = requireEnums(), r = requireSerializedType(), t = requireDist$3(), i = requireBinaryParser(), n = requireBinarySerializer(), s = requireStArray(), a = requireUint64(), o = Uint8Array.from([225]), d = "ObjectEndMarker", u = "STObject", b = "Destination", l = "Account", g = "SourceTag", p = "DestinationTag";
+  function w(v, h) {
+    const _ = (0, t.xAddressToClassicAddress)(h);
+    let y;
+    if (v === b)
+      y = p;
+    else if (v === l)
+      y = g;
+    else if (_.tag !== !1)
+      throw new Error(`${v} cannot have an associated tag`);
+    return _.tag !== !1 ? { [v]: _.classicAddress, [y]: _.tag } : { [v]: _.classicAddress };
+  }
+  function I(v, h) {
+    if (!(v[g] === void 0 || h[g] === void 0))
+      throw new Error("Cannot have Account X-Address and SourceTag");
+    if (!(v[p] === void 0 || h[p] === void 0))
+      throw new Error("Cannot have Destination X-Address and DestinationTag");
+  }
+  class m extends r.SerializedType {
+    /**
+     * Construct a STObject from a BinaryParser
+     *
+     * @param parser BinaryParser to read STObject from
+     * @returns A STObject object
+     */
+    static fromParser(h) {
+      const _ = new n.BytesList(), y = new n.BinarySerializer(_);
+      for (; !h.end(); ) {
+        const c = h.readField();
+        if (c.name === d)
+          break;
+        const R = h.readFieldValue(c);
+        y.writeFieldAndValue(c, R), c.type.name === u && y.put(o);
+      }
+      return new m(_.toBytes());
+    }
+    /**
+     * Construct a STObject from a JSON object
+     *
+     * @param value An object to include
+     * @param filter optional, denote which field to include in serialized object
+     * @param definitions optional, types and values to use to encode/decode a transaction
+     * @returns a STObject object
+     */
+    static from(h, _, y = e.DEFAULT_DEFINITIONS) {
+      if (h instanceof m)
+        return h;
+      const c = new n.BytesList(), R = new n.BinarySerializer(c);
+      let D = !1;
+      const N = Object.entries(h).reduce((C, [A, E]) => {
+        let S;
+        return E && (0, t.isValidXAddress)(E.toString()) && (S = w(A, E.toString()), I(S, h)), Object.assign(C, S ?? { [A]: E });
+      }, {});
+      function T(C) {
+        return C !== void 0 && N[C.name] !== void 0 && C.isSerialized;
+      }
+      let f = Object.keys(N).map((C) => {
+        if (!(C in y.field)) {
+          if (C[0] === C[0].toLowerCase())
+            return;
+          throw new Error(`Field ${C} is not defined in the definitions`);
+        }
+        return y.field[C];
+      }).filter(T).sort((C, A) => C.ordinal - A.ordinal);
+      return _ !== void 0 && (f = f.filter(_)), f.forEach((C) => {
+        var A;
+        const E = C.type.name === u ? this.from(N[C.name], void 0, y) : C.type.name === "STArray" ? s.STArray.from(N[C.name], y) : C.type.name === "UInt64" ? a.UInt64.from(N[C.name], C.name) : !((A = C.associatedType) === null || A === void 0) && A.from ? C.associatedType.from(N[C.name]) : (() => {
+          throw new Error(`Type ${C.type.name} for field ${C.name} is missing associatedType.from`);
+        })();
+        if (E == null)
+          throw new TypeError(`Unable to interpret "${C.name}: ${N[C.name]}".`);
+        E.name === "UNLModify" && (D = !0);
+        const S = C.name == "Account" && D;
+        R.writeFieldAndValue(C, E, S), C.type.name === u && R.put(o);
+      }), new m(c.toBytes());
+    }
+    /**
+     * Get the JSON interpretation of this.bytes
+     * @param definitions rippled definitions used to parse the values of transaction types and such.
+     *                          Can be customized for sidechains and amendments.
+     * @returns a JSON object
+     */
+    toJSON(h) {
+      const _ = new i.BinaryParser(this.toString(), h), y = {};
+      for (; !_.end(); ) {
+        const c = _.readField();
+        if (c.name === d)
+          break;
+        y[c.name] = _.readFieldValue(c).toJSON(h, c.name);
+      }
+      return y;
+    }
+  }
+  return stObject.STObject = m, stObject;
+}
+var hasRequiredStArray;
+function requireStArray() {
+  if (hasRequiredStArray) return stArray;
+  hasRequiredStArray = 1, Object.defineProperty(stArray, "__esModule", { value: !0 }), stArray.STArray = void 0;
+  const e = requireEnums(), r = requireSerializedType(), t = requireStObject(), i = requireBinaryParser(), n = requireBrowser$4(), s = Uint8Array.from([241]), a = "ArrayEndMarker", o = Uint8Array.from([225]);
+  function d(b) {
+    return Array.isArray(b) && b.every((l) => typeof l == "object" && Object.keys(l).length === 1 && typeof Object.values(l)[0] == "object");
+  }
+  class u extends r.SerializedType {
+    /**
+     * Construct an STArray from a BinaryParser
+     *
+     * @param parser BinaryParser to parse an STArray from
+     * @returns An STArray Object
+     */
+    static fromParser(l) {
+      const g = [];
+      for (; !l.end(); ) {
+        const p = l.readField();
+        if (p.name === a)
+          break;
+        g.push(p.header, l.readFieldValue(p).toBytes(), o);
+      }
+      return g.push(s), new u((0, n.concat)(g));
+    }
+    /**
+     * Construct an STArray from an Array of JSON Objects
+     *
+     * @param value STArray or Array of Objects to parse into an STArray
+     * @param definitions optional, types and values to use to encode/decode a transaction
+     * @returns An STArray object
+     */
+    static from(l, g = e.DEFAULT_DEFINITIONS) {
+      if (l instanceof u)
+        return l;
+      if (d(l)) {
+        const p = [];
+        return l.forEach((w) => {
+          p.push(t.STObject.from(w, void 0, g).toBytes());
+        }), p.push(s), new u((0, n.concat)(p));
+      }
+      throw new Error("Cannot construct STArray from value given");
+    }
+    /**
+     * Return the JSON representation of this.bytes
+     *
+     * @param definitions optional, types and values to use to encode/decode a transaction
+     * @returns An Array of JSON objects
+     */
+    toJSON(l = e.DEFAULT_DEFINITIONS) {
+      const g = [], p = new i.BinaryParser(this.toString(), l);
+      for (; !p.end(); ) {
+        const w = p.readField();
+        if (w.name === a)
+          break;
+        const I = {};
+        I[w.name] = t.STObject.fromParser(p).toJSON(l), g.push(I);
+      }
+      return g;
+    }
+  }
+  return stArray.STArray = u, stArray;
+}
+var uint16 = {}, hasRequiredUint16;
+function requireUint16() {
+  if (hasRequiredUint16) return uint16;
+  hasRequiredUint16 = 1, Object.defineProperty(uint16, "__esModule", { value: !0 }), uint16.UInt16 = void 0;
+  const e = requireUint(), r = requireUtils$9();
+  class t extends e.UInt {
+    constructor(n) {
+      super(n ?? t.defaultUInt16.bytes);
+    }
+    static fromParser(n) {
+      return new t(n.read(t.width));
+    }
+    /**
+     * Construct a UInt16 object from a number
+     *
+     * @param val UInt16 object or number
+     */
+    static from(n) {
+      if (n instanceof t)
+        return n;
+      if (typeof n == "number") {
+        t.checkUintRange(n, 0, 65535);
+        const s = new Uint8Array(t.width);
+        return (0, r.writeUInt16BE)(s, n, 0), new t(s);
+      }
+      throw new Error("Can not construct UInt16 with given value");
+    }
+    /**
+     * get the value of a UInt16 object
+     *
+     * @returns the number represented by this.bytes
+     */
+    valueOf() {
+      return parseInt((0, r.readUInt16BE)(this.bytes, 0));
+    }
+  }
+  return uint16.UInt16 = t, t.width = 16 / 8, t.defaultUInt16 = new t(new Uint8Array(t.width)), uint16;
+}
+var uint32 = {}, hasRequiredUint32;
+function requireUint32() {
+  if (hasRequiredUint32) return uint32;
+  hasRequiredUint32 = 1, Object.defineProperty(uint32, "__esModule", { value: !0 }), uint32.UInt32 = void 0;
+  const e = requireUint(), r = requireUtils$9();
+  class t extends e.UInt {
+    constructor(n) {
+      super(n ?? t.defaultUInt32.bytes);
+    }
+    static fromParser(n) {
+      return new t(n.read(t.width));
+    }
+    /**
+     * Construct a UInt32 object from a number
+     *
+     * @param val UInt32 object or number
+     */
+    static from(n) {
+      if (n instanceof t)
+        return n;
+      const s = new Uint8Array(t.width);
+      if (typeof n == "string") {
+        const a = Number.parseInt(n);
+        return (0, r.writeUInt32BE)(s, a, 0), new t(s);
+      }
+      if (typeof n == "number")
+        return t.checkUintRange(n, 0, 4294967295), (0, r.writeUInt32BE)(s, n, 0), new t(s);
+      throw new Error("Cannot construct UInt32 from given value");
+    }
+    /**
+     * get the value of a UInt32 object
+     *
+     * @returns the number represented by this.bytes
+     */
+    valueOf() {
+      return parseInt((0, r.readUInt32BE)(this.bytes, 0), 10);
+    }
+  }
+  return uint32.UInt32 = t, t.width = 32 / 8, t.defaultUInt32 = new t(new Uint8Array(t.width)), uint32;
+}
+var uint8 = {}, hasRequiredUint8;
+function requireUint8() {
+  if (hasRequiredUint8) return uint8;
+  hasRequiredUint8 = 1, Object.defineProperty(uint8, "__esModule", { value: !0 }), uint8.UInt8 = void 0;
+  const e = requireUint(), r = requireBrowser$4(), t = requireUtils$9();
+  class i extends e.UInt {
+    constructor(s) {
+      super(s ?? i.defaultUInt8.bytes);
+    }
+    static fromParser(s) {
+      return new i(s.read(i.width));
+    }
+    /**
+     * Construct a UInt8 object from a number
+     *
+     * @param val UInt8 object or number
+     */
+    static from(s) {
+      if (s instanceof i)
+        return s;
+      if (typeof s == "number") {
+        i.checkUintRange(s, 0, 255);
+        const a = new Uint8Array(i.width);
+        return (0, t.writeUInt8)(a, s, 0), new i(a);
+      }
+      throw new Error("Cannot construct UInt8 from given value");
+    }
+    /**
+     * get the value of a UInt8 object
+     *
+     * @returns the number represented by this.bytes
+     */
+    valueOf() {
+      return parseInt((0, r.bytesToHex)(this.bytes), 16);
+    }
+  }
+  return uint8.UInt8 = i, i.width = 8 / 8, i.defaultUInt8 = new i(new Uint8Array(i.width)), uint8;
+}
+var vector256 = {}, hasRequiredVector256;
+function requireVector256() {
+  if (hasRequiredVector256) return vector256;
+  hasRequiredVector256 = 1, Object.defineProperty(vector256, "__esModule", { value: !0 }), vector256.Vector256 = void 0;
+  const e = requireSerializedType(), r = requireHash256(), t = requireBinarySerializer(), i = requireBrowser$4();
+  function n(a) {
+    return Array.isArray(a) && (a.length === 0 || typeof a[0] == "string");
+  }
+  class s extends e.SerializedType {
+    constructor(o) {
+      super(o);
+    }
+    /**
+     * Construct a Vector256 from a BinaryParser
+     *
+     * @param parser BinaryParser to
+     * @param hint length of the vector, in bytes, optional
+     * @returns a Vector256 object
+     */
+    static fromParser(o, d) {
+      const u = new t.BytesList(), l = (d ?? o.size()) / 32;
+      for (let g = 0; g < l; g++)
+        r.Hash256.fromParser(o).toBytesSink(u);
+      return new s(u.toBytes());
+    }
+    /**
+     * Construct a Vector256 object from an array of hashes
+     *
+     * @param value A Vector256 object or array of hex-strings representing Hash256's
+     * @returns a Vector256 object
+     */
+    static from(o) {
+      if (o instanceof s)
+        return o;
+      if (n(o)) {
+        const d = new t.BytesList();
+        return o.forEach((u) => {
+          r.Hash256.from(u).toBytesSink(d);
+        }), new s(d.toBytes());
+      }
+      throw new Error("Cannot construct Vector256 from given value");
+    }
+    /**
+     * Return an Array of hex-strings represented by this.bytes
+     *
+     * @returns An Array of strings representing the Hash256 objects
+     */
+    toJSON() {
+      if (this.bytes.byteLength % 32 !== 0)
+        throw new Error("Invalid bytes for Vector256");
+      const o = [];
+      for (let d = 0; d < this.bytes.byteLength; d += 32)
+        o.push((0, i.bytesToHex)(this.bytes.slice(d, d + 32)));
+      return o;
+    }
+  }
+  return vector256.Vector256 = s, vector256;
+}
+var xchainBridge = {}, hasRequiredXchainBridge;
+function requireXchainBridge() {
+  if (hasRequiredXchainBridge) return xchainBridge;
+  hasRequiredXchainBridge = 1, Object.defineProperty(xchainBridge, "__esModule", { value: !0 }), xchainBridge.XChainBridge = void 0;
+  const e = requireBinaryParser(), r = requireAccountId(), t = requireSerializedType(), i = requireIssue(), n = requireBrowser$4();
+  function s(o) {
+    const d = Object.keys(o).sort();
+    return d.length === 4 && d[0] === "IssuingChainDoor" && d[1] === "IssuingChainIssue" && d[2] === "LockingChainDoor" && d[3] === "LockingChainIssue";
+  }
+  class a extends t.SerializedType {
+    constructor(d) {
+      super(d ?? a.ZERO_XCHAIN_BRIDGE.bytes);
+    }
+    /**
+     * Construct a cross-chain bridge from a JSON
+     *
+     * @param value XChainBridge or JSON to parse into an XChainBridge
+     * @returns An XChainBridge object
+     */
+    static from(d) {
+      if (d instanceof a)
+        return d;
+      if (!s(d))
+        throw new Error("Invalid type to construct an XChainBridge");
+      const u = [];
+      return this.TYPE_ORDER.forEach((b) => {
+        const { name: l, type: g } = b;
+        g === r.AccountID && u.push(Uint8Array.from([20]));
+        const p = g.from(d[l]);
+        u.push(p.toBytes());
+      }), new a((0, n.concat)(u));
+    }
+    /**
+     * Read an XChainBridge from a BinaryParser
+     *
+     * @param parser BinaryParser to read the XChainBridge from
+     * @returns An XChainBridge object
+     */
+    static fromParser(d) {
+      const u = [];
+      return this.TYPE_ORDER.forEach((b) => {
+        const { type: l } = b;
+        l === r.AccountID && (d.skip(1), u.push(Uint8Array.from([20])));
+        const g = l.fromParser(d);
+        u.push(g.toBytes());
+      }), new a((0, n.concat)(u));
+    }
+    /**
+     * Get the JSON representation of this XChainBridge
+     *
+     * @returns the JSON interpretation of this.bytes
+     */
+    toJSON() {
+      const d = new e.BinaryParser(this.toString()), u = {};
+      return a.TYPE_ORDER.forEach((b) => {
+        const { name: l, type: g } = b;
+        g === r.AccountID && d.skip(1);
+        const p = g.fromParser(d).toJSON();
+        u[l] = p;
+      }), u;
+    }
+  }
+  return xchainBridge.XChainBridge = a, a.ZERO_XCHAIN_BRIDGE = new a((0, n.concat)([
+    Uint8Array.from([20]),
+    new Uint8Array(40),
+    Uint8Array.from([20]),
+    new Uint8Array(40)
+  ])), a.TYPE_ORDER = [
+    { name: "LockingChainDoor", type: r.AccountID },
+    { name: "LockingChainIssue", type: i.Issue },
+    { name: "IssuingChainDoor", type: r.AccountID },
+    { name: "IssuingChainIssue", type: i.Issue }
+  ], xchainBridge;
+}
+var hasRequiredTypes$1;
+function requireTypes$1() {
+  return hasRequiredTypes$1 || (hasRequiredTypes$1 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.Vector256 = e.UInt64 = e.UInt32 = e.UInt16 = e.UInt8 = e.STObject = e.STArray = e.PathSet = e.Hash256 = e.Hash192 = e.Hash160 = e.Hash128 = e.Currency = e.Blob = e.Amount = e.AccountID = e.coreTypes = void 0;
+    const r = requireAccountId();
+    Object.defineProperty(e, "AccountID", { enumerable: !0, get: function() {
+      return r.AccountID;
+    } });
+    const t = requireAmount();
+    Object.defineProperty(e, "Amount", { enumerable: !0, get: function() {
+      return t.Amount;
+    } });
+    const i = requireBlob();
+    Object.defineProperty(e, "Blob", { enumerable: !0, get: function() {
+      return i.Blob;
+    } });
+    const n = requireCurrency();
+    Object.defineProperty(e, "Currency", { enumerable: !0, get: function() {
+      return n.Currency;
+    } });
+    const s = requireHash128();
+    Object.defineProperty(e, "Hash128", { enumerable: !0, get: function() {
+      return s.Hash128;
+    } });
+    const a = requireHash160();
+    Object.defineProperty(e, "Hash160", { enumerable: !0, get: function() {
+      return a.Hash160;
+    } });
+    const o = requireHash192();
+    Object.defineProperty(e, "Hash192", { enumerable: !0, get: function() {
+      return o.Hash192;
+    } });
+    const d = requireHash256();
+    Object.defineProperty(e, "Hash256", { enumerable: !0, get: function() {
+      return d.Hash256;
+    } });
+    const u = requireIssue(), b = requireStNumber(), l = requirePathSet();
+    Object.defineProperty(e, "PathSet", { enumerable: !0, get: function() {
+      return l.PathSet;
+    } });
+    const g = requireStArray();
+    Object.defineProperty(e, "STArray", { enumerable: !0, get: function() {
+      return g.STArray;
+    } });
+    const p = requireStObject();
+    Object.defineProperty(e, "STObject", { enumerable: !0, get: function() {
+      return p.STObject;
+    } });
+    const w = requireUint16();
+    Object.defineProperty(e, "UInt16", { enumerable: !0, get: function() {
+      return w.UInt16;
+    } });
+    const I = requireUint32();
+    Object.defineProperty(e, "UInt32", { enumerable: !0, get: function() {
+      return I.UInt32;
+    } });
+    const m = requireUint64();
+    Object.defineProperty(e, "UInt64", { enumerable: !0, get: function() {
+      return m.UInt64;
+    } });
+    const v = requireUint8();
+    Object.defineProperty(e, "UInt8", { enumerable: !0, get: function() {
+      return v.UInt8;
+    } });
+    const h = requireVector256();
+    Object.defineProperty(e, "Vector256", { enumerable: !0, get: function() {
+      return h.Vector256;
+    } });
+    const _ = requireXchainBridge(), y = requireEnums(), c = {
+      AccountID: r.AccountID,
+      Amount: t.Amount,
+      Blob: i.Blob,
+      Currency: n.Currency,
+      Hash128: s.Hash128,
+      Hash160: a.Hash160,
+      Hash192: o.Hash192,
+      Hash256: d.Hash256,
+      Issue: u.Issue,
+      Number: b.STNumber,
+      PathSet: l.PathSet,
+      STArray: g.STArray,
+      STObject: p.STObject,
+      UInt8: v.UInt8,
+      UInt16: w.UInt16,
+      UInt32: I.UInt32,
+      UInt64: m.UInt64,
+      Vector256: h.Vector256,
+      XChainBridge: _.XChainBridge
+    };
+    e.coreTypes = c, y.DEFAULT_DEFINITIONS.associateTypes(c);
+  })(types$1)), types$1;
+}
+var binary = {}, hashPrefixes = {}, hasRequiredHashPrefixes;
+function requireHashPrefixes() {
+  if (hasRequiredHashPrefixes) return hashPrefixes;
+  hasRequiredHashPrefixes = 1, Object.defineProperty(hashPrefixes, "__esModule", { value: !0 }), hashPrefixes.HashPrefix = void 0;
+  const e = requireUtils$9();
+  function r(i) {
+    const n = new Uint8Array(4);
+    return (0, e.writeUInt32BE)(n, i, 0), n;
+  }
+  const t = {
+    transactionID: r(1415073280),
+    // transaction plus metadata
+    transaction: r(1397638144),
+    // account state
+    accountStateEntry: r(1296846336),
+    // inner node in tree
+    innerNode: r(1296649728),
+    // ledger master data for signing
+    ledgerHeader: r(1280791040),
+    // inner transaction to sign
+    transactionSig: r(1398036480),
+    // inner transaction to sign
+    transactionMultiSig: r(1397576704),
+    // validation for signing
+    validation: r(1447119872),
+    // proposal for signing
+    proposal: r(1347571712),
+    // payment channel claim
+    paymentChannelClaim: r(1129073920),
+    // batch
+    batch: r(1111705600)
+  };
+  return hashPrefixes.HashPrefix = t, hashPrefixes;
+}
+var hashes$1 = {}, browser$2 = {}, sha512 = {}, _u64 = {}, hasRequired_u64;
+function require_u64() {
+  if (hasRequired_u64) return _u64;
+  hasRequired_u64 = 1, Object.defineProperty(_u64, "__esModule", { value: !0 }), _u64.add5L = _u64.add5H = _u64.add4H = _u64.add4L = _u64.add3H = _u64.add3L = _u64.add = _u64.rotlBL = _u64.rotlBH = _u64.rotlSL = _u64.rotlSH = _u64.rotr32L = _u64.rotr32H = _u64.rotrBL = _u64.rotrBH = _u64.rotrSL = _u64.rotrSH = _u64.shrSL = _u64.shrSH = _u64.toBig = _u64.split = _u64.fromBig = void 0;
+  const e = /* @__PURE__ */ BigInt(2 ** 32 - 1), r = /* @__PURE__ */ BigInt(32);
+  function t(T, f = !1) {
+    return f ? { h: Number(T & e), l: Number(T >> r & e) } : { h: Number(T >> r & e) | 0, l: Number(T & e) | 0 };
+  }
+  _u64.fromBig = t;
+  function i(T, f = !1) {
+    let C = new Uint32Array(T.length), A = new Uint32Array(T.length);
+    for (let E = 0; E < T.length; E++) {
+      const { h: S, l: L } = t(T[E], f);
+      [C[E], A[E]] = [S, L];
+    }
+    return [C, A];
+  }
+  _u64.split = i;
+  const n = (T, f) => BigInt(T >>> 0) << r | BigInt(f >>> 0);
+  _u64.toBig = n;
+  const s = (T, f, C) => T >>> C;
+  _u64.shrSH = s;
+  const a = (T, f, C) => T << 32 - C | f >>> C;
+  _u64.shrSL = a;
+  const o = (T, f, C) => T >>> C | f << 32 - C;
+  _u64.rotrSH = o;
+  const d = (T, f, C) => T << 32 - C | f >>> C;
+  _u64.rotrSL = d;
+  const u = (T, f, C) => T << 64 - C | f >>> C - 32;
+  _u64.rotrBH = u;
+  const b = (T, f, C) => T >>> C - 32 | f << 64 - C;
+  _u64.rotrBL = b;
+  const l = (T, f) => f;
+  _u64.rotr32H = l;
+  const g = (T, f) => T;
+  _u64.rotr32L = g;
+  const p = (T, f, C) => T << C | f >>> 32 - C;
+  _u64.rotlSH = p;
+  const w = (T, f, C) => f << C | T >>> 32 - C;
+  _u64.rotlSL = w;
+  const I = (T, f, C) => f << C - 32 | T >>> 64 - C;
+  _u64.rotlBH = I;
+  const m = (T, f, C) => T << C - 32 | f >>> 64 - C;
+  _u64.rotlBL = m;
+  function v(T, f, C, A) {
+    const E = (f >>> 0) + (A >>> 0);
+    return { h: T + C + (E / 2 ** 32 | 0) | 0, l: E | 0 };
+  }
+  _u64.add = v;
+  const h = (T, f, C) => (T >>> 0) + (f >>> 0) + (C >>> 0);
+  _u64.add3L = h;
+  const _ = (T, f, C, A) => f + C + A + (T / 2 ** 32 | 0) | 0;
+  _u64.add3H = _;
+  const y = (T, f, C, A) => (T >>> 0) + (f >>> 0) + (C >>> 0) + (A >>> 0);
+  _u64.add4L = y;
+  const c = (T, f, C, A, E) => f + C + A + E + (T / 2 ** 32 | 0) | 0;
+  _u64.add4H = c;
+  const R = (T, f, C, A, E) => (T >>> 0) + (f >>> 0) + (C >>> 0) + (A >>> 0) + (E >>> 0);
+  _u64.add5L = R;
+  const D = (T, f, C, A, E, S) => f + C + A + E + S + (T / 2 ** 32 | 0) | 0;
+  _u64.add5H = D;
+  const N = {
+    fromBig: t,
+    split: i,
+    toBig: n,
+    shrSH: s,
+    shrSL: a,
+    rotrSH: o,
+    rotrSL: d,
+    rotrBH: u,
+    rotrBL: b,
+    rotr32H: l,
+    rotr32L: g,
+    rotlSH: p,
+    rotlSL: w,
+    rotlBH: I,
+    rotlBL: m,
+    add: v,
+    add3L: h,
+    add3H: _,
+    add4L: y,
+    add4H: c,
+    add5H: D,
+    add5L: R
+  };
+  return _u64.default = N, _u64;
+}
+var hasRequiredSha512$1;
+function requireSha512$1() {
+  if (hasRequiredSha512$1) return sha512;
+  hasRequiredSha512$1 = 1, Object.defineProperty(sha512, "__esModule", { value: !0 }), sha512.sha384 = sha512.sha512_256 = sha512.sha512_224 = sha512.sha512 = sha512.SHA512 = void 0;
+  const e = /* @__PURE__ */ require_md(), r = /* @__PURE__ */ require_u64(), t = /* @__PURE__ */ requireUtils$b(), [i, n] = r.default.split([
+    "0x428a2f98d728ae22",
+    "0x7137449123ef65cd",
+    "0xb5c0fbcfec4d3b2f",
+    "0xe9b5dba58189dbbc",
+    "0x3956c25bf348b538",
+    "0x59f111f1b605d019",
+    "0x923f82a4af194f9b",
+    "0xab1c5ed5da6d8118",
+    "0xd807aa98a3030242",
+    "0x12835b0145706fbe",
+    "0x243185be4ee4b28c",
+    "0x550c7dc3d5ffb4e2",
+    "0x72be5d74f27b896f",
+    "0x80deb1fe3b1696b1",
+    "0x9bdc06a725c71235",
+    "0xc19bf174cf692694",
+    "0xe49b69c19ef14ad2",
+    "0xefbe4786384f25e3",
+    "0x0fc19dc68b8cd5b5",
+    "0x240ca1cc77ac9c65",
+    "0x2de92c6f592b0275",
+    "0x4a7484aa6ea6e483",
+    "0x5cb0a9dcbd41fbd4",
+    "0x76f988da831153b5",
+    "0x983e5152ee66dfab",
+    "0xa831c66d2db43210",
+    "0xb00327c898fb213f",
+    "0xbf597fc7beef0ee4",
+    "0xc6e00bf33da88fc2",
+    "0xd5a79147930aa725",
+    "0x06ca6351e003826f",
+    "0x142929670a0e6e70",
+    "0x27b70a8546d22ffc",
+    "0x2e1b21385c26c926",
+    "0x4d2c6dfc5ac42aed",
+    "0x53380d139d95b3df",
+    "0x650a73548baf63de",
+    "0x766a0abb3c77b2a8",
+    "0x81c2c92e47edaee6",
+    "0x92722c851482353b",
+    "0xa2bfe8a14cf10364",
+    "0xa81a664bbc423001",
+    "0xc24b8b70d0f89791",
+    "0xc76c51a30654be30",
+    "0xd192e819d6ef5218",
+    "0xd69906245565a910",
+    "0xf40e35855771202a",
+    "0x106aa07032bbd1b8",
+    "0x19a4c116b8d2d0c8",
+    "0x1e376c085141ab53",
+    "0x2748774cdf8eeb99",
+    "0x34b0bcb5e19b48a8",
+    "0x391c0cb3c5c95a63",
+    "0x4ed8aa4ae3418acb",
+    "0x5b9cca4f7763e373",
+    "0x682e6ff3d6b2b8a3",
+    "0x748f82ee5defb2fc",
+    "0x78a5636f43172f60",
+    "0x84c87814a1f0ab72",
+    "0x8cc702081a6439ec",
+    "0x90befffa23631e28",
+    "0xa4506cebde82bde9",
+    "0xbef9a3f7b2c67915",
+    "0xc67178f2e372532b",
+    "0xca273eceea26619c",
+    "0xd186b8c721c0c207",
+    "0xeada7dd6cde0eb1e",
+    "0xf57d4f7fee6ed178",
+    "0x06f067aa72176fba",
+    "0x0a637dc5a2c898a6",
+    "0x113f9804bef90dae",
+    "0x1b710b35131c471b",
+    "0x28db77f523047d84",
+    "0x32caab7b40c72493",
+    "0x3c9ebe0a15c9bebc",
+    "0x431d67c49c100d4c",
+    "0x4cc5d4becb3e42b6",
+    "0x597f299cfc657e2a",
+    "0x5fcb6fab3ad6faec",
+    "0x6c44198c4a475817"
+  ].map((l) => BigInt(l))), s = /* @__PURE__ */ new Uint32Array(80), a = /* @__PURE__ */ new Uint32Array(80);
+  class o extends e.HashMD {
+    constructor() {
+      super(128, 64, 16, !1), this.Ah = 1779033703, this.Al = -205731576, this.Bh = -1150833019, this.Bl = -2067093701, this.Ch = 1013904242, this.Cl = -23791573, this.Dh = -1521486534, this.Dl = 1595750129, this.Eh = 1359893119, this.El = -1377402159, this.Fh = -1694144372, this.Fl = 725511199, this.Gh = 528734635, this.Gl = -79577749, this.Hh = 1541459225, this.Hl = 327033209;
+    }
+    // prettier-ignore
+    get() {
+      const { Ah: g, Al: p, Bh: w, Bl: I, Ch: m, Cl: v, Dh: h, Dl: _, Eh: y, El: c, Fh: R, Fl: D, Gh: N, Gl: T, Hh: f, Hl: C } = this;
+      return [g, p, w, I, m, v, h, _, y, c, R, D, N, T, f, C];
+    }
+    // prettier-ignore
+    set(g, p, w, I, m, v, h, _, y, c, R, D, N, T, f, C) {
+      this.Ah = g | 0, this.Al = p | 0, this.Bh = w | 0, this.Bl = I | 0, this.Ch = m | 0, this.Cl = v | 0, this.Dh = h | 0, this.Dl = _ | 0, this.Eh = y | 0, this.El = c | 0, this.Fh = R | 0, this.Fl = D | 0, this.Gh = N | 0, this.Gl = T | 0, this.Hh = f | 0, this.Hl = C | 0;
+    }
+    process(g, p) {
+      for (let S = 0; S < 16; S++, p += 4)
+        s[S] = g.getUint32(p), a[S] = g.getUint32(p += 4);
+      for (let S = 16; S < 80; S++) {
+        const L = s[S - 15] | 0, U = a[S - 15] | 0, H = r.default.rotrSH(L, U, 1) ^ r.default.rotrSH(L, U, 8) ^ r.default.shrSH(L, U, 7), K = r.default.rotrSL(L, U, 1) ^ r.default.rotrSL(L, U, 8) ^ r.default.shrSL(L, U, 7), $ = s[S - 2] | 0, W = a[S - 2] | 0, G = r.default.rotrSH($, W, 19) ^ r.default.rotrBH($, W, 61) ^ r.default.shrSH($, W, 6), J = r.default.rotrSL($, W, 19) ^ r.default.rotrBL($, W, 61) ^ r.default.shrSL($, W, 6), re = r.default.add4L(K, J, a[S - 7], a[S - 16]), x = r.default.add4H(re, H, G, s[S - 7], s[S - 16]);
+        s[S] = x | 0, a[S] = re | 0;
+      }
+      let { Ah: w, Al: I, Bh: m, Bl: v, Ch: h, Cl: _, Dh: y, Dl: c, Eh: R, El: D, Fh: N, Fl: T, Gh: f, Gl: C, Hh: A, Hl: E } = this;
+      for (let S = 0; S < 80; S++) {
+        const L = r.default.rotrSH(R, D, 14) ^ r.default.rotrSH(R, D, 18) ^ r.default.rotrBH(R, D, 41), U = r.default.rotrSL(R, D, 14) ^ r.default.rotrSL(R, D, 18) ^ r.default.rotrBL(R, D, 41), H = R & N ^ ~R & f, K = D & T ^ ~D & C, $ = r.default.add5L(E, U, K, n[S], a[S]), W = r.default.add5H($, A, L, H, i[S], s[S]), G = $ | 0, J = r.default.rotrSH(w, I, 28) ^ r.default.rotrBH(w, I, 34) ^ r.default.rotrBH(w, I, 39), re = r.default.rotrSL(w, I, 28) ^ r.default.rotrBL(w, I, 34) ^ r.default.rotrBL(w, I, 39), x = w & m ^ w & h ^ m & h, Q = I & v ^ I & _ ^ v & _;
+        A = f | 0, E = C | 0, f = N | 0, C = T | 0, N = R | 0, T = D | 0, { h: R, l: D } = r.default.add(y | 0, c | 0, W | 0, G | 0), y = h | 0, c = _ | 0, h = m | 0, _ = v | 0, m = w | 0, v = I | 0;
+        const se = r.default.add3L(G, re, Q);
+        w = r.default.add3H(se, W, J, x), I = se | 0;
+      }
+      ({ h: w, l: I } = r.default.add(this.Ah | 0, this.Al | 0, w | 0, I | 0)), { h: m, l: v } = r.default.add(this.Bh | 0, this.Bl | 0, m | 0, v | 0), { h, l: _ } = r.default.add(this.Ch | 0, this.Cl | 0, h | 0, _ | 0), { h: y, l: c } = r.default.add(this.Dh | 0, this.Dl | 0, y | 0, c | 0), { h: R, l: D } = r.default.add(this.Eh | 0, this.El | 0, R | 0, D | 0), { h: N, l: T } = r.default.add(this.Fh | 0, this.Fl | 0, N | 0, T | 0), { h: f, l: C } = r.default.add(this.Gh | 0, this.Gl | 0, f | 0, C | 0), { h: A, l: E } = r.default.add(this.Hh | 0, this.Hl | 0, A | 0, E | 0), this.set(w, I, m, v, h, _, y, c, R, D, N, T, f, C, A, E);
+    }
+    roundClean() {
+      s.fill(0), a.fill(0);
+    }
+    destroy() {
+      this.buffer.fill(0), this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+  }
+  sha512.SHA512 = o;
+  class d extends o {
+    constructor() {
+      super(), this.Ah = -1942145080, this.Al = 424955298, this.Bh = 1944164710, this.Bl = -1982016298, this.Ch = 502970286, this.Cl = 855612546, this.Dh = 1738396948, this.Dl = 1479516111, this.Eh = 258812777, this.El = 2077511080, this.Fh = 2011393907, this.Fl = 79989058, this.Gh = 1067287976, this.Gl = 1780299464, this.Hh = 286451373, this.Hl = -1848208735, this.outputLen = 28;
+    }
+  }
+  class u extends o {
+    constructor() {
+      super(), this.Ah = 573645204, this.Al = -64227540, this.Bh = -1621794909, this.Bl = -934517566, this.Ch = 596883563, this.Cl = 1867755857, this.Dh = -1774684391, this.Dl = 1497426621, this.Eh = -1775747358, this.El = -1467023389, this.Fh = -1101128155, this.Fl = 1401305490, this.Gh = 721525244, this.Gl = 746961066, this.Hh = 246885852, this.Hl = -2117784414, this.outputLen = 32;
+    }
+  }
+  class b extends o {
+    constructor() {
+      super(), this.Ah = -876896931, this.Al = -1056596264, this.Bh = 1654270250, this.Bl = 914150663, this.Ch = -1856437926, this.Cl = 812702999, this.Dh = 355462360, this.Dl = -150054599, this.Eh = 1731405415, this.El = -4191439, this.Fh = -1900787065, this.Fl = 1750603025, this.Gh = -619958771, this.Gl = 1694076839, this.Hh = 1203062813, this.Hl = -1090891868, this.outputLen = 48;
+    }
+  }
+  return sha512.sha512 = (0, t.wrapConstructor)(() => new o()), sha512.sha512_224 = (0, t.wrapConstructor)(() => new d()), sha512.sha512_256 = (0, t.wrapConstructor)(() => new u()), sha512.sha384 = (0, t.wrapConstructor)(() => new b()), sha512;
+}
+var hasRequiredBrowser$2;
+function requireBrowser$2() {
+  if (hasRequiredBrowser$2) return browser$2;
+  hasRequiredBrowser$2 = 1;
+  var e = browser$2 && browser$2.__importDefault || function(i) {
+    return i && i.__esModule ? i : { default: i };
+  };
+  Object.defineProperty(browser$2, "__esModule", { value: !0 }), browser$2.sha512 = void 0;
+  const r = /* @__PURE__ */ requireSha512$1(), t = e(requireWrapNoble());
+  return browser$2.sha512 = (0, t.default)(r.sha512), browser$2;
+}
+var hasRequiredHashes$1;
+function requireHashes$1() {
+  if (hasRequiredHashes$1) return hashes$1;
+  hasRequiredHashes$1 = 1, Object.defineProperty(hashes$1, "__esModule", { value: !0 }), hashes$1.transactionID = hashes$1.sha512Half = hashes$1.Sha512Half = void 0;
+  const e = requireHashPrefixes(), r = requireTypes$1(), t = requireBinarySerializer(), i = requireBrowser$2();
+  class n extends t.BytesList {
+    constructor() {
+      super(...arguments), this.hash = i.sha512.create();
+    }
+    /**
+     * Construct a new Sha512Hash and write bytes this.hash
+     *
+     * @param bytes bytes to write to this.hash
+     * @returns the new Sha512Hash object
+     */
+    static put(d) {
+      return new n().put(d);
+    }
+    /**
+     * Write bytes to an existing Sha512Hash
+     *
+     * @param bytes bytes to write to object
+     * @returns the Sha512 object
+     */
+    put(d) {
+      return this.hash.update(d), this;
+    }
+    /**
+     * Compute SHA512 hash and slice in half
+     *
+     * @returns half of a SHA512 hash
+     */
+    finish256() {
+      return Uint8Array.from(this.hash.digest().slice(0, 32));
+    }
+    /**
+     * Constructs a Hash256 from the Sha512Half object
+     *
+     * @returns a Hash256 object
+     */
+    finish() {
+      return new r.Hash256(this.finish256());
+    }
+  }
+  hashes$1.Sha512Half = n;
+  function s(...o) {
+    const d = new n();
+    return o.forEach((u) => d.put(u)), d.finish256();
+  }
+  hashes$1.sha512Half = s;
+  function a(o) {
+    return new r.Hash256(s(e.HashPrefix.transactionID, o));
+  }
+  return hashes$1.transactionID = a, hashes$1;
+}
+var hasRequiredBinary;
+function requireBinary() {
+  return hasRequiredBinary || (hasRequiredBinary = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.signingBatchData = e.transactionID = e.sha512Half = e.binaryToJSON = e.signingClaimData = e.signingData = e.multiSigningData = e.readJSON = e.serializeObject = e.makeParser = e.BytesList = e.BinarySerializer = e.BinaryParser = void 0;
+    const r = requireBrowser$4(), t = requireTypes$1(), i = requireBinaryParser();
+    Object.defineProperty(e, "BinaryParser", { enumerable: !0, get: function() {
+      return i.BinaryParser;
+    } });
+    const n = requireHashPrefixes(), s = requireBinarySerializer();
+    Object.defineProperty(e, "BinarySerializer", { enumerable: !0, get: function() {
+      return s.BinarySerializer;
+    } }), Object.defineProperty(e, "BytesList", { enumerable: !0, get: function() {
+      return s.BytesList;
+    } });
+    const a = requireHashes$1();
+    Object.defineProperty(e, "sha512Half", { enumerable: !0, get: function() {
+      return a.sha512Half;
+    } }), Object.defineProperty(e, "transactionID", { enumerable: !0, get: function() {
+      return a.transactionID;
+    } });
+    const o = requireEnums(), d = (m, v) => new i.BinaryParser(m instanceof Uint8Array ? (0, r.bytesToHex)(m) : m, v);
+    e.makeParser = d;
+    const u = (m, v = o.DEFAULT_DEFINITIONS) => m.readType(t.coreTypes.STObject).toJSON(v);
+    e.readJSON = u;
+    const b = (m, v) => u(d(m, v), v);
+    e.binaryToJSON = b;
+    function l(m, v = {}) {
+      const { prefix: h, suffix: _, signingFieldsOnly: y = !1, definitions: c } = v, R = new s.BytesList();
+      h && R.put(h);
+      const D = y ? (N) => N.isSigningField : void 0;
+      return t.coreTypes.STObject.from(m, D, c).toBytesSink(R), _ && R.put(_), R.toBytes();
+    }
+    e.serializeObject = l;
+    function g(m, v = n.HashPrefix.transactionSig, h = {}) {
+      return l(m, {
+        prefix: v,
+        signingFieldsOnly: !0,
+        definitions: h.definitions
+      });
+    }
+    e.signingData = g;
+    function p(m) {
+      const v = BigInt(String(m.amount)), h = n.HashPrefix.paymentChannelClaim, _ = t.coreTypes.Hash256.from(m.channel).toBytes(), y = t.coreTypes.UInt64.from(v).toBytes(), c = new s.BytesList();
+      return c.put(h), c.put(_), c.put(y), c.toBytes();
+    }
+    e.signingClaimData = p;
+    function w(m, v, h = {
+      definitions: o.DEFAULT_DEFINITIONS
+    }) {
+      const _ = n.HashPrefix.transactionMultiSig, y = t.coreTypes.AccountID.from(v).toBytes();
+      return l(m, {
+        prefix: _,
+        suffix: y,
+        signingFieldsOnly: !0,
+        definitions: h.definitions
+      });
+    }
+    e.multiSigningData = w;
+    function I(m) {
+      if (m.flags == null)
+        throw Error("No field `flags'");
+      if (m.txIDs == null)
+        throw Error("No field `txIDs`");
+      const v = n.HashPrefix.batch, h = t.coreTypes.UInt32.from(m.flags).toBytes(), _ = t.coreTypes.UInt32.from(m.txIDs.length).toBytes(), y = new s.BytesList();
+      return y.put(v), y.put(h), y.put(_), m.txIDs.forEach((c) => {
+        y.put(t.coreTypes.Hash256.from(c).toBytes());
+      }), y.toBytes();
+    }
+    e.signingBatchData = I;
+  })(binary)), binary;
+}
+var shamap = {}, hasRequiredShamap;
+function requireShamap() {
+  if (hasRequiredShamap) return shamap;
+  hasRequiredShamap = 1, Object.defineProperty(shamap, "__esModule", { value: !0 }), shamap.ShaMapLeaf = shamap.ShaMapNode = shamap.ShaMap = void 0;
+  const e = requireTypes$1(), r = requireHashPrefixes(), t = requireHashes$1();
+  class i {
+  }
+  shamap.ShaMapNode = i;
+  class n extends i {
+    constructor(d, u) {
+      super(), this.index = d, this.item = u;
+    }
+    /**
+     * @returns true as ShaMapLeaf is a leaf node
+     */
+    isLeaf() {
+      return !0;
+    }
+    /**
+     * @returns false as ShaMapLeaf is not an inner node
+     */
+    isInner() {
+      return !1;
+    }
+    /**
+     * Get the prefix of the this.item
+     *
+     * @returns The hash prefix, unless this.item is undefined, then it returns an empty Uint8Array
+     */
+    hashPrefix() {
+      return this.item === void 0 ? new Uint8Array(0) : this.item.hashPrefix();
+    }
+    /**
+     * Hash the bytes representation of this
+     *
+     * @returns hash of this.item concatenated with this.index
+     */
+    hash() {
+      const d = t.Sha512Half.put(this.hashPrefix());
+      return this.toBytesSink(d), d.finish();
+    }
+    /**
+     * Write the bytes representation of this to a BytesList
+     * @param list BytesList to write bytes to
+     */
+    toBytesSink(d) {
+      this.item !== void 0 && this.item.toBytesSink(d), this.index.toBytesSink(d);
+    }
+  }
+  shamap.ShaMapLeaf = n;
+  class s extends i {
+    constructor(d = 0) {
+      super(), this.depth = d, this.slotBits = 0, this.branches = Array(16);
+    }
+    /**
+     * @returns true as ShaMapInner is an inner node
+     */
+    isInner() {
+      return !0;
+    }
+    /**
+     * @returns false as ShaMapInner is not a leaf node
+     */
+    isLeaf() {
+      return !1;
+    }
+    /**
+     * Get the hash prefix for this node
+     *
+     * @returns hash prefix describing an inner node
+     */
+    hashPrefix() {
+      return r.HashPrefix.innerNode;
+    }
+    /**
+     * Set a branch of this node to be another node
+     *
+     * @param slot Slot to add branch to this.branches
+     * @param branch Branch to add
+     */
+    setBranch(d, u) {
+      this.slotBits = this.slotBits | 1 << d, this.branches[d] = u;
+    }
+    /**
+     * @returns true if node is empty
+     */
+    empty() {
+      return this.slotBits === 0;
+    }
+    /**
+     * Compute the hash of this node
+     *
+     * @returns The hash of this node
+     */
+    hash() {
+      if (this.empty())
+        return e.coreTypes.Hash256.ZERO_256;
+      const d = t.Sha512Half.put(this.hashPrefix());
+      return this.toBytesSink(d), d.finish();
+    }
+    /**
+     * Writes the bytes representation of this node to a BytesList
+     *
+     * @param list BytesList to write bytes to
+     */
+    toBytesSink(d) {
+      for (let u = 0; u < this.branches.length; u++) {
+        const b = this.branches[u];
+        (b ? b.hash() : e.coreTypes.Hash256.ZERO_256).toBytesSink(d);
+      }
+    }
+    /**
+     * Add item to the SHAMap
+     *
+     * @param index Hash of the index of the item being inserted
+     * @param item Item to insert in the map
+     * @param leaf Leaf node to insert when branch doesn't exist
+     */
+    addItem(d, u, b) {
+      if (d === void 0)
+        throw new Error();
+      if (d !== void 0) {
+        const l = d.nibblet(this.depth), g = this.branches[l];
+        if (g === void 0)
+          this.setBranch(l, b || new n(d, u));
+        else if (g instanceof n) {
+          const p = new s(this.depth + 1);
+          p.addItem(g.index, void 0, g), p.addItem(d, u, b), this.setBranch(l, p);
+        } else if (g instanceof s)
+          g.addItem(d, u, b);
+        else
+          throw new Error("invalid ShaMap.addItem call");
+      }
+    }
+  }
+  class a extends s {
+  }
+  return shamap.ShaMap = a, shamap;
+}
+var ledgerHashes = {}, hasRequiredLedgerHashes;
+function requireLedgerHashes() {
+  if (hasRequiredLedgerHashes) return ledgerHashes;
+  hasRequiredLedgerHashes = 1, Object.defineProperty(ledgerHashes, "__esModule", { value: !0 }), ledgerHashes.decodeLedgerData = ledgerHashes.ledgerHash = ledgerHashes.transactionTreeHash = ledgerHashes.accountStateHash = void 0;
+  const e = requireShamap(), r = requireHashPrefixes(), t = requireHashes$1(), i = requireBinary(), n = requireHash256(), s = requireStObject(), a = requireUint64(), o = requireUint32(), d = requireUint8(), u = requireBinaryParser();
+  function b(v, h) {
+    const _ = new e.ShaMap();
+    return h.forEach((y) => _.addItem(...v(y))), _.hash();
+  }
+  function l(v) {
+    if (!v.hash)
+      throw new Error();
+    return [n.Hash256.from(v.hash), {
+      hashPrefix() {
+        return r.HashPrefix.transaction;
+      },
+      toBytesSink(y) {
+        const c = new i.BinarySerializer(y);
+        c.writeLengthEncoded(s.STObject.from(v)), c.writeLengthEncoded(s.STObject.from(v.metaData));
+      }
+    }, void 0];
+  }
+  function g(v) {
+    const h = n.Hash256.from(v.index), _ = (0, i.serializeObject)(v);
+    return [h, {
+      hashPrefix() {
+        return r.HashPrefix.accountStateEntry;
+      },
+      toBytesSink(c) {
+        c.put(_);
+      }
+    }, void 0];
+  }
+  function p(v) {
+    return b(l, v);
+  }
+  ledgerHashes.transactionTreeHash = p;
+  function w(v) {
+    return b(g, v);
+  }
+  ledgerHashes.accountStateHash = w;
+  function I(v) {
+    const h = new t.Sha512Half();
+    if (h.put(r.HashPrefix.ledgerHeader), v.parent_close_time === void 0 || v.close_flags === void 0)
+      throw new Error();
+    return o.UInt32.from(v.ledger_index).toBytesSink(h), a.UInt64.from(BigInt(String(v.total_coins))).toBytesSink(h), n.Hash256.from(v.parent_hash).toBytesSink(h), n.Hash256.from(v.transaction_hash).toBytesSink(h), n.Hash256.from(v.account_hash).toBytesSink(h), o.UInt32.from(v.parent_close_time).toBytesSink(h), o.UInt32.from(v.close_time).toBytesSink(h), d.UInt8.from(v.close_time_resolution).toBytesSink(h), d.UInt8.from(v.close_flags).toBytesSink(h), h.finish();
+  }
+  ledgerHashes.ledgerHash = I;
+  function m(v, h) {
+    if (typeof v != "string")
+      throw new Error("binary must be a hex string");
+    const _ = new u.BinaryParser(v, h);
+    return {
+      ledger_index: _.readUInt32(),
+      total_coins: _.readType(a.UInt64).valueOf().toString(),
+      parent_hash: _.readType(n.Hash256).toHex(),
+      transaction_hash: _.readType(n.Hash256).toHex(),
+      account_hash: _.readType(n.Hash256).toHex(),
+      parent_close_time: _.readUInt32(),
+      close_time: _.readUInt32(),
+      close_time_resolution: _.readUInt8(),
+      close_flags: _.readUInt8()
+    };
+  }
+  return ledgerHashes.decodeLedgerData = m, ledgerHashes;
+}
+var quality$1 = {}, hasRequiredQuality$1;
+function requireQuality$1() {
+  if (hasRequiredQuality$1) return quality$1;
+  hasRequiredQuality$1 = 1;
+  var e = quality$1 && quality$1.__importDefault || function(s) {
+    return s && s.__esModule ? s : { default: s };
+  };
+  Object.defineProperty(quality$1, "__esModule", { value: !0 }), quality$1.quality = void 0;
+  const r = requireTypes$1(), t = e(requireBignumber()), i = requireBrowser$4();
+  class n {
+    /**
+     * Encode quality amount
+     *
+     * @param arg string representation of an amount
+     * @returns Serialized quality
+     */
+    static encode(a) {
+      const o = (0, t.default)(a), d = (o?.e || 0) - 15, u = o.times(`1e${-d}`).abs().toString(), b = r.coreTypes.UInt64.from(BigInt(u)).toBytes();
+      return b[0] = d + 100, b;
+    }
+    /**
+     * Decode quality amount
+     *
+     * @param arg hex-string denoting serialized quality
+     * @returns deserialized quality
+     */
+    static decode(a) {
+      const o = (0, i.hexToBytes)(a).slice(-8), d = o[0] - 100;
+      return new t.default(`0x${(0, i.bytesToHex)(o.slice(1))}`).times(`1e${d}`);
+    }
+  }
+  return quality$1.quality = n, quality$1;
+}
+var hasRequiredCoretypes;
+function requireCoretypes() {
+  return hasRequiredCoretypes || (hasRequiredCoretypes = 1, (function(e) {
+    var r = coretypes && coretypes.__createBinding || (Object.create ? (function(g, p, w, I) {
+      I === void 0 && (I = w);
+      var m = Object.getOwnPropertyDescriptor(p, w);
+      (!m || ("get" in m ? !p.__esModule : m.writable || m.configurable)) && (m = { enumerable: !0, get: function() {
+        return p[w];
+      } }), Object.defineProperty(g, I, m);
+    }) : (function(g, p, w, I) {
+      I === void 0 && (I = w), g[I] = p[w];
+    })), t = coretypes && coretypes.__setModuleDefault || (Object.create ? (function(g, p) {
+      Object.defineProperty(g, "default", { enumerable: !0, value: p });
+    }) : function(g, p) {
+      g.default = p;
+    }), i = coretypes && coretypes.__importStar || function(g) {
+      if (g && g.__esModule) return g;
+      var p = {};
+      if (g != null) for (var w in g) w !== "default" && Object.prototype.hasOwnProperty.call(g, w) && r(p, g, w);
+      return t(p, g), p;
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.types = e.ShaMap = e.HashPrefix = e.quality = e.TransactionResult = e.Type = e.LedgerEntryType = e.TransactionType = e.Field = e.DEFAULT_DEFINITIONS = e.ledgerHashes = e.binary = e.hashes = void 0;
+    const n = requireEnums();
+    Object.defineProperty(e, "DEFAULT_DEFINITIONS", { enumerable: !0, get: function() {
+      return n.DEFAULT_DEFINITIONS;
+    } }), Object.defineProperty(e, "Field", { enumerable: !0, get: function() {
+      return n.Field;
+    } }), Object.defineProperty(e, "TransactionType", { enumerable: !0, get: function() {
+      return n.TransactionType;
+    } }), Object.defineProperty(e, "LedgerEntryType", { enumerable: !0, get: function() {
+      return n.LedgerEntryType;
+    } }), Object.defineProperty(e, "Type", { enumerable: !0, get: function() {
+      return n.Type;
+    } }), Object.defineProperty(e, "TransactionResult", { enumerable: !0, get: function() {
+      return n.TransactionResult;
+    } });
+    const s = i(requireTypes$1());
+    e.types = s;
+    const a = i(requireBinary());
+    e.binary = a;
+    const o = requireShamap();
+    Object.defineProperty(e, "ShaMap", { enumerable: !0, get: function() {
+      return o.ShaMap;
+    } });
+    const d = i(requireLedgerHashes());
+    e.ledgerHashes = d;
+    const u = i(requireHashes$1());
+    e.hashes = u;
+    const b = requireQuality$1();
+    Object.defineProperty(e, "quality", { enumerable: !0, get: function() {
+      return b.quality;
+    } });
+    const l = requireHashPrefixes();
+    Object.defineProperty(e, "HashPrefix", { enumerable: !0, get: function() {
+      return l.HashPrefix;
+    } });
+  })(coretypes)), coretypes;
+}
+var xrplDefinitions = {}, hasRequiredXrplDefinitions;
+function requireXrplDefinitions() {
+  if (hasRequiredXrplDefinitions) return xrplDefinitions;
+  hasRequiredXrplDefinitions = 1, Object.defineProperty(xrplDefinitions, "__esModule", { value: !0 }), xrplDefinitions.XrplDefinitions = void 0;
+  const e = requireXrplDefinitionsBase(), r = requireTypes$1();
+  class t extends e.XrplDefinitionsBase {
+    /**
+     * Present rippled types in a typed and updatable format.
+     * For an example of the input format see `definitions.json`
+     * To generate a new definitions file from rippled source code, use the tool at
+     * `packages/ripple-binary-codec/tools/generateDefinitions.js`.
+     *
+     * See the definitions.test.js file for examples of how to create your own updated definitions.json.
+     *
+     * @param enums - A json encoding of the core types, transaction types, transaction results, transaction names, and fields.
+     * @param additionalTypes - A list of SerializedType objects with the same name as the fields defined.
+     *              These types will be included in addition to the coreTypes used on mainnet.
+     */
+    constructor(n, s) {
+      const a = Object.assign({}, r.coreTypes, s);
+      super(n, a);
+    }
+  }
+  return xrplDefinitions.XrplDefinitions = t, xrplDefinitions;
+}
+var hasRequiredDist$2;
+function requireDist$2() {
+  return hasRequiredDist$2 || (hasRequiredDist$2 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.coreTypes = e.DEFAULT_DEFINITIONS = e.XrplDefinitionsBase = e.XrplDefinitions = e.TRANSACTION_TYPES = e.decodeLedgerData = e.decodeQuality = e.encodeQuality = e.encodeForSigningBatch = e.encodeForMultisigning = e.encodeForSigningClaim = e.encodeForSigning = e.encode = e.decode = void 0;
+    const r = requireCoretypes(), t = requireLedgerHashes();
+    Object.defineProperty(e, "decodeLedgerData", { enumerable: !0, get: function() {
+      return t.decodeLedgerData;
+    } });
+    const i = requireEnums();
+    Object.defineProperty(e, "XrplDefinitionsBase", { enumerable: !0, get: function() {
+      return i.XrplDefinitionsBase;
+    } }), Object.defineProperty(e, "TRANSACTION_TYPES", { enumerable: !0, get: function() {
+      return i.TRANSACTION_TYPES;
+    } }), Object.defineProperty(e, "DEFAULT_DEFINITIONS", { enumerable: !0, get: function() {
+      return i.DEFAULT_DEFINITIONS;
+    } });
+    const n = requireXrplDefinitions();
+    Object.defineProperty(e, "XrplDefinitions", { enumerable: !0, get: function() {
+      return n.XrplDefinitions;
+    } });
+    const s = requireTypes$1();
+    Object.defineProperty(e, "coreTypes", { enumerable: !0, get: function() {
+      return s.coreTypes;
+    } });
+    const a = requireBrowser$4(), { signingData: o, signingClaimData: d, multiSigningData: u, signingBatchData: b, binaryToJSON: l, serializeObject: g } = r.binary;
+    function p(c, R) {
+      if (typeof c != "string")
+        throw new Error("binary must be a hex string");
+      return l(c, R);
+    }
+    e.decode = p;
+    function w(c, R) {
+      if (typeof c != "object")
+        throw new Error();
+      return (0, a.bytesToHex)(g(c, { definitions: R }));
+    }
+    e.encode = w;
+    function I(c, R) {
+      if (typeof c != "object")
+        throw new Error();
+      return (0, a.bytesToHex)(o(c, r.HashPrefix.transactionSig, {
+        definitions: R
+      }));
+    }
+    e.encodeForSigning = I;
+    function m(c) {
+      if (typeof c != "object")
+        throw new Error();
+      return (0, a.bytesToHex)(d(c));
+    }
+    e.encodeForSigningClaim = m;
+    function v(c, R, D) {
+      if (typeof c != "object")
+        throw new Error();
+      if (c.SigningPubKey !== "")
+        throw new Error();
+      const N = D ? { definitions: D } : void 0;
+      return (0, a.bytesToHex)(u(c, R, N));
+    }
+    e.encodeForMultisigning = v;
+    function h(c) {
+      if (typeof c != "object")
+        throw new Error("Need an object to encode a Batch transaction");
+      return (0, a.bytesToHex)(b(c));
+    }
+    e.encodeForSigningBatch = h;
+    function _(c) {
+      if (typeof c != "string")
+        throw new Error();
+      return (0, a.bytesToHex)(r.quality.encode(c));
+    }
+    e.encodeQuality = _;
+    function y(c) {
+      if (typeof c != "string")
+        throw new Error();
+      return r.quality.decode(c).toString();
+    }
+    e.decodeQuality = y;
+  })(dist$2)), dist$2;
+}
+var utils$8 = {}, hasRequiredUtils$8;
+function requireUtils$8() {
+  if (hasRequiredUtils$8) return utils$8;
+  hasRequiredUtils$8 = 1, Object.defineProperty(utils$8, "__esModule", { value: !0 }), utils$8.isHex = utils$8.hasFlag = utils$8.isFlagEnabled = utils$8.onlyHasFields = utils$8.INTEGER_SANITY_CHECK = void 0;
+  const e = /^[0-9A-Fa-f]+$/u;
+  utils$8.INTEGER_SANITY_CHECK = /^[0-9]+$/u;
+  function r(s, a) {
+    return Object.keys(s).every((o) => a.includes(o));
+  }
+  utils$8.onlyHasFields = r;
+  function t(s, a) {
+    return (BigInt(a) & BigInt(s)) === BigInt(a);
+  }
+  utils$8.isFlagEnabled = t;
+  function i(s, a, o) {
+    return s.Flags == null ? !1 : typeof s.Flags == "number" ? t(s.Flags, a) : s.Flags[o] === !0;
+  }
+  utils$8.hasFlag = i;
+  function n(s) {
+    return e.test(s);
+  }
+  return utils$8.isHex = n, utils$8;
+}
+var hasRequiredCommon;
+function requireCommon() {
+  return hasRequiredCommon || (hasRequiredCommon = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.validateMPTokenMetadata = e.isDomainID = e.containsDuplicates = e.validateCredentialsList = e.validateCredentialType = e.parseAmountValue = e.validateBaseTransaction = e.GlobalFlags = e.validateOptionalField = e.validateRequiredField = e.isArray = e.isXChainBridge = e.isAmount = e.isAccount = e.isClawbackAmount = e.isMPTAmount = e.isAuthorizeCredential = e.isIssuedCurrencyAmount = e.isIssuedCurrency = e.isCurrency = e.isXRPLNumber = e.isValue = e.isNull = e.isNumber = e.isString = e.isRecord = e.MPT_META_WARNING_HEADER = e.VAULT_DATA_MAX_BYTE_LENGTH = e.MAX_MPT_META_BYTE_LENGTH = e.MAX_AUTHORIZED_CREDENTIALS = void 0;
+    const r = requireBrowser$4(), t = requireDist$3(), i = requireDist$2(), n = requireErrors(), s = requireUtils$8(), a = 3;
+    e.MAX_AUTHORIZED_CREDENTIALS = 8;
+    const d = 64 * 2;
+    e.MAX_MPT_META_BYTE_LENGTH = 1024, e.VAULT_DATA_MAX_BYTE_LENGTH = 256;
+    const u = /^[A-Z0-9]{1,6}$/u, b = 9, l = 3, g = [
+      "ticker",
+      "name",
+      "icon",
+      "asset_class",
+      "issuer_name"
+    ], p = [
+      "rwa",
+      "memes",
+      "wrapped",
+      "gaming",
+      "defi",
+      "other"
+    ], w = [
+      "stablecoin",
+      "commodity",
+      "real_estate",
+      "private_credit",
+      "equity",
+      "treasury",
+      "other"
+    ];
+    e.MPT_META_WARNING_HEADER = "MPTokenMetadata is not properly formatted as JSON as per the XLS-89d standard. While adherence to this standard is not mandatory, such non-compliant MPToken's might not be discoverable by Explorers and Indexers in the XRPL ecosystem.";
+    function I(O) {
+      if (!N(O))
+        return !1;
+      const P = O.Memo;
+      if (!N(P))
+        return !1;
+      const z = Object.keys(P).length, j = P.MemoData == null || T(P.MemoData) && (0, s.isHex)(P.MemoData), Y = P.MemoFormat == null || T(P.MemoFormat) && (0, s.isHex)(P.MemoFormat), te = P.MemoType == null || T(P.MemoType) && (0, s.isHex)(P.MemoType);
+      return z >= 1 && z <= a && j && Y && te && (0, s.onlyHasFields)(P, ["MemoFormat", "MemoData", "MemoType"]);
+    }
+    const m = 3;
+    function v(O) {
+      if (!N(O))
+        return !1;
+      const P = O.Signer;
+      return N(P) ? Object.keys(P).length === m && T(P.Account) && T(P.TxnSignature) && T(P.SigningPubKey) : !1;
+    }
+    const h = 1, _ = 2, y = 3, c = 4, R = 2, D = 1;
+    function N(O) {
+      return O !== null && typeof O == "object" && !Array.isArray(O);
+    }
+    e.isRecord = N;
+    function T(O) {
+      return typeof O == "string";
+    }
+    e.isString = T;
+    function f(O) {
+      return typeof O == "number";
+    }
+    e.isNumber = f;
+    function C(O) {
+      return O == null;
+    }
+    e.isNull = C;
+    function A(O) {
+      return (z) => z === O;
+    }
+    e.isValue = A;
+    function E(O) {
+      return typeof O == "string" && /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$/u.test(O.trim());
+    }
+    e.isXRPLNumber = E;
+    function S(O) {
+      return T(O) || L(O);
+    }
+    e.isCurrency = S;
+    function L(O) {
+      return N(O) && (Object.keys(O).length === _ && T(O.issuer) && T(O.currency) || Object.keys(O).length === h && O.currency === "XRP");
+    }
+    e.isIssuedCurrency = L;
+    function U(O) {
+      return N(O) && Object.keys(O).length === y && T(O.value) && T(O.issuer) && T(O.currency);
+    }
+    e.isIssuedCurrencyAmount = U;
+    function H(O) {
+      return N(O) && N(O.Credential) && Object.keys(O).length === D && typeof O.Credential.CredentialType == "string" && typeof O.Credential.Issuer == "string";
+    }
+    e.isAuthorizeCredential = H;
+    function K(O) {
+      return N(O) && Object.keys(O).length === R && typeof O.value == "string" && typeof O.mpt_issuance_id == "string";
+    }
+    e.isMPTAmount = K;
+    function $(O) {
+      return U(O) || K(O);
+    }
+    e.isClawbackAmount = $;
+    function W(O) {
+      return typeof O == "string" && ((0, t.isValidClassicAddress)(O) || (0, t.isValidXAddress)(O));
+    }
+    e.isAccount = W;
+    function G(O) {
+      return typeof O == "string" || U(O) || K(O);
+    }
+    e.isAmount = G;
+    function J(O) {
+      return N(O) && Object.keys(O).length === c && typeof O.LockingChainDoor == "string" && L(O.LockingChainIssue) && typeof O.IssuingChainDoor == "string" && L(O.IssuingChainIssue);
+    }
+    e.isXChainBridge = J;
+    function re(O) {
+      return O != null && Array.isArray(O);
+    }
+    e.isArray = re;
+    function x(O, P, z, j = {}) {
+      var Y, te;
+      const ne = (Y = j.paramName) !== null && Y !== void 0 ? Y : P, ae = (te = j.txType) !== null && te !== void 0 ? te : O.TransactionType;
+      if (O[P] == null)
+        throw new n.ValidationError(`${ae}: missing field ${String(ne)}`);
+      if (!z(O[P]))
+        throw new n.ValidationError(`${ae}: invalid field ${String(ne)}`);
+    }
+    e.validateRequiredField = x;
+    function Q(O, P, z, j = {}) {
+      var Y, te;
+      const ne = (Y = j.paramName) !== null && Y !== void 0 ? Y : P, ae = (te = j.txType) !== null && te !== void 0 ? te : O.TransactionType;
+      if (O[P] !== void 0 && !z(O[P]))
+        throw new n.ValidationError(`${ae}: invalid field ${String(ne)}`);
+    }
+    e.validateOptionalField = Q;
+    var se;
+    (function(O) {
+      O[O.tfInnerBatchTxn = 1073741824] = "tfInnerBatchTxn";
+    })(se || (e.GlobalFlags = se = {}));
+    function ue(O) {
+      if (!N(O))
+        throw new n.ValidationError("BaseTransaction: invalid, expected a valid object");
+      if (O.TransactionType === void 0)
+        throw new n.ValidationError("BaseTransaction: missing field TransactionType");
+      if (typeof O.TransactionType != "string")
+        throw new n.ValidationError("BaseTransaction: TransactionType not string");
+      if (!i.TRANSACTION_TYPES.includes(O.TransactionType))
+        throw new n.ValidationError(`BaseTransaction: Unknown TransactionType ${O.TransactionType}`);
+      x(O, "Account", T), Q(O, "Fee", T), Q(O, "Sequence", f), Q(O, "AccountTxnID", T), Q(O, "LastLedgerSequence", f);
+      const P = O.Memos;
+      if (P != null && (!re(P) || !P.every(I)))
+        throw new n.ValidationError("BaseTransaction: invalid Memos");
+      const z = O.Signers;
+      if (z != null && (!re(z) || z.length === 0 || !z.every(v)))
+        throw new n.ValidationError("BaseTransaction: invalid Signers");
+      Q(O, "SourceTag", f), Q(O, "SigningPubKey", T), Q(O, "TicketSequence", f), Q(O, "TxnSignature", T), Q(O, "NetworkID", f), Q(O, "Delegate", W);
+      const j = O.Delegate;
+      if (j != null && j === O.Account)
+        throw new n.ValidationError("BaseTransaction: Account and Delegate addresses cannot be the same");
+    }
+    e.validateBaseTransaction = ue;
+    function oe(O) {
+      return G(O) ? parseFloat(typeof O == "string" ? O : O.value) : NaN;
+    }
+    e.parseAmountValue = oe;
+    function Z(O) {
+      if (typeof O.TransactionType != "string")
+        throw new n.ValidationError("Invalid TransactionType");
+      if (O.CredentialType === void 0)
+        throw new n.ValidationError(`${O.TransactionType}: missing field CredentialType`);
+      if (!T(O.CredentialType))
+        throw new n.ValidationError(`${O.TransactionType}: CredentialType must be a string`);
+      if (O.CredentialType.length === 0)
+        throw new n.ValidationError(`${O.TransactionType}: CredentialType cannot be an empty string`);
+      if (O.CredentialType.length > d)
+        throw new n.ValidationError(`${O.TransactionType}: CredentialType length cannot be > ${d}`);
+      if (!r.HEX_REGEX.test(O.CredentialType))
+        throw new n.ValidationError(`${O.TransactionType}: CredentialType must be encoded in hex`);
+    }
+    e.validateCredentialType = Z;
+    function B(O, P, z, j) {
+      if (O != null) {
+        if (!re(O))
+          throw new n.ValidationError(`${P}: Credentials must be an array`);
+        if (O.length > j)
+          throw new n.ValidationError(`${P}: Credentials length cannot exceed ${j} elements`);
+        if (O.length === 0)
+          throw new n.ValidationError(`${P}: Credentials cannot be an empty array`);
+        if (O.forEach((Y) => {
+          if (z) {
+            if (!T(Y))
+              throw new n.ValidationError(`${P}: Invalid Credentials ID list format`);
+          } else if (!H(Y))
+            throw new n.ValidationError(`${P}: Invalid Credentials format`);
+        }), M(O))
+          throw new n.ValidationError(`${P}: Credentials cannot contain duplicate elements`);
+      }
+    }
+    e.validateCredentialsList = B;
+    function q(O) {
+      return typeof O[0] != "string";
+    }
+    function M(O) {
+      if (typeof O[0] == "string")
+        return new Set(O.map((j) => JSON.stringify(j))).size !== O.length;
+      const P = /* @__PURE__ */ new Set();
+      if (q(O))
+        for (const z of O) {
+          const j = `${z.Credential.Issuer}-${z.Credential.CredentialType}`;
+          if (P.has(j))
+            return !0;
+          P.add(j);
+        }
+      return !1;
+    }
+    e.containsDuplicates = M;
+    const k = 64;
+    function F(O) {
+      return T(O) && O.length === k && (0, s.isHex)(O);
+    }
+    e.isDomainID = F;
+    function V(O) {
+      const P = [];
+      if (!(0, s.isHex)(O))
+        return P.push("MPTokenMetadata must be in hex format."), P;
+      if (O.length / 2 > e.MAX_MPT_META_BYTE_LENGTH)
+        return P.push(`MPTokenMetadata must be max ${e.MAX_MPT_META_BYTE_LENGTH} bytes.`), P;
+      let z;
+      try {
+        z = JSON.parse((0, r.hexToString)(O));
+      } catch (ae) {
+        return P.push(`MPTokenMetadata is not properly formatted as JSON - ${String(ae)}`), P;
+      }
+      if (z == null || typeof z != "object" || Array.isArray(z))
+        return P.push("MPTokenMetadata is not properly formatted as per XLS-89d."), P;
+      const j = z, Y = Object.keys(j).length;
+      if (Y > b)
+        return P.push(`MPTokenMetadata must not contain more than ${b} top-level fields (found ${Y}).`), P;
+      const te = g.filter((ae) => !T(j[ae]));
+      if (te.length > 0)
+        return te.forEach((ae) => P.push(`${ae} is required and must be string.`)), P;
+      if (j.desc != null && !T(j.desc))
+        return P.push("desc must be a string."), P;
+      if (j.asset_subclass != null && !T(j.asset_subclass))
+        return P.push("asset_subclass must be a string."), P;
+      if (j.additional_info != null && !T(j.additional_info) && !N(j.additional_info))
+        return P.push("additional_info must be a string or JSON object."), P;
+      if (j.urls != null) {
+        if (!Array.isArray(j.urls))
+          return P.push("urls must be an array as per XLS-89d."), P;
+        if (!j.urls.every(X))
+          return P.push("One or more urls are not structured per XLS-89d."), P;
+      }
+      const ne = j;
+      return u.test(ne.ticker) || P.push("ticker should have uppercase letters (A-Z) and digits (0-9) only. Max 6 characters recommended."), ne.icon.startsWith("https://") || P.push("icon should be a valid https url."), p.includes(ne.asset_class.toLowerCase()) || P.push(`asset_class should be one of ${p.join(", ")}.`), ne.asset_subclass != null && !w.includes(ne.asset_subclass.toLowerCase()) && P.push(`asset_subclass should be one of ${w.join(", ")}.`), ne.asset_class.toLowerCase() === "rwa" && ne.asset_subclass == null && P.push("asset_subclass is required when asset_class is rwa."), ne.urls != null && !ne.urls.every((ae) => ae.url.startsWith("https://")) && P.push("url should be a valid https url."), P;
+    }
+    e.validateMPTokenMetadata = V;
+    function X(O) {
+      if (O == null)
+        return !1;
+      const P = O;
+      return typeof P == "object" && T(P.url) && T(P.type) && T(P.title) && Object.keys(P).length === l;
+    }
+  })(common)), common;
+}
+var hasRequiredAccountSet;
+function requireAccountSet() {
+  if (hasRequiredAccountSet) return accountSet;
+  hasRequiredAccountSet = 1, Object.defineProperty(accountSet, "__esModule", { value: !0 }), accountSet.validateAccountSet = accountSet.AccountSetTfFlags = accountSet.AccountSetAsfFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(o) {
+    o[o.asfRequireDest = 1] = "asfRequireDest", o[o.asfRequireAuth = 2] = "asfRequireAuth", o[o.asfDisallowXRP = 3] = "asfDisallowXRP", o[o.asfDisableMaster = 4] = "asfDisableMaster", o[o.asfAccountTxnID = 5] = "asfAccountTxnID", o[o.asfNoFreeze = 6] = "asfNoFreeze", o[o.asfGlobalFreeze = 7] = "asfGlobalFreeze", o[o.asfDefaultRipple = 8] = "asfDefaultRipple", o[o.asfDepositAuth = 9] = "asfDepositAuth", o[o.asfAuthorizedNFTokenMinter = 10] = "asfAuthorizedNFTokenMinter", o[o.asfDisallowIncomingNFTokenOffer = 12] = "asfDisallowIncomingNFTokenOffer", o[o.asfDisallowIncomingCheck = 13] = "asfDisallowIncomingCheck", o[o.asfDisallowIncomingPayChan = 14] = "asfDisallowIncomingPayChan", o[o.asfDisallowIncomingTrustline = 15] = "asfDisallowIncomingTrustline", o[o.asfAllowTrustLineClawback = 16] = "asfAllowTrustLineClawback", o[o.asfAllowTrustLineLocking = 17] = "asfAllowTrustLineLocking";
+  })(t || (accountSet.AccountSetAsfFlags = t = {}));
+  var i;
+  (function(o) {
+    o[o.tfRequireDestTag = 65536] = "tfRequireDestTag", o[o.tfOptionalDestTag = 131072] = "tfOptionalDestTag", o[o.tfRequireAuth = 262144] = "tfRequireAuth", o[o.tfOptionalAuth = 524288] = "tfOptionalAuth", o[o.tfDisallowXRP = 1048576] = "tfDisallowXRP", o[o.tfAllowXRP = 2097152] = "tfAllowXRP";
+  })(i || (accountSet.AccountSetTfFlags = i = {}));
+  const n = 3, s = 15;
+  function a(o) {
+    if ((0, r.validateBaseTransaction)(o), (0, r.validateOptionalField)(o, "NFTokenMinter", r.isAccount), o.ClearFlag !== void 0) {
+      if (typeof o.ClearFlag != "number")
+        throw new e.ValidationError("AccountSet: invalid ClearFlag");
+      if (!Object.values(t).includes(o.ClearFlag))
+        throw new e.ValidationError("AccountSet: invalid ClearFlag");
+    }
+    if (o.Domain !== void 0 && typeof o.Domain != "string")
+      throw new e.ValidationError("AccountSet: invalid Domain");
+    if (o.EmailHash !== void 0 && typeof o.EmailHash != "string")
+      throw new e.ValidationError("AccountSet: invalid EmailHash");
+    if (o.MessageKey !== void 0 && typeof o.MessageKey != "string")
+      throw new e.ValidationError("AccountSet: invalid MessageKey");
+    if (o.SetFlag !== void 0) {
+      if (typeof o.SetFlag != "number")
+        throw new e.ValidationError("AccountSet: invalid SetFlag");
+      if (!Object.values(t).includes(o.SetFlag))
+        throw new e.ValidationError("AccountSet: invalid SetFlag");
+    }
+    if (o.TransferRate !== void 0 && typeof o.TransferRate != "number")
+      throw new e.ValidationError("AccountSet: invalid TransferRate");
+    if (o.TickSize !== void 0) {
+      if (typeof o.TickSize != "number")
+        throw new e.ValidationError("AccountSet: invalid TickSize");
+      if (o.TickSize !== 0 && (o.TickSize < n || o.TickSize > s))
+        throw new e.ValidationError("AccountSet: invalid TickSize");
+    }
+  }
+  return accountSet.validateAccountSet = a, accountSet;
+}
+var AMMClawback = {}, hasRequiredAMMClawback;
+function requireAMMClawback() {
+  if (hasRequiredAMMClawback) return AMMClawback;
+  hasRequiredAMMClawback = 1, Object.defineProperty(AMMClawback, "__esModule", { value: !0 }), AMMClawback.validateAMMClawback = AMMClawback.AMMClawbackFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(n) {
+    n[n.tfClawTwoAssets = 1] = "tfClawTwoAssets";
+  })(t || (AMMClawback.AMMClawbackFlags = t = {}));
+  function i(n) {
+    (0, r.validateBaseTransaction)(n), (0, r.validateRequiredField)(n, "Holder", r.isAccount), (0, r.validateRequiredField)(n, "Asset", r.isIssuedCurrency);
+    const s = n.Asset;
+    if (n.Holder === s.issuer)
+      throw new e.ValidationError("AMMClawback: Holder and Asset.issuer must be distinct");
+    if (n.Account !== s.issuer)
+      throw new e.ValidationError("AMMClawback: Account must be the same as Asset.issuer");
+    if ((0, r.validateRequiredField)(n, "Asset2", r.isIssuedCurrency), (0, r.validateOptionalField)(n, "Amount", r.isIssuedCurrencyAmount), n.Amount != null) {
+      if (n.Amount.currency !== s.currency)
+        throw new e.ValidationError("AMMClawback: Amount.currency must match Asset.currency");
+      if (n.Amount.issuer !== s.issuer)
+        throw new e.ValidationError("AMMClawback: Amount.issuer must match Amount.issuer");
+    }
+  }
+  return AMMClawback.validateAMMClawback = i, AMMClawback;
+}
+var AMMDeposit = {}, hasRequiredAMMDeposit;
+function requireAMMDeposit() {
+  if (hasRequiredAMMDeposit) return AMMDeposit;
+  hasRequiredAMMDeposit = 1, Object.defineProperty(AMMDeposit, "__esModule", { value: !0 }), AMMDeposit.validateAMMDeposit = AMMDeposit.AMMDepositFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(n) {
+    n[n.tfLPToken = 65536] = "tfLPToken", n[n.tfSingleAsset = 524288] = "tfSingleAsset", n[n.tfTwoAsset = 1048576] = "tfTwoAsset", n[n.tfOneAssetLPToken = 2097152] = "tfOneAssetLPToken", n[n.tfLimitLPToken = 4194304] = "tfLimitLPToken", n[n.tfTwoAssetIfEmpty = 8388608] = "tfTwoAssetIfEmpty";
+  })(t || (AMMDeposit.AMMDepositFlags = t = {}));
+  function i(n) {
+    if ((0, r.validateBaseTransaction)(n), n.Asset == null)
+      throw new e.ValidationError("AMMDeposit: missing field Asset");
+    if (!(0, r.isIssuedCurrency)(n.Asset))
+      throw new e.ValidationError("AMMDeposit: Asset must be a Currency");
+    if (n.Asset2 == null)
+      throw new e.ValidationError("AMMDeposit: missing field Asset2");
+    if (!(0, r.isIssuedCurrency)(n.Asset2))
+      throw new e.ValidationError("AMMDeposit: Asset2 must be a Currency");
+    if (n.Amount2 != null && n.Amount == null)
+      throw new e.ValidationError("AMMDeposit: must set Amount with Amount2");
+    if (n.EPrice != null && n.Amount == null)
+      throw new e.ValidationError("AMMDeposit: must set Amount with EPrice");
+    if (n.LPTokenOut == null && n.Amount == null)
+      throw new e.ValidationError("AMMDeposit: must set at least LPTokenOut or Amount");
+    if (n.LPTokenOut != null && !(0, r.isIssuedCurrencyAmount)(n.LPTokenOut))
+      throw new e.ValidationError("AMMDeposit: LPTokenOut must be an IssuedCurrencyAmount");
+    if (n.Amount != null && !(0, r.isAmount)(n.Amount))
+      throw new e.ValidationError("AMMDeposit: Amount must be an Amount");
+    if (n.Amount2 != null && !(0, r.isAmount)(n.Amount2))
+      throw new e.ValidationError("AMMDeposit: Amount2 must be an Amount");
+    if (n.EPrice != null && !(0, r.isAmount)(n.EPrice))
+      throw new e.ValidationError("AMMDeposit: EPrice must be an Amount");
+  }
+  return AMMDeposit.validateAMMDeposit = i, AMMDeposit;
+}
+var AMMWithdraw = {}, hasRequiredAMMWithdraw;
+function requireAMMWithdraw() {
+  if (hasRequiredAMMWithdraw) return AMMWithdraw;
+  hasRequiredAMMWithdraw = 1, Object.defineProperty(AMMWithdraw, "__esModule", { value: !0 }), AMMWithdraw.validateAMMWithdraw = AMMWithdraw.AMMWithdrawFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(n) {
+    n[n.tfLPToken = 65536] = "tfLPToken", n[n.tfWithdrawAll = 131072] = "tfWithdrawAll", n[n.tfOneAssetWithdrawAll = 262144] = "tfOneAssetWithdrawAll", n[n.tfSingleAsset = 524288] = "tfSingleAsset", n[n.tfTwoAsset = 1048576] = "tfTwoAsset", n[n.tfOneAssetLPToken = 2097152] = "tfOneAssetLPToken", n[n.tfLimitLPToken = 4194304] = "tfLimitLPToken";
+  })(t || (AMMWithdraw.AMMWithdrawFlags = t = {}));
+  function i(n) {
+    if ((0, r.validateBaseTransaction)(n), n.Asset == null)
+      throw new e.ValidationError("AMMWithdraw: missing field Asset");
+    if (!(0, r.isIssuedCurrency)(n.Asset))
+      throw new e.ValidationError("AMMWithdraw: Asset must be a Currency");
+    if (n.Asset2 == null)
+      throw new e.ValidationError("AMMWithdraw: missing field Asset2");
+    if (!(0, r.isIssuedCurrency)(n.Asset2))
+      throw new e.ValidationError("AMMWithdraw: Asset2 must be a Currency");
+    if (n.Amount2 != null && n.Amount == null)
+      throw new e.ValidationError("AMMWithdraw: must set Amount with Amount2");
+    if (n.EPrice != null && n.Amount == null)
+      throw new e.ValidationError("AMMWithdraw: must set Amount with EPrice");
+    if (n.LPTokenIn != null && !(0, r.isIssuedCurrencyAmount)(n.LPTokenIn))
+      throw new e.ValidationError("AMMWithdraw: LPTokenIn must be an IssuedCurrencyAmount");
+    if (n.Amount != null && !(0, r.isAmount)(n.Amount))
+      throw new e.ValidationError("AMMWithdraw: Amount must be an Amount");
+    if (n.Amount2 != null && !(0, r.isAmount)(n.Amount2))
+      throw new e.ValidationError("AMMWithdraw: Amount2 must be an Amount");
+    if (n.EPrice != null && !(0, r.isAmount)(n.EPrice))
+      throw new e.ValidationError("AMMWithdraw: EPrice must be an Amount");
+  }
+  return AMMWithdraw.validateAMMWithdraw = i, AMMWithdraw;
+}
+var batch = {}, hasRequiredBatch;
+function requireBatch() {
+  if (hasRequiredBatch) return batch;
+  hasRequiredBatch = 1, Object.defineProperty(batch, "__esModule", { value: !0 }), batch.validateBatch = batch.BatchFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(a) {
+    a[a.tfAllOrNothing = 65536] = "tfAllOrNothing", a[a.tfOnlyOne = 131072] = "tfOnlyOne", a[a.tfUntilFailure = 262144] = "tfUntilFailure", a[a.tfIndependent = 524288] = "tfIndependent";
+  })(i || (batch.BatchFlags = i = {}));
+  function n(a, o) {
+    if (a.TransactionType === "Batch")
+      throw new e.ValidationError(`Batch: RawTransactions[${o}] is a Batch transaction. Cannot nest Batch transactions.`);
+    if (!(0, r.hasFlag)(a, t.GlobalFlags.tfInnerBatchTxn, "tfInnerBatchTxn"))
+      throw new e.ValidationError(`Batch: RawTransactions[${o}] must contain the \`tfInnerBatchTxn\` flag.`);
+    (0, t.validateOptionalField)(a, "Fee", (0, t.isValue)("0"), {
+      paramName: `RawTransactions[${o}].RawTransaction.Fee`,
+      txType: "Batch"
+    }), (0, t.validateOptionalField)(a, "SigningPubKey", (0, t.isValue)(""), {
+      paramName: `RawTransactions[${o}].RawTransaction.SigningPubKey`,
+      txType: "Batch"
+    }), (0, t.validateOptionalField)(a, "TxnSignature", t.isNull, {
+      paramName: `RawTransactions[${o}].RawTransaction.TxnSignature`,
+      txType: "Batch"
+    }), (0, t.validateOptionalField)(a, "Signers", t.isNull, {
+      paramName: `RawTransactions[${o}].RawTransaction.Signers`,
+      txType: "Batch"
+    }), (0, t.validateOptionalField)(a, "LastLedgerSequence", t.isNull, {
+      paramName: `RawTransactions[${o}].RawTransaction.LastLedgerSequence`,
+      txType: "Batch"
+    });
+  }
+  function s(a) {
+    var o;
+    (0, t.validateBaseTransaction)(a), (0, t.validateRequiredField)(a, "RawTransactions", t.isArray), a.RawTransactions.forEach((d, u) => {
+      if (!(0, t.isRecord)(d))
+        throw new e.ValidationError(`Batch: RawTransactions[${u}] is not object.`);
+      (0, t.validateRequiredField)(d, "RawTransaction", t.isRecord, {
+        paramName: `RawTransactions[${u}].RawTransaction`,
+        txType: "Batch"
+      });
+      const b = d.RawTransaction;
+      n(b, u);
+    }), (0, t.validateOptionalField)(a, "BatchSigners", t.isArray), (o = a.BatchSigners) === null || o === void 0 || o.forEach((d, u) => {
+      if (!(0, t.isRecord)(d))
+        throw new e.ValidationError(`Batch: BatchSigners[${u}] is not object.`);
+      const b = d;
+      (0, t.validateRequiredField)(b, "BatchSigner", t.isRecord, {
+        paramName: `BatchSigners[${u}].BatchSigner`,
+        txType: "Batch"
+      });
+      const l = b.BatchSigner;
+      (0, t.validateRequiredField)(l, "Account", t.isString, {
+        paramName: `BatchSigners[${u}].BatchSigner.Account`,
+        txType: "Batch"
+      }), (0, t.validateOptionalField)(l, "SigningPubKey", t.isString, {
+        paramName: `BatchSigners[${u}].BatchSigner.SigningPubKey`,
+        txType: "Batch"
+      }), (0, t.validateOptionalField)(l, "TxnSignature", t.isString, {
+        paramName: `BatchSigners[${u}].BatchSigner.TxnSignature`,
+        txType: "Batch"
+      }), (0, t.validateOptionalField)(l, "Signers", t.isArray, {
+        paramName: `BatchSigners[${u}].BatchSigner.Signers`,
+        txType: "Batch"
+      });
+    });
+  }
+  return batch.validateBatch = s, batch;
+}
+var MPTokenAuthorize = {}, hasRequiredMPTokenAuthorize;
+function requireMPTokenAuthorize() {
+  if (hasRequiredMPTokenAuthorize) return MPTokenAuthorize;
+  hasRequiredMPTokenAuthorize = 1, Object.defineProperty(MPTokenAuthorize, "__esModule", { value: !0 }), MPTokenAuthorize.validateMPTokenAuthorize = MPTokenAuthorize.MPTokenAuthorizeFlags = void 0;
+  const e = requireCommon();
+  var r;
+  (function(i) {
+    i[i.tfMPTUnauthorize = 1] = "tfMPTUnauthorize";
+  })(r || (MPTokenAuthorize.MPTokenAuthorizeFlags = r = {}));
+  function t(i) {
+    (0, e.validateBaseTransaction)(i), (0, e.validateRequiredField)(i, "MPTokenIssuanceID", e.isString), (0, e.validateOptionalField)(i, "Holder", e.isAccount);
+  }
+  return MPTokenAuthorize.validateMPTokenAuthorize = t, MPTokenAuthorize;
+}
+var MPTokenIssuanceCreate = {}, hasRequiredMPTokenIssuanceCreate;
+function requireMPTokenIssuanceCreate() {
+  if (hasRequiredMPTokenIssuanceCreate) return MPTokenIssuanceCreate;
+  hasRequiredMPTokenIssuanceCreate = 1, Object.defineProperty(MPTokenIssuanceCreate, "__esModule", { value: !0 }), MPTokenIssuanceCreate.validateMPTokenIssuanceCreate = MPTokenIssuanceCreate.MPTokenIssuanceCreateFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon(), i = "9223372036854775807", n = 5e4;
+  var s;
+  (function(o) {
+    o[o.tfMPTCanLock = 2] = "tfMPTCanLock", o[o.tfMPTRequireAuth = 4] = "tfMPTRequireAuth", o[o.tfMPTCanEscrow = 8] = "tfMPTCanEscrow", o[o.tfMPTCanTrade = 16] = "tfMPTCanTrade", o[o.tfMPTCanTransfer = 32] = "tfMPTCanTransfer", o[o.tfMPTCanClawback = 64] = "tfMPTCanClawback";
+  })(s || (MPTokenIssuanceCreate.MPTokenIssuanceCreateFlags = s = {}));
+  function a(o) {
+    var d, u;
+    if ((0, t.validateBaseTransaction)(o), (0, t.validateOptionalField)(o, "MaximumAmount", t.isString), (0, t.validateOptionalField)(o, "MPTokenMetadata", t.isString), (0, t.validateOptionalField)(o, "TransferFee", t.isNumber), (0, t.validateOptionalField)(o, "AssetScale", t.isNumber), typeof o.MPTokenMetadata == "string" && (!(0, r.isHex)(o.MPTokenMetadata) || o.MPTokenMetadata.length / 2 > t.MAX_MPT_META_BYTE_LENGTH))
+      throw new e.ValidationError(`MPTokenIssuanceCreate: MPTokenMetadata (hex format) must be non-empty and no more than ${t.MAX_MPT_META_BYTE_LENGTH} bytes.`);
+    if (typeof o.MaximumAmount == "string")
+      if (r.INTEGER_SANITY_CHECK.exec(o.MaximumAmount)) {
+        if (BigInt(o.MaximumAmount) > BigInt(i) || BigInt(o.MaximumAmount) < BigInt("0"))
+          throw new e.ValidationError("MPTokenIssuanceCreate: MaximumAmount out of range");
+      } else throw new e.ValidationError("MPTokenIssuanceCreate: Invalid MaximumAmount");
+    if (typeof o.TransferFee == "number") {
+      const b = (d = o.Flags) !== null && d !== void 0 ? d : 0, l = typeof b == "number" ? (0, r.isFlagEnabled)(b, s.tfMPTCanTransfer) : (u = b.tfMPTCanTransfer) !== null && u !== void 0 ? u : !1;
+      if (o.TransferFee < 0 || o.TransferFee > n)
+        throw new e.ValidationError(`MPTokenIssuanceCreate: TransferFee must be between 0 and ${n}`);
+      if (o.TransferFee && !l)
+        throw new e.ValidationError("MPTokenIssuanceCreate: TransferFee cannot be provided without enabling tfMPTCanTransfer flag");
+    }
+    if (o.MPTokenMetadata != null) {
+      const b = (0, t.validateMPTokenMetadata)(o.MPTokenMetadata);
+      if (b.length > 0) {
+        const l = [
+          t.MPT_META_WARNING_HEADER,
+          ...b.map((g) => `- ${g}`)
+        ].join(`
+`);
+        console.warn(l);
+      }
+    }
+  }
+  return MPTokenIssuanceCreate.validateMPTokenIssuanceCreate = a, MPTokenIssuanceCreate;
+}
+var MPTokenIssuanceSet = {}, hasRequiredMPTokenIssuanceSet;
+function requireMPTokenIssuanceSet() {
+  if (hasRequiredMPTokenIssuanceSet) return MPTokenIssuanceSet;
+  hasRequiredMPTokenIssuanceSet = 1, Object.defineProperty(MPTokenIssuanceSet, "__esModule", { value: !0 }), MPTokenIssuanceSet.validateMPTokenIssuanceSet = MPTokenIssuanceSet.MPTokenIssuanceSetFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(s) {
+    s[s.tfMPTLock = 1] = "tfMPTLock", s[s.tfMPTUnlock = 2] = "tfMPTUnlock";
+  })(i || (MPTokenIssuanceSet.MPTokenIssuanceSetFlags = i = {}));
+  function n(s) {
+    var a, o, d;
+    (0, t.validateBaseTransaction)(s), (0, t.validateRequiredField)(s, "MPTokenIssuanceID", t.isString), (0, t.validateOptionalField)(s, "Holder", t.isAccount);
+    const u = (a = s.Flags) !== null && a !== void 0 ? a : 0, b = typeof u == "number" ? (0, r.isFlagEnabled)(u, i.tfMPTLock) : (o = u.tfMPTLock) !== null && o !== void 0 ? o : !1, l = typeof u == "number" ? (0, r.isFlagEnabled)(u, i.tfMPTUnlock) : (d = u.tfMPTUnlock) !== null && d !== void 0 ? d : !1;
+    if (b && l)
+      throw new e.ValidationError("MPTokenIssuanceSet: flag conflict");
+  }
+  return MPTokenIssuanceSet.validateMPTokenIssuanceSet = n, MPTokenIssuanceSet;
+}
+var NFTokenCreateOffer = {}, hasRequiredNFTokenCreateOffer;
+function requireNFTokenCreateOffer() {
+  if (hasRequiredNFTokenCreateOffer) return NFTokenCreateOffer;
+  hasRequiredNFTokenCreateOffer = 1, Object.defineProperty(NFTokenCreateOffer, "__esModule", { value: !0 }), NFTokenCreateOffer.validateNFTokenCreateOffer = NFTokenCreateOffer.NFTokenCreateOfferFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(o) {
+    o[o.tfSellNFToken = 1] = "tfSellNFToken";
+  })(i || (NFTokenCreateOffer.NFTokenCreateOfferFlags = i = {}));
+  function n(o) {
+    if (o.Owner != null)
+      throw new e.ValidationError("NFTokenCreateOffer: Owner must not be present for sell offers");
+  }
+  function s(o) {
+    if (o.Owner == null)
+      throw new e.ValidationError("NFTokenCreateOffer: Owner must be present for buy offers");
+    if ((0, t.parseAmountValue)(o.Amount) <= 0)
+      throw new e.ValidationError("NFTokenCreateOffer: Amount must be greater than 0 for buy offers");
+  }
+  function a(o) {
+    var d, u;
+    if ((0, t.validateBaseTransaction)(o), o.Account === o.Owner)
+      throw new e.ValidationError("NFTokenCreateOffer: Owner and Account must not be equal");
+    if (o.Account === o.Destination)
+      throw new e.ValidationError("NFTokenCreateOffer: Destination and Account must not be equal");
+    if ((0, t.validateOptionalField)(o, "Destination", t.isAccount), (0, t.validateOptionalField)(o, "Owner", t.isAccount), o.NFTokenID == null)
+      throw new e.ValidationError("NFTokenCreateOffer: missing field NFTokenID");
+    if (!(0, t.isAmount)(o.Amount))
+      throw new e.ValidationError("NFTokenCreateOffer: invalid Amount");
+    const b = (d = o.Flags) !== null && d !== void 0 ? d : 0;
+    (typeof b == "number" ? (0, r.isFlagEnabled)(b, i.tfSellNFToken) : (u = b.tfSellNFToken) !== null && u !== void 0 ? u : !1) ? n(o) : s(o);
+  }
+  return NFTokenCreateOffer.validateNFTokenCreateOffer = a, NFTokenCreateOffer;
+}
+var NFTokenMint = {}, hasRequiredNFTokenMint;
+function requireNFTokenMint() {
+  if (hasRequiredNFTokenMint) return NFTokenMint;
+  hasRequiredNFTokenMint = 1, Object.defineProperty(NFTokenMint, "__esModule", { value: !0 }), NFTokenMint.validateNFTokenMint = NFTokenMint.NFTokenMintFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(s) {
+    s[s.tfBurnable = 1] = "tfBurnable", s[s.tfOnlyXRP = 2] = "tfOnlyXRP", s[s.tfTrustLine = 4] = "tfTrustLine", s[s.tfTransferable = 8] = "tfTransferable", s[s.tfMutable = 16] = "tfMutable";
+  })(i || (NFTokenMint.NFTokenMintFlags = i = {}));
+  function n(s) {
+    if ((0, t.validateBaseTransaction)(s), s.Account === s.Issuer)
+      throw new e.ValidationError("NFTokenMint: Issuer must not be equal to Account");
+    if ((0, t.validateOptionalField)(s, "Issuer", t.isAccount), typeof s.URI == "string" && s.URI === "")
+      throw new e.ValidationError("NFTokenMint: URI must not be empty string");
+    if (typeof s.URI == "string" && !(0, r.isHex)(s.URI))
+      throw new e.ValidationError("NFTokenMint: URI must be in hex format");
+    if (s.NFTokenTaxon == null)
+      throw new e.ValidationError("NFTokenMint: missing field NFTokenTaxon");
+    if (s.Amount == null && (s.Expiration != null || s.Destination != null))
+      throw new e.ValidationError("NFTokenMint: Amount is required when Expiration or Destination is present");
+    (0, t.validateOptionalField)(s, "Amount", t.isAmount), (0, t.validateOptionalField)(s, "Expiration", t.isNumber), (0, t.validateOptionalField)(s, "Destination", t.isAccount);
+  }
+  return NFTokenMint.validateNFTokenMint = n, NFTokenMint;
+}
+var offerCreate = {}, hasRequiredOfferCreate;
+function requireOfferCreate() {
+  if (hasRequiredOfferCreate) return offerCreate;
+  hasRequiredOfferCreate = 1, Object.defineProperty(offerCreate, "__esModule", { value: !0 }), offerCreate.validateOfferCreate = offerCreate.OfferCreateFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(s) {
+    s[s.tfPassive = 65536] = "tfPassive", s[s.tfImmediateOrCancel = 131072] = "tfImmediateOrCancel", s[s.tfFillOrKill = 262144] = "tfFillOrKill", s[s.tfSell = 524288] = "tfSell", s[s.tfHybrid = 1048576] = "tfHybrid";
+  })(i || (offerCreate.OfferCreateFlags = i = {}));
+  function n(s) {
+    if ((0, t.validateBaseTransaction)(s), s.TakerGets === void 0)
+      throw new e.ValidationError("OfferCreate: missing field TakerGets");
+    if (s.TakerPays === void 0)
+      throw new e.ValidationError("OfferCreate: missing field TakerPays");
+    if (typeof s.TakerGets != "string" && !(0, t.isAmount)(s.TakerGets))
+      throw new e.ValidationError("OfferCreate: invalid TakerGets");
+    if (typeof s.TakerPays != "string" && !(0, t.isAmount)(s.TakerPays))
+      throw new e.ValidationError("OfferCreate: invalid TakerPays");
+    if (s.Expiration !== void 0 && typeof s.Expiration != "number")
+      throw new e.ValidationError("OfferCreate: invalid Expiration");
+    if (s.OfferSequence !== void 0 && typeof s.OfferSequence != "number")
+      throw new e.ValidationError("OfferCreate: invalid OfferSequence");
+    if ((0, t.validateOptionalField)(s, "DomainID", t.isDomainID, {
+      txType: "OfferCreate",
+      paramName: "DomainID"
+    }), s.DomainID == null && (0, r.hasFlag)(s, i.tfHybrid, "tfHybrid"))
+      throw new e.ValidationError("OfferCreate: tfHybrid flag cannot be set if DomainID is not present");
+  }
+  return offerCreate.validateOfferCreate = n, offerCreate;
+}
+var payment = {}, hasRequiredPayment;
+function requirePayment() {
+  if (hasRequiredPayment) return payment;
+  hasRequiredPayment = 1, Object.defineProperty(payment, "__esModule", { value: !0 }), payment.validatePayment = payment.PaymentFlags = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(u) {
+    u[u.tfNoRippleDirect = 65536] = "tfNoRippleDirect", u[u.tfPartialPayment = 131072] = "tfPartialPayment", u[u.tfLimitQuality = 262144] = "tfLimitQuality";
+  })(i || (payment.PaymentFlags = i = {}));
+  function n(u) {
+    if ((0, t.validateBaseTransaction)(u), u.Amount === void 0)
+      throw new e.ValidationError("PaymentTransaction: missing field Amount");
+    if (!(0, t.isAmount)(u.Amount))
+      throw new e.ValidationError("PaymentTransaction: invalid Amount");
+    if ((0, t.validateRequiredField)(u, "Destination", t.isAccount), (0, t.validateOptionalField)(u, "DestinationTag", t.isNumber), (0, t.validateCredentialsList)(u.CredentialIDs, u.TransactionType, !0, t.MAX_AUTHORIZED_CREDENTIALS), u.InvoiceID !== void 0 && typeof u.InvoiceID != "string")
+      throw new e.ValidationError("PaymentTransaction: InvoiceID must be a string");
+    if ((0, t.validateOptionalField)(u, "DomainID", t.isDomainID, {
+      txType: "PaymentTransaction",
+      paramName: "DomainID"
+    }), u.Paths !== void 0 && !d(u.Paths))
+      throw new e.ValidationError("PaymentTransaction: invalid Paths");
+    if (u.SendMax !== void 0 && !(0, t.isAmount)(u.SendMax))
+      throw new e.ValidationError("PaymentTransaction: invalid SendMax");
+    s(u);
+  }
+  payment.validatePayment = n;
+  function s(u) {
+    var b;
+    if (u.DeliverMin != null) {
+      if (u.Flags == null)
+        throw new e.ValidationError("PaymentTransaction: tfPartialPayment flag required with DeliverMin");
+      const l = u.Flags;
+      if (!(typeof l == "number" ? (0, r.isFlagEnabled)(l, i.tfPartialPayment) : (b = l.tfPartialPayment) !== null && b !== void 0 ? b : !1))
+        throw new e.ValidationError("PaymentTransaction: tfPartialPayment flag required with DeliverMin");
+      if (!(0, t.isAmount)(u.DeliverMin))
+        throw new e.ValidationError("PaymentTransaction: invalid DeliverMin");
+    }
+  }
+  function a(u) {
+    return u.account !== void 0 && typeof u.account != "string" || u.currency !== void 0 && typeof u.currency != "string" || u.issuer !== void 0 && typeof u.issuer != "string" ? !1 : u.account !== void 0 && u.currency === void 0 && u.issuer === void 0 || u.currency !== void 0 || u.issuer !== void 0;
+  }
+  function o(u) {
+    if (!Array.isArray(u) || u.length === 0)
+      return !1;
+    for (const b of u)
+      if (!a(b))
+        return !1;
+    return !0;
+  }
+  function d(u) {
+    if (!(0, t.isArray)(u) || u.length === 0)
+      return !1;
+    for (const b of u)
+      if (!(0, t.isArray)(b) || b.length === 0 || !o(b))
+        return !1;
+    return !0;
+  }
+  return payment;
+}
+var paymentChannelClaim = {}, hasRequiredPaymentChannelClaim;
+function requirePaymentChannelClaim() {
+  if (hasRequiredPaymentChannelClaim) return paymentChannelClaim;
+  hasRequiredPaymentChannelClaim = 1, Object.defineProperty(paymentChannelClaim, "__esModule", { value: !0 }), paymentChannelClaim.validatePaymentChannelClaim = paymentChannelClaim.PaymentChannelClaimFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(n) {
+    n[n.tfRenew = 65536] = "tfRenew", n[n.tfClose = 131072] = "tfClose";
+  })(t || (paymentChannelClaim.PaymentChannelClaimFlags = t = {}));
+  function i(n) {
+    if ((0, r.validateBaseTransaction)(n), (0, r.validateCredentialsList)(n.CredentialIDs, n.TransactionType, !0, r.MAX_AUTHORIZED_CREDENTIALS), n.Channel === void 0)
+      throw new e.ValidationError("PaymentChannelClaim: missing Channel");
+    if (typeof n.Channel != "string")
+      throw new e.ValidationError("PaymentChannelClaim: Channel must be a string");
+    if (n.Balance !== void 0 && typeof n.Balance != "string")
+      throw new e.ValidationError("PaymentChannelClaim: Balance must be a string");
+    if (n.Amount !== void 0 && typeof n.Amount != "string")
+      throw new e.ValidationError("PaymentChannelClaim: Amount must be a string");
+    if (n.Signature !== void 0 && typeof n.Signature != "string")
+      throw new e.ValidationError("PaymentChannelClaim: Signature must be a string");
+    if (n.PublicKey !== void 0 && typeof n.PublicKey != "string")
+      throw new e.ValidationError("PaymentChannelClaim: PublicKey must be a string");
+  }
+  return paymentChannelClaim.validatePaymentChannelClaim = i, paymentChannelClaim;
+}
+var trustSet = {}, hasRequiredTrustSet;
+function requireTrustSet() {
+  if (hasRequiredTrustSet) return trustSet;
+  hasRequiredTrustSet = 1, Object.defineProperty(trustSet, "__esModule", { value: !0 }), trustSet.validateTrustSet = trustSet.TrustSetFlags = void 0;
+  const e = requireErrors(), r = requireCommon();
+  var t;
+  (function(n) {
+    n[n.tfSetfAuth = 65536] = "tfSetfAuth", n[n.tfSetNoRipple = 131072] = "tfSetNoRipple", n[n.tfClearNoRipple = 262144] = "tfClearNoRipple", n[n.tfSetFreeze = 1048576] = "tfSetFreeze", n[n.tfClearFreeze = 2097152] = "tfClearFreeze", n[n.tfSetDeepFreeze = 4194304] = "tfSetDeepFreeze", n[n.tfClearDeepFreeze = 8388608] = "tfClearDeepFreeze";
+  })(t || (trustSet.TrustSetFlags = t = {}));
+  function i(n) {
+    (0, r.validateBaseTransaction)(n);
+    const { LimitAmount: s, QualityIn: a, QualityOut: o } = n;
+    if (s === void 0)
+      throw new e.ValidationError("TrustSet: missing field LimitAmount");
+    if (!(0, r.isAmount)(s))
+      throw new e.ValidationError("TrustSet: invalid LimitAmount");
+    if (a !== void 0 && typeof a != "number")
+      throw new e.ValidationError("TrustSet: QualityIn must be a number");
+    if (o !== void 0 && typeof o != "number")
+      throw new e.ValidationError("TrustSet: QualityOut must be a number");
+  }
+  return trustSet.validateTrustSet = i, trustSet;
+}
+var vaultCreate = {}, hasRequiredVaultCreate;
+function requireVaultCreate() {
+  if (hasRequiredVaultCreate) return vaultCreate;
+  hasRequiredVaultCreate = 1, Object.defineProperty(vaultCreate, "__esModule", { value: !0 }), vaultCreate.validateVaultCreate = vaultCreate.VaultCreateFlags = vaultCreate.VaultWithdrawalPolicy = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  var i;
+  (function(a) {
+    a[a.vaultStrategyFirstComeFirstServe = 1] = "vaultStrategyFirstComeFirstServe";
+  })(i || (vaultCreate.VaultWithdrawalPolicy = i = {}));
+  var n;
+  (function(a) {
+    a[a.tfVaultPrivate = 65536] = "tfVaultPrivate", a[a.tfVaultShareNonTransferable = 131072] = "tfVaultShareNonTransferable";
+  })(n || (vaultCreate.VaultCreateFlags = n = {}));
+  function s(a) {
+    if ((0, t.validateBaseTransaction)(a), (0, t.validateRequiredField)(a, "Asset", t.isCurrency), (0, t.validateOptionalField)(a, "Data", t.isString), (0, t.validateOptionalField)(a, "AssetsMaximum", t.isXRPLNumber), (0, t.validateOptionalField)(a, "MPTokenMetadata", t.isString), (0, t.validateOptionalField)(a, "WithdrawalPolicy", t.isNumber), (0, t.validateOptionalField)(a, "DomainID", t.isString), a.Data !== void 0) {
+      const o = a.Data;
+      if (!(0, r.isHex)(o))
+        throw new e.ValidationError("VaultCreate: Data must be a valid hex string");
+      const d = o.length / 2;
+      if (d > t.VAULT_DATA_MAX_BYTE_LENGTH)
+        throw new e.ValidationError(`VaultCreate: Data exceeds ${t.VAULT_DATA_MAX_BYTE_LENGTH} bytes (actual: ${d})`);
+    }
+    if (a.MPTokenMetadata !== void 0) {
+      const o = a.MPTokenMetadata;
+      if (!(0, r.isHex)(o))
+        throw new e.ValidationError("VaultCreate: MPTokenMetadata must be a valid non-empty hex string");
+      const d = o.length / 2;
+      if (d > t.MAX_MPT_META_BYTE_LENGTH)
+        throw new e.ValidationError(`VaultCreate: MPTokenMetadata exceeds ${t.MAX_MPT_META_BYTE_LENGTH} bytes (actual: ${d})`);
+    }
+    if (a.DomainID !== void 0 && !(0, r.hasFlag)(a, n.tfVaultPrivate, "tfVaultPrivate"))
+      throw new e.ValidationError("VaultCreate: Cannot set DomainID unless tfVaultPrivate flag is set.");
+    if (a.MPTokenMetadata != null) {
+      const o = (0, t.validateMPTokenMetadata)(a.MPTokenMetadata);
+      if (o.length > 0) {
+        const d = [
+          t.MPT_META_WARNING_HEADER,
+          ...o.map((u) => `- ${u}`)
+        ].join(`
+`);
+        console.warn(d);
+      }
+    }
+  }
+  return vaultCreate.validateVaultCreate = s, vaultCreate;
+}
+var XChainModifyBridge = {}, hasRequiredXChainModifyBridge;
+function requireXChainModifyBridge() {
+  if (hasRequiredXChainModifyBridge) return XChainModifyBridge;
+  hasRequiredXChainModifyBridge = 1, Object.defineProperty(XChainModifyBridge, "__esModule", { value: !0 }), XChainModifyBridge.validateXChainModifyBridge = XChainModifyBridge.XChainModifyBridgeFlags = void 0;
+  const e = requireCommon();
+  var r;
+  (function(i) {
+    i[i.tfClearAccountCreateAmount = 65536] = "tfClearAccountCreateAmount";
+  })(r || (XChainModifyBridge.XChainModifyBridgeFlags = r = {}));
+  function t(i) {
+    (0, e.validateBaseTransaction)(i), (0, e.validateRequiredField)(i, "XChainBridge", e.isXChainBridge), (0, e.validateOptionalField)(i, "SignatureReward", e.isAmount), (0, e.validateOptionalField)(i, "MinAccountCreateAmount", e.isAmount);
+  }
+  return XChainModifyBridge.validateXChainModifyBridge = t, XChainModifyBridge;
+}
+var hasRequiredFlags;
+function requireFlags() {
+  if (hasRequiredFlags) return flags;
+  hasRequiredFlags = 1, Object.defineProperty(flags, "__esModule", { value: !0 }), flags.parseTransactionFlags = flags.convertTxFlagsToNumber = flags.setTransactionFlagsToNumber = flags.parseAccountRootFlags = void 0;
+  const e = requireErrors(), r = requireAccountRoot(), t = requireAccountSet(), i = requireAMMClawback(), n = requireAMMDeposit(), s = requireAMMWithdraw(), a = requireBatch(), o = requireCommon(), d = requireMPTokenAuthorize(), u = requireMPTokenIssuanceCreate(), b = requireMPTokenIssuanceSet(), l = requireNFTokenCreateOffer(), g = requireNFTokenMint(), p = requireOfferCreate(), w = requirePayment(), I = requirePaymentChannelClaim(), m = requireTrustSet(), v = requireVaultCreate(), h = requireXChainModifyBridge(), _ = requireUtils$8();
+  function y(f) {
+    const C = {};
+    return Object.values(r.AccountRootFlags).forEach((A) => {
+      typeof A == "string" && (0, _.isFlagEnabled)(f, r.AccountRootFlags[A]) && (C[A] = !0);
+    }), C;
+  }
+  flags.parseAccountRootFlags = y;
+  const c = {
+    AccountSet: t.AccountSetTfFlags,
+    AMMClawback: i.AMMClawbackFlags,
+    AMMDeposit: n.AMMDepositFlags,
+    AMMWithdraw: s.AMMWithdrawFlags,
+    Batch: a.BatchFlags,
+    MPTokenAuthorize: d.MPTokenAuthorizeFlags,
+    MPTokenIssuanceCreate: u.MPTokenIssuanceCreateFlags,
+    MPTokenIssuanceSet: b.MPTokenIssuanceSetFlags,
+    NFTokenCreateOffer: l.NFTokenCreateOfferFlags,
+    NFTokenMint: g.NFTokenMintFlags,
+    OfferCreate: p.OfferCreateFlags,
+    PaymentChannelClaim: I.PaymentChannelClaimFlags,
+    Payment: w.PaymentFlags,
+    TrustSet: m.TrustSetFlags,
+    VaultCreate: v.VaultCreateFlags,
+    XChainModifyBridge: h.XChainModifyBridgeFlags
+  };
+  function R(f) {
+    return f in c;
+  }
+  function D(f) {
+    console.warn("This function is deprecated. Use convertTxFlagsToNumber() instead and use the returned value to modify the Transaction.Flags from the caller."), f.Flags && (f.Flags = N(f));
+  }
+  flags.setTransactionFlagsToNumber = D;
+  function N(f) {
+    const C = f.Flags;
+    if (C == null)
+      return 0;
+    if (typeof C == "number")
+      return C;
+    if (R(f.TransactionType)) {
+      const A = c[f.TransactionType];
+      return Object.keys(C).reduce((E, S) => {
+        var L;
+        if (A[S] == null && o.GlobalFlags[S] == null)
+          throw new e.ValidationError(`Invalid flag ${S}.`);
+        return C[S] ? E | ((L = A[S]) !== null && L !== void 0 ? L : o.GlobalFlags[S]) : E;
+      }, 0);
+    }
+    return Object.keys(C).reduce((A, E) => {
+      if (o.GlobalFlags[E] == null)
+        throw new e.ValidationError(`Invalid flag ${E}. Valid flags are ${JSON.stringify(o.GlobalFlags)}`);
+      return C[E] ? A | o.GlobalFlags[E] : A;
+    }, 0);
+  }
+  flags.convertTxFlagsToNumber = N;
+  function T(f) {
+    const C = N(f);
+    if (C === 0)
+      return {};
+    const A = {};
+    if (R(f.TransactionType)) {
+      const E = c[f.TransactionType];
+      Object.values(E).forEach((S) => {
+        typeof S == "string" && (0, _.isFlagEnabled)(C, E[S]) && (A[S] = !0);
+      });
+    }
+    return Object.values(o.GlobalFlags).forEach((E) => {
+      typeof E == "string" && (0, _.isFlagEnabled)(C, o.GlobalFlags[E]) && (A[E] = !0);
+    }), A;
+  }
+  return flags.parseTransactionFlags = T, flags;
+}
+var sugar = {}, submit = {}, utils$7 = {}, dist$1 = {}, browser$1 = {}, ripemd160 = {}, hasRequiredRipemd160;
+function requireRipemd160() {
+  if (hasRequiredRipemd160) return ripemd160;
+  hasRequiredRipemd160 = 1, Object.defineProperty(ripemd160, "__esModule", { value: !0 }), ripemd160.ripemd160 = ripemd160.RIPEMD160 = void 0;
+  const e = /* @__PURE__ */ require_md(), r = /* @__PURE__ */ requireUtils$b(), t = /* @__PURE__ */ new Uint8Array([7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8]), i = /* @__PURE__ */ new Uint8Array(new Array(16).fill(0).map((I, m) => m)), n = /* @__PURE__ */ i.map((I) => (9 * I + 5) % 16);
+  let s = [i], a = [n];
+  for (let I = 0; I < 4; I++)
+    for (let m of [s, a])
+      m.push(m[I].map((v) => t[v]));
+  const o = /* @__PURE__ */ [
+    [11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8],
+    [12, 13, 11, 15, 6, 9, 9, 7, 12, 15, 11, 13, 7, 8, 7, 7],
+    [13, 15, 14, 11, 7, 7, 6, 8, 13, 14, 13, 12, 5, 5, 6, 9],
+    [14, 11, 12, 14, 8, 6, 5, 5, 15, 12, 15, 14, 9, 9, 8, 6],
+    [15, 12, 13, 13, 9, 5, 8, 6, 14, 11, 12, 11, 8, 6, 5, 5]
+  ].map((I) => new Uint8Array(I)), d = /* @__PURE__ */ s.map((I, m) => I.map((v) => o[m][v])), u = /* @__PURE__ */ a.map((I, m) => I.map((v) => o[m][v])), b = /* @__PURE__ */ new Uint32Array([
+    0,
+    1518500249,
+    1859775393,
+    2400959708,
+    2840853838
+  ]), l = /* @__PURE__ */ new Uint32Array([
+    1352829926,
+    1548603684,
+    1836072691,
+    2053994217,
+    0
+  ]);
+  function g(I, m, v, h) {
+    return I === 0 ? m ^ v ^ h : I === 1 ? m & v | ~m & h : I === 2 ? (m | ~v) ^ h : I === 3 ? m & h | v & ~h : m ^ (v | ~h);
+  }
+  const p = /* @__PURE__ */ new Uint32Array(16);
+  class w extends e.HashMD {
+    constructor() {
+      super(64, 20, 8, !0), this.h0 = 1732584193, this.h1 = -271733879, this.h2 = -1732584194, this.h3 = 271733878, this.h4 = -1009589776;
+    }
+    get() {
+      const { h0: m, h1: v, h2: h, h3: _, h4: y } = this;
+      return [m, v, h, _, y];
+    }
+    set(m, v, h, _, y) {
+      this.h0 = m | 0, this.h1 = v | 0, this.h2 = h | 0, this.h3 = _ | 0, this.h4 = y | 0;
+    }
+    process(m, v) {
+      for (let A = 0; A < 16; A++, v += 4)
+        p[A] = m.getUint32(v, !0);
+      let h = this.h0 | 0, _ = h, y = this.h1 | 0, c = y, R = this.h2 | 0, D = R, N = this.h3 | 0, T = N, f = this.h4 | 0, C = f;
+      for (let A = 0; A < 5; A++) {
+        const E = 4 - A, S = b[A], L = l[A], U = s[A], H = a[A], K = d[A], $ = u[A];
+        for (let W = 0; W < 16; W++) {
+          const G = (0, r.rotl)(h + g(A, y, R, N) + p[U[W]] + S, K[W]) + f | 0;
+          h = f, f = N, N = (0, r.rotl)(R, 10) | 0, R = y, y = G;
+        }
+        for (let W = 0; W < 16; W++) {
+          const G = (0, r.rotl)(_ + g(E, c, D, T) + p[H[W]] + L, $[W]) + C | 0;
+          _ = C, C = T, T = (0, r.rotl)(D, 10) | 0, D = c, c = G;
+        }
+      }
+      this.set(this.h1 + R + T | 0, this.h2 + N + C | 0, this.h3 + f + _ | 0, this.h4 + h + c | 0, this.h0 + y + D | 0);
+    }
+    roundClean() {
+      p.fill(0);
+    }
+    destroy() {
+      this.destroyed = !0, this.buffer.fill(0), this.set(0, 0, 0, 0, 0);
+    }
+  }
+  return ripemd160.RIPEMD160 = w, ripemd160.ripemd160 = (0, r.wrapConstructor)(() => new w()), ripemd160;
+}
+var hasRequiredBrowser$1;
+function requireBrowser$1() {
+  if (hasRequiredBrowser$1) return browser$1;
+  hasRequiredBrowser$1 = 1;
+  var e = browser$1 && browser$1.__importDefault || function(i) {
+    return i && i.__esModule ? i : { default: i };
+  };
+  Object.defineProperty(browser$1, "__esModule", { value: !0 }), browser$1.ripemd160 = void 0;
+  const r = /* @__PURE__ */ requireRipemd160(), t = e(requireWrapNoble());
+  return browser$1.ripemd160 = (0, t.default)(r.ripemd160), browser$1;
+}
+var utils$6 = {}, secp256k1$1 = {}, modular = {}, utils$5 = {}, hasRequiredUtils$7;
+function requireUtils$7() {
+  if (hasRequiredUtils$7) return utils$5;
+  hasRequiredUtils$7 = 1, Object.defineProperty(utils$5, "__esModule", { value: !0 }), utils$5.validateObject = utils$5.createHmacDrbg = utils$5.bitMask = utils$5.bitSet = utils$5.bitGet = utils$5.bitLen = utils$5.utf8ToBytes = utils$5.equalBytes = utils$5.concatBytes = utils$5.ensureBytes = utils$5.numberToVarBytesBE = utils$5.numberToBytesLE = utils$5.numberToBytesBE = utils$5.bytesToNumberLE = utils$5.bytesToNumberBE = utils$5.hexToBytes = utils$5.hexToNumber = utils$5.numberToHexUnpadded = utils$5.bytesToHex = utils$5.abytes = utils$5.isBytes = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = BigInt(0), r = BigInt(1), t = BigInt(2);
+  function i(S) {
+    return S instanceof Uint8Array || S != null && typeof S == "object" && S.constructor.name === "Uint8Array";
+  }
+  utils$5.isBytes = i;
+  function n(S) {
+    if (!i(S))
+      throw new Error("Uint8Array expected");
+  }
+  utils$5.abytes = n;
+  const s = /* @__PURE__ */ Array.from({ length: 256 }, (S, L) => L.toString(16).padStart(2, "0"));
+  function a(S) {
+    n(S);
+    let L = "";
+    for (let U = 0; U < S.length; U++)
+      L += s[S[U]];
+    return L;
+  }
+  utils$5.bytesToHex = a;
+  function o(S) {
+    const L = S.toString(16);
+    return L.length & 1 ? `0${L}` : L;
+  }
+  utils$5.numberToHexUnpadded = o;
+  function d(S) {
+    if (typeof S != "string")
+      throw new Error("hex string expected, got " + typeof S);
+    return BigInt(S === "" ? "0" : `0x${S}`);
+  }
+  utils$5.hexToNumber = d;
+  const u = { _0: 48, _9: 57, _A: 65, _F: 70, _a: 97, _f: 102 };
+  function b(S) {
+    if (S >= u._0 && S <= u._9)
+      return S - u._0;
+    if (S >= u._A && S <= u._F)
+      return S - (u._A - 10);
+    if (S >= u._a && S <= u._f)
+      return S - (u._a - 10);
+  }
+  function l(S) {
+    if (typeof S != "string")
+      throw new Error("hex string expected, got " + typeof S);
+    const L = S.length, U = L / 2;
+    if (L % 2)
+      throw new Error("padded hex string expected, got unpadded hex of length " + L);
+    const H = new Uint8Array(U);
+    for (let K = 0, $ = 0; K < U; K++, $ += 2) {
+      const W = b(S.charCodeAt($)), G = b(S.charCodeAt($ + 1));
+      if (W === void 0 || G === void 0) {
+        const J = S[$] + S[$ + 1];
+        throw new Error('hex string expected, got non-hex character "' + J + '" at index ' + $);
+      }
+      H[K] = W * 16 + G;
+    }
+    return H;
+  }
+  utils$5.hexToBytes = l;
+  function g(S) {
+    return d(a(S));
+  }
+  utils$5.bytesToNumberBE = g;
+  function p(S) {
+    return n(S), d(a(Uint8Array.from(S).reverse()));
+  }
+  utils$5.bytesToNumberLE = p;
+  function w(S, L) {
+    return l(S.toString(16).padStart(L * 2, "0"));
+  }
+  utils$5.numberToBytesBE = w;
+  function I(S, L) {
+    return w(S, L).reverse();
+  }
+  utils$5.numberToBytesLE = I;
+  function m(S) {
+    return l(o(S));
+  }
+  utils$5.numberToVarBytesBE = m;
+  function v(S, L, U) {
+    let H;
+    if (typeof L == "string")
+      try {
+        H = l(L);
+      } catch ($) {
+        throw new Error(`${S} must be valid hex string, got "${L}". Cause: ${$}`);
+      }
+    else if (i(L))
+      H = Uint8Array.from(L);
+    else
+      throw new Error(`${S} must be hex string or Uint8Array`);
+    const K = H.length;
+    if (typeof U == "number" && K !== U)
+      throw new Error(`${S} expected ${U} bytes, got ${K}`);
+    return H;
+  }
+  utils$5.ensureBytes = v;
+  function h(...S) {
+    let L = 0;
+    for (let H = 0; H < S.length; H++) {
+      const K = S[H];
+      n(K), L += K.length;
+    }
+    const U = new Uint8Array(L);
+    for (let H = 0, K = 0; H < S.length; H++) {
+      const $ = S[H];
+      U.set($, K), K += $.length;
+    }
+    return U;
+  }
+  utils$5.concatBytes = h;
+  function _(S, L) {
+    if (S.length !== L.length)
+      return !1;
+    let U = 0;
+    for (let H = 0; H < S.length; H++)
+      U |= S[H] ^ L[H];
+    return U === 0;
+  }
+  utils$5.equalBytes = _;
+  function y(S) {
+    if (typeof S != "string")
+      throw new Error(`utf8ToBytes expected string, got ${typeof S}`);
+    return new Uint8Array(new TextEncoder().encode(S));
+  }
+  utils$5.utf8ToBytes = y;
+  function c(S) {
+    let L;
+    for (L = 0; S > e; S >>= r, L += 1)
+      ;
+    return L;
+  }
+  utils$5.bitLen = c;
+  function R(S, L) {
+    return S >> BigInt(L) & r;
+  }
+  utils$5.bitGet = R;
+  function D(S, L, U) {
+    return S | (U ? r : e) << BigInt(L);
+  }
+  utils$5.bitSet = D;
+  const N = (S) => (t << BigInt(S - 1)) - r;
+  utils$5.bitMask = N;
+  const T = (S) => new Uint8Array(S), f = (S) => Uint8Array.from(S);
+  function C(S, L, U) {
+    if (typeof S != "number" || S < 2)
+      throw new Error("hashLen must be a number");
+    if (typeof L != "number" || L < 2)
+      throw new Error("qByteLen must be a number");
+    if (typeof U != "function")
+      throw new Error("hmacFn must be a function");
+    let H = T(S), K = T(S), $ = 0;
+    const W = () => {
+      H.fill(1), K.fill(0), $ = 0;
+    }, G = (...Q) => U(K, H, ...Q), J = (Q = T()) => {
+      K = G(f([0]), Q), H = G(), Q.length !== 0 && (K = G(f([1]), Q), H = G());
+    }, re = () => {
+      if ($++ >= 1e3)
+        throw new Error("drbg: tried 1000 values");
+      let Q = 0;
+      const se = [];
+      for (; Q < L; ) {
+        H = G();
+        const ue = H.slice();
+        se.push(ue), Q += H.length;
+      }
+      return h(...se);
+    };
+    return (Q, se) => {
+      W(), J(Q);
+      let ue;
+      for (; !(ue = se(re())); )
+        J();
+      return W(), ue;
+    };
+  }
+  utils$5.createHmacDrbg = C;
+  const A = {
+    bigint: (S) => typeof S == "bigint",
+    function: (S) => typeof S == "function",
+    boolean: (S) => typeof S == "boolean",
+    string: (S) => typeof S == "string",
+    stringOrUint8Array: (S) => typeof S == "string" || i(S),
+    isSafeInteger: (S) => Number.isSafeInteger(S),
+    array: (S) => Array.isArray(S),
+    field: (S, L) => L.Fp.isValid(S),
+    hash: (S) => typeof S == "function" && Number.isSafeInteger(S.outputLen)
+  };
+  function E(S, L, U = {}) {
+    const H = (K, $, W) => {
+      const G = A[$];
+      if (typeof G != "function")
+        throw new Error(`Invalid validator "${$}", expected function`);
+      const J = S[K];
+      if (!(W && J === void 0) && !G(J, S))
+        throw new Error(`Invalid param ${String(K)}=${J} (${typeof J}), expected ${$}`);
+    };
+    for (const [K, $] of Object.entries(L))
+      H(K, $, !1);
+    for (const [K, $] of Object.entries(U))
+      H(K, $, !0);
+    return S;
+  }
+  return utils$5.validateObject = E, utils$5;
+}
+var hasRequiredModular;
+function requireModular() {
+  if (hasRequiredModular) return modular;
+  hasRequiredModular = 1, Object.defineProperty(modular, "__esModule", { value: !0 }), modular.mapHashToField = modular.getMinHashLength = modular.getFieldBytesLength = modular.hashToPrivateScalar = modular.FpSqrtEven = modular.FpSqrtOdd = modular.Field = modular.nLength = modular.FpIsSquare = modular.FpDiv = modular.FpInvertBatch = modular.FpPow = modular.validateField = modular.isNegativeLE = modular.FpSqrt = modular.tonelliShanks = modular.invert = modular.pow2 = modular.pow = modular.mod = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ requireUtils$7(), r = BigInt(0), t = BigInt(1), i = BigInt(2), n = BigInt(3), s = BigInt(4), a = BigInt(5), o = BigInt(8);
+  BigInt(9), BigInt(16);
+  function d(E, S) {
+    const L = E % S;
+    return L >= r ? L : S + L;
+  }
+  modular.mod = d;
+  function u(E, S, L) {
+    if (L <= r || S < r)
+      throw new Error("Expected power/modulo > 0");
+    if (L === t)
+      return r;
+    let U = t;
+    for (; S > r; )
+      S & t && (U = U * E % L), E = E * E % L, S >>= t;
+    return U;
+  }
+  modular.pow = u;
+  function b(E, S, L) {
+    let U = E;
+    for (; S-- > r; )
+      U *= U, U %= L;
+    return U;
+  }
+  modular.pow2 = b;
+  function l(E, S) {
+    if (E === r || S <= r)
+      throw new Error(`invert: expected positive integers, got n=${E} mod=${S}`);
+    let L = d(E, S), U = S, H = r, K = t;
+    for (; L !== r; ) {
+      const W = U / L, G = U % L, J = H - K * W;
+      U = L, L = G, H = K, K = J;
+    }
+    if (U !== t)
+      throw new Error("invert: does not exist");
+    return d(H, S);
+  }
+  modular.invert = l;
+  function g(E) {
+    const S = (E - t) / i;
+    let L, U, H;
+    for (L = E - t, U = 0; L % i === r; L /= i, U++)
+      ;
+    for (H = i; H < E && u(H, S, E) !== E - t; H++)
+      ;
+    if (U === 1) {
+      const $ = (E + t) / s;
+      return function(G, J) {
+        const re = G.pow(J, $);
+        if (!G.eql(G.sqr(re), J))
+          throw new Error("Cannot find square root");
+        return re;
+      };
+    }
+    const K = (L + t) / i;
+    return function(W, G) {
+      if (W.pow(G, S) === W.neg(W.ONE))
+        throw new Error("Cannot find square root");
+      let J = U, re = W.pow(W.mul(W.ONE, H), L), x = W.pow(G, K), Q = W.pow(G, L);
+      for (; !W.eql(Q, W.ONE); ) {
+        if (W.eql(Q, W.ZERO))
+          return W.ZERO;
+        let se = 1;
+        for (let oe = W.sqr(Q); se < J && !W.eql(oe, W.ONE); se++)
+          oe = W.sqr(oe);
+        const ue = W.pow(re, t << BigInt(J - se - 1));
+        re = W.sqr(ue), x = W.mul(x, ue), Q = W.mul(Q, re), J = se;
+      }
+      return x;
+    };
+  }
+  modular.tonelliShanks = g;
+  function p(E) {
+    if (E % s === n) {
+      const S = (E + t) / s;
+      return function(U, H) {
+        const K = U.pow(H, S);
+        if (!U.eql(U.sqr(K), H))
+          throw new Error("Cannot find square root");
+        return K;
+      };
+    }
+    if (E % o === a) {
+      const S = (E - a) / o;
+      return function(U, H) {
+        const K = U.mul(H, i), $ = U.pow(K, S), W = U.mul(H, $), G = U.mul(U.mul(W, i), $), J = U.mul(W, U.sub(G, U.ONE));
+        if (!U.eql(U.sqr(J), H))
+          throw new Error("Cannot find square root");
+        return J;
+      };
+    }
+    return g(E);
+  }
+  modular.FpSqrt = p;
+  const w = (E, S) => (d(E, S) & t) === t;
+  modular.isNegativeLE = w;
+  const I = [
+    "create",
+    "isValid",
+    "is0",
+    "neg",
+    "inv",
+    "sqrt",
+    "sqr",
+    "eql",
+    "add",
+    "sub",
+    "mul",
+    "pow",
+    "div",
+    "addN",
+    "subN",
+    "mulN",
+    "sqrN"
+  ];
+  function m(E) {
+    const S = {
+      ORDER: "bigint",
+      MASK: "bigint",
+      BYTES: "isSafeInteger",
+      BITS: "isSafeInteger"
+    }, L = I.reduce((U, H) => (U[H] = "function", U), S);
+    return (0, e.validateObject)(E, L);
+  }
+  modular.validateField = m;
+  function v(E, S, L) {
+    if (L < r)
+      throw new Error("Expected power > 0");
+    if (L === r)
+      return E.ONE;
+    if (L === t)
+      return S;
+    let U = E.ONE, H = S;
+    for (; L > r; )
+      L & t && (U = E.mul(U, H)), H = E.sqr(H), L >>= t;
+    return U;
+  }
+  modular.FpPow = v;
+  function h(E, S) {
+    const L = new Array(S.length), U = S.reduce((K, $, W) => E.is0($) ? K : (L[W] = K, E.mul(K, $)), E.ONE), H = E.inv(U);
+    return S.reduceRight((K, $, W) => E.is0($) ? K : (L[W] = E.mul(K, L[W]), E.mul(K, $)), H), L;
+  }
+  modular.FpInvertBatch = h;
+  function _(E, S, L) {
+    return E.mul(S, typeof L == "bigint" ? l(L, E.ORDER) : E.inv(L));
+  }
+  modular.FpDiv = _;
+  function y(E) {
+    const S = (E.ORDER - t) / i;
+    return (L) => {
+      const U = E.pow(L, S);
+      return E.eql(U, E.ZERO) || E.eql(U, E.ONE);
+    };
+  }
+  modular.FpIsSquare = y;
+  function c(E, S) {
+    const L = S !== void 0 ? S : E.toString(2).length, U = Math.ceil(L / 8);
+    return { nBitLength: L, nByteLength: U };
+  }
+  modular.nLength = c;
+  function R(E, S, L = !1, U = {}) {
+    if (E <= r)
+      throw new Error(`Expected Field ORDER > 0, got ${E}`);
+    const { nBitLength: H, nByteLength: K } = c(E, S);
+    if (K > 2048)
+      throw new Error("Field lengths over 2048 bytes are not supported");
+    const $ = p(E), W = Object.freeze({
+      ORDER: E,
+      BITS: H,
+      BYTES: K,
+      MASK: (0, e.bitMask)(H),
+      ZERO: r,
+      ONE: t,
+      create: (G) => d(G, E),
+      isValid: (G) => {
+        if (typeof G != "bigint")
+          throw new Error(`Invalid field element: expected bigint, got ${typeof G}`);
+        return r <= G && G < E;
+      },
+      is0: (G) => G === r,
+      isOdd: (G) => (G & t) === t,
+      neg: (G) => d(-G, E),
+      eql: (G, J) => G === J,
+      sqr: (G) => d(G * G, E),
+      add: (G, J) => d(G + J, E),
+      sub: (G, J) => d(G - J, E),
+      mul: (G, J) => d(G * J, E),
+      pow: (G, J) => v(W, G, J),
+      div: (G, J) => d(G * l(J, E), E),
+      // Same as above, but doesn't normalize
+      sqrN: (G) => G * G,
+      addN: (G, J) => G + J,
+      subN: (G, J) => G - J,
+      mulN: (G, J) => G * J,
+      inv: (G) => l(G, E),
+      sqrt: U.sqrt || ((G) => $(W, G)),
+      invertBatch: (G) => h(W, G),
+      // TODO: do we really need constant cmov?
+      // We don't have const-time bigints anyway, so probably will be not very useful
+      cmov: (G, J, re) => re ? J : G,
+      toBytes: (G) => L ? (0, e.numberToBytesLE)(G, K) : (0, e.numberToBytesBE)(G, K),
+      fromBytes: (G) => {
+        if (G.length !== K)
+          throw new Error(`Fp.fromBytes: expected ${K}, got ${G.length}`);
+        return L ? (0, e.bytesToNumberLE)(G) : (0, e.bytesToNumberBE)(G);
+      }
+    });
+    return Object.freeze(W);
+  }
+  modular.Field = R;
+  function D(E, S) {
+    if (!E.isOdd)
+      throw new Error("Field doesn't have isOdd");
+    const L = E.sqrt(S);
+    return E.isOdd(L) ? L : E.neg(L);
+  }
+  modular.FpSqrtOdd = D;
+  function N(E, S) {
+    if (!E.isOdd)
+      throw new Error("Field doesn't have isOdd");
+    const L = E.sqrt(S);
+    return E.isOdd(L) ? E.neg(L) : L;
+  }
+  modular.FpSqrtEven = N;
+  function T(E, S, L = !1) {
+    E = (0, e.ensureBytes)("privateHash", E);
+    const U = E.length, H = c(S).nByteLength + 8;
+    if (H < 24 || U < H || U > 1024)
+      throw new Error(`hashToPrivateScalar: expected ${H}-1024 bytes of input, got ${U}`);
+    const K = L ? (0, e.bytesToNumberLE)(E) : (0, e.bytesToNumberBE)(E);
+    return d(K, S - t) + t;
+  }
+  modular.hashToPrivateScalar = T;
+  function f(E) {
+    if (typeof E != "bigint")
+      throw new Error("field order must be bigint");
+    const S = E.toString(2).length;
+    return Math.ceil(S / 8);
+  }
+  modular.getFieldBytesLength = f;
+  function C(E) {
+    const S = f(E);
+    return S + Math.ceil(S / 2);
+  }
+  modular.getMinHashLength = C;
+  function A(E, S, L = !1) {
+    const U = E.length, H = f(S), K = C(S);
+    if (U < 16 || U < K || U > 1024)
+      throw new Error(`expected ${K}-1024 bytes of input, got ${U}`);
+    const $ = L ? (0, e.bytesToNumberBE)(E) : (0, e.bytesToNumberLE)(E), W = d($, S - t) + t;
+    return L ? (0, e.numberToBytesLE)(W, H) : (0, e.numberToBytesBE)(W, H);
+  }
+  return modular.mapHashToField = A, modular;
+}
+var weierstrass = {}, curve = {}, hasRequiredCurve;
+function requireCurve() {
+  if (hasRequiredCurve) return curve;
+  hasRequiredCurve = 1, Object.defineProperty(curve, "__esModule", { value: !0 }), curve.validateBasic = curve.wNAF = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ requireModular(), r = /* @__PURE__ */ requireUtils$7(), t = BigInt(0), i = BigInt(1);
+  function n(a, o) {
+    const d = (b, l) => {
+      const g = l.negate();
+      return b ? g : l;
+    }, u = (b) => {
+      const l = Math.ceil(o / b) + 1, g = 2 ** (b - 1);
+      return { windows: l, windowSize: g };
+    };
+    return {
+      constTimeNegate: d,
+      // non-const time multiplication ladder
+      unsafeLadder(b, l) {
+        let g = a.ZERO, p = b;
+        for (; l > t; )
+          l & i && (g = g.add(p)), p = p.double(), l >>= i;
+        return g;
+      },
+      /**
+       * Creates a wNAF precomputation window. Used for caching.
+       * Default window size is set by `utils.precompute()` and is equal to 8.
+       * Number of precomputed points depends on the curve size:
+       * 2^(𝑊−1) * (Math.ceil(𝑛 / 𝑊) + 1), where:
+       * - 𝑊 is the window size
+       * - 𝑛 is the bitlength of the curve order.
+       * For a 256-bit curve and window size 8, the number of precomputed points is 128 * 33 = 4224.
+       * @returns precomputed point tables flattened to a single array
+       */
+      precomputeWindow(b, l) {
+        const { windows: g, windowSize: p } = u(l), w = [];
+        let I = b, m = I;
+        for (let v = 0; v < g; v++) {
+          m = I, w.push(m);
+          for (let h = 1; h < p; h++)
+            m = m.add(I), w.push(m);
+          I = m.double();
+        }
+        return w;
+      },
+      /**
+       * Implements ec multiplication using precomputed tables and w-ary non-adjacent form.
+       * @param W window size
+       * @param precomputes precomputed tables
+       * @param n scalar (we don't check here, but should be less than curve order)
+       * @returns real and fake (for const-time) points
+       */
+      wNAF(b, l, g) {
+        const { windows: p, windowSize: w } = u(b);
+        let I = a.ZERO, m = a.BASE;
+        const v = BigInt(2 ** b - 1), h = 2 ** b, _ = BigInt(b);
+        for (let y = 0; y < p; y++) {
+          const c = y * w;
+          let R = Number(g & v);
+          g >>= _, R > w && (R -= h, g += i);
+          const D = c, N = c + Math.abs(R) - 1, T = y % 2 !== 0, f = R < 0;
+          R === 0 ? m = m.add(d(T, l[D])) : I = I.add(d(f, l[N]));
+        }
+        return { p: I, f: m };
+      },
+      wNAFCached(b, l, g, p) {
+        const w = b._WINDOW_SIZE || 1;
+        let I = l.get(b);
+        return I || (I = this.precomputeWindow(b, w), w !== 1 && l.set(b, p(I))), this.wNAF(w, I, g);
+      }
+    };
+  }
+  curve.wNAF = n;
+  function s(a) {
+    return (0, e.validateField)(a.Fp), (0, r.validateObject)(a, {
+      n: "bigint",
+      h: "bigint",
+      Gx: "field",
+      Gy: "field"
+    }, {
+      nBitLength: "isSafeInteger",
+      nByteLength: "isSafeInteger"
+    }), Object.freeze({
+      ...(0, e.nLength)(a.n, a.nBitLength),
+      ...a,
+      p: a.Fp.ORDER
+    });
+  }
+  return curve.validateBasic = s, curve;
+}
+var hasRequiredWeierstrass;
+function requireWeierstrass() {
+  return hasRequiredWeierstrass || (hasRequiredWeierstrass = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.mapToCurveSimpleSWU = e.SWUFpSqrtRatio = e.weierstrass = e.weierstrassPoints = e.DER = void 0;
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    const r = /* @__PURE__ */ requireModular(), t = /* @__PURE__ */ requireUtils$7(), i = /* @__PURE__ */ requireUtils$7(), n = /* @__PURE__ */ requireCurve();
+    function s(h) {
+      const _ = (0, n.validateBasic)(h);
+      t.validateObject(_, {
+        a: "field",
+        b: "field"
+      }, {
+        allowedPrivateKeyLengths: "array",
+        wrapPrivateKey: "boolean",
+        isTorsionFree: "function",
+        clearCofactor: "function",
+        allowInfinityPoint: "boolean",
+        fromBytes: "function",
+        toBytes: "function"
+      });
+      const { endo: y, Fp: c, a: R } = _;
+      if (y) {
+        if (!c.eql(R, c.ZERO))
+          throw new Error("Endomorphism can only be defined for Koblitz curves that have a=0");
+        if (typeof y != "object" || typeof y.beta != "bigint" || typeof y.splitScalar != "function")
+          throw new Error("Expected endomorphism with beta: bigint and splitScalar: function");
+      }
+      return Object.freeze({ ..._ });
+    }
+    const { bytesToNumberBE: a, hexToBytes: o } = t;
+    e.DER = {
+      // asn.1 DER encoding utils
+      Err: class extends Error {
+        constructor(_ = "") {
+          super(_);
+        }
+      },
+      _parseInt(h) {
+        const { Err: _ } = e.DER;
+        if (h.length < 2 || h[0] !== 2)
+          throw new _("Invalid signature integer tag");
+        const y = h[1], c = h.subarray(2, y + 2);
+        if (!y || c.length !== y)
+          throw new _("Invalid signature integer: wrong length");
+        if (c[0] & 128)
+          throw new _("Invalid signature integer: negative");
+        if (c[0] === 0 && !(c[1] & 128))
+          throw new _("Invalid signature integer: unnecessary leading zero");
+        return { d: a(c), l: h.subarray(y + 2) };
+      },
+      toSig(h) {
+        const { Err: _ } = e.DER, y = typeof h == "string" ? o(h) : h;
+        t.abytes(y);
+        let c = y.length;
+        if (c < 2 || y[0] != 48)
+          throw new _("Invalid signature tag");
+        if (y[1] !== c - 2)
+          throw new _("Invalid signature: incorrect length");
+        const { d: R, l: D } = e.DER._parseInt(y.subarray(2)), { d: N, l: T } = e.DER._parseInt(D);
+        if (T.length)
+          throw new _("Invalid signature: left bytes after parsing");
+        return { r: R, s: N };
+      },
+      hexFromSig(h) {
+        const _ = (C) => Number.parseInt(C[0], 16) & 8 ? "00" + C : C, y = (C) => {
+          const A = C.toString(16);
+          return A.length & 1 ? `0${A}` : A;
+        }, c = _(y(h.s)), R = _(y(h.r)), D = c.length / 2, N = R.length / 2, T = y(D), f = y(N);
+        return `30${y(N + D + 4)}02${f}${R}02${T}${c}`;
+      }
+    };
+    const d = BigInt(0), u = BigInt(1), b = BigInt(2), l = BigInt(3), g = BigInt(4);
+    function p(h) {
+      const _ = s(h), { Fp: y } = _, c = _.toBytes || ((U, H, K) => {
+        const $ = H.toAffine();
+        return t.concatBytes(Uint8Array.from([4]), y.toBytes($.x), y.toBytes($.y));
+      }), R = _.fromBytes || ((U) => {
+        const H = U.subarray(1), K = y.fromBytes(H.subarray(0, y.BYTES)), $ = y.fromBytes(H.subarray(y.BYTES, 2 * y.BYTES));
+        return { x: K, y: $ };
+      });
+      function D(U) {
+        const { a: H, b: K } = _, $ = y.sqr(U), W = y.mul($, U);
+        return y.add(y.add(W, y.mul(U, H)), K);
+      }
+      if (!y.eql(y.sqr(_.Gy), D(_.Gx)))
+        throw new Error("bad generator point: equation left != right");
+      function N(U) {
+        return typeof U == "bigint" && d < U && U < _.n;
+      }
+      function T(U) {
+        if (!N(U))
+          throw new Error("Expected valid bigint: 0 < bigint < curve.n");
+      }
+      function f(U) {
+        const { allowedPrivateKeyLengths: H, nByteLength: K, wrapPrivateKey: $, n: W } = _;
+        if (H && typeof U != "bigint") {
+          if (t.isBytes(U) && (U = t.bytesToHex(U)), typeof U != "string" || !H.includes(U.length))
+            throw new Error("Invalid key");
+          U = U.padStart(K * 2, "0");
+        }
+        let G;
+        try {
+          G = typeof U == "bigint" ? U : t.bytesToNumberBE((0, i.ensureBytes)("private key", U, K));
+        } catch {
+          throw new Error(`private key must be ${K} bytes, hex or bigint, not ${typeof U}`);
+        }
+        return $ && (G = r.mod(G, W)), T(G), G;
+      }
+      const C = /* @__PURE__ */ new Map();
+      function A(U) {
+        if (!(U instanceof E))
+          throw new Error("ProjectivePoint expected");
+      }
+      class E {
+        constructor(H, K, $) {
+          if (this.px = H, this.py = K, this.pz = $, H == null || !y.isValid(H))
+            throw new Error("x required");
+          if (K == null || !y.isValid(K))
+            throw new Error("y required");
+          if ($ == null || !y.isValid($))
+            throw new Error("z required");
+        }
+        // Does not validate if the point is on-curve.
+        // Use fromHex instead, or call assertValidity() later.
+        static fromAffine(H) {
+          const { x: K, y: $ } = H || {};
+          if (!H || !y.isValid(K) || !y.isValid($))
+            throw new Error("invalid affine point");
+          if (H instanceof E)
+            throw new Error("projective point not allowed");
+          const W = (G) => y.eql(G, y.ZERO);
+          return W(K) && W($) ? E.ZERO : new E(K, $, y.ONE);
+        }
+        get x() {
+          return this.toAffine().x;
+        }
+        get y() {
+          return this.toAffine().y;
+        }
+        /**
+         * Takes a bunch of Projective Points but executes only one
+         * inversion on all of them. Inversion is very slow operation,
+         * so this improves performance massively.
+         * Optimization: converts a list of projective points to a list of identical points with Z=1.
+         */
+        static normalizeZ(H) {
+          const K = y.invertBatch(H.map(($) => $.pz));
+          return H.map(($, W) => $.toAffine(K[W])).map(E.fromAffine);
+        }
+        /**
+         * Converts hash string or Uint8Array to Point.
+         * @param hex short/long ECDSA hex
+         */
+        static fromHex(H) {
+          const K = E.fromAffine(R((0, i.ensureBytes)("pointHex", H)));
+          return K.assertValidity(), K;
+        }
+        // Multiplies generator point by privateKey.
+        static fromPrivateKey(H) {
+          return E.BASE.multiply(f(H));
+        }
+        // "Private method", don't use it directly
+        _setWindowSize(H) {
+          this._WINDOW_SIZE = H, C.delete(this);
+        }
+        // A point on curve is valid if it conforms to equation.
+        assertValidity() {
+          if (this.is0()) {
+            if (_.allowInfinityPoint && !y.is0(this.py))
+              return;
+            throw new Error("bad point: ZERO");
+          }
+          const { x: H, y: K } = this.toAffine();
+          if (!y.isValid(H) || !y.isValid(K))
+            throw new Error("bad point: x or y not FE");
+          const $ = y.sqr(K), W = D(H);
+          if (!y.eql($, W))
+            throw new Error("bad point: equation left != right");
+          if (!this.isTorsionFree())
+            throw new Error("bad point: not in prime-order subgroup");
+        }
+        hasEvenY() {
+          const { y: H } = this.toAffine();
+          if (y.isOdd)
+            return !y.isOdd(H);
+          throw new Error("Field doesn't support isOdd");
+        }
+        /**
+         * Compare one point to another.
+         */
+        equals(H) {
+          A(H);
+          const { px: K, py: $, pz: W } = this, { px: G, py: J, pz: re } = H, x = y.eql(y.mul(K, re), y.mul(G, W)), Q = y.eql(y.mul($, re), y.mul(J, W));
+          return x && Q;
+        }
+        /**
+         * Flips point to one corresponding to (x, -y) in Affine coordinates.
+         */
+        negate() {
+          return new E(this.px, y.neg(this.py), this.pz);
+        }
+        // Renes-Costello-Batina exception-free doubling formula.
+        // There is 30% faster Jacobian formula, but it is not complete.
+        // https://eprint.iacr.org/2015/1060, algorithm 3
+        // Cost: 8M + 3S + 3*a + 2*b3 + 15add.
+        double() {
+          const { a: H, b: K } = _, $ = y.mul(K, l), { px: W, py: G, pz: J } = this;
+          let re = y.ZERO, x = y.ZERO, Q = y.ZERO, se = y.mul(W, W), ue = y.mul(G, G), oe = y.mul(J, J), Z = y.mul(W, G);
+          return Z = y.add(Z, Z), Q = y.mul(W, J), Q = y.add(Q, Q), re = y.mul(H, Q), x = y.mul($, oe), x = y.add(re, x), re = y.sub(ue, x), x = y.add(ue, x), x = y.mul(re, x), re = y.mul(Z, re), Q = y.mul($, Q), oe = y.mul(H, oe), Z = y.sub(se, oe), Z = y.mul(H, Z), Z = y.add(Z, Q), Q = y.add(se, se), se = y.add(Q, se), se = y.add(se, oe), se = y.mul(se, Z), x = y.add(x, se), oe = y.mul(G, J), oe = y.add(oe, oe), se = y.mul(oe, Z), re = y.sub(re, se), Q = y.mul(oe, ue), Q = y.add(Q, Q), Q = y.add(Q, Q), new E(re, x, Q);
+        }
+        // Renes-Costello-Batina exception-free addition formula.
+        // There is 30% faster Jacobian formula, but it is not complete.
+        // https://eprint.iacr.org/2015/1060, algorithm 1
+        // Cost: 12M + 0S + 3*a + 3*b3 + 23add.
+        add(H) {
+          A(H);
+          const { px: K, py: $, pz: W } = this, { px: G, py: J, pz: re } = H;
+          let x = y.ZERO, Q = y.ZERO, se = y.ZERO;
+          const ue = _.a, oe = y.mul(_.b, l);
+          let Z = y.mul(K, G), B = y.mul($, J), q = y.mul(W, re), M = y.add(K, $), k = y.add(G, J);
+          M = y.mul(M, k), k = y.add(Z, B), M = y.sub(M, k), k = y.add(K, W);
+          let F = y.add(G, re);
+          return k = y.mul(k, F), F = y.add(Z, q), k = y.sub(k, F), F = y.add($, W), x = y.add(J, re), F = y.mul(F, x), x = y.add(B, q), F = y.sub(F, x), se = y.mul(ue, k), x = y.mul(oe, q), se = y.add(x, se), x = y.sub(B, se), se = y.add(B, se), Q = y.mul(x, se), B = y.add(Z, Z), B = y.add(B, Z), q = y.mul(ue, q), k = y.mul(oe, k), B = y.add(B, q), q = y.sub(Z, q), q = y.mul(ue, q), k = y.add(k, q), Z = y.mul(B, k), Q = y.add(Q, Z), Z = y.mul(F, k), x = y.mul(M, x), x = y.sub(x, Z), Z = y.mul(M, B), se = y.mul(F, se), se = y.add(se, Z), new E(x, Q, se);
+        }
+        subtract(H) {
+          return this.add(H.negate());
+        }
+        is0() {
+          return this.equals(E.ZERO);
+        }
+        wNAF(H) {
+          return L.wNAFCached(this, C, H, (K) => {
+            const $ = y.invertBatch(K.map((W) => W.pz));
+            return K.map((W, G) => W.toAffine($[G])).map(E.fromAffine);
+          });
+        }
+        /**
+         * Non-constant-time multiplication. Uses double-and-add algorithm.
+         * It's faster, but should only be used when you don't care about
+         * an exposed private key e.g. sig verification, which works over *public* keys.
+         */
+        multiplyUnsafe(H) {
+          const K = E.ZERO;
+          if (H === d)
+            return K;
+          if (T(H), H === u)
+            return this;
+          const { endo: $ } = _;
+          if (!$)
+            return L.unsafeLadder(this, H);
+          let { k1neg: W, k1: G, k2neg: J, k2: re } = $.splitScalar(H), x = K, Q = K, se = this;
+          for (; G > d || re > d; )
+            G & u && (x = x.add(se)), re & u && (Q = Q.add(se)), se = se.double(), G >>= u, re >>= u;
+          return W && (x = x.negate()), J && (Q = Q.negate()), Q = new E(y.mul(Q.px, $.beta), Q.py, Q.pz), x.add(Q);
+        }
+        /**
+         * Constant time multiplication.
+         * Uses wNAF method. Windowed method may be 10% faster,
+         * but takes 2x longer to generate and consumes 2x memory.
+         * Uses precomputes when available.
+         * Uses endomorphism for Koblitz curves.
+         * @param scalar by which the point would be multiplied
+         * @returns New point
+         */
+        multiply(H) {
+          T(H);
+          let K = H, $, W;
+          const { endo: G } = _;
+          if (G) {
+            const { k1neg: J, k1: re, k2neg: x, k2: Q } = G.splitScalar(K);
+            let { p: se, f: ue } = this.wNAF(re), { p: oe, f: Z } = this.wNAF(Q);
+            se = L.constTimeNegate(J, se), oe = L.constTimeNegate(x, oe), oe = new E(y.mul(oe.px, G.beta), oe.py, oe.pz), $ = se.add(oe), W = ue.add(Z);
+          } else {
+            const { p: J, f: re } = this.wNAF(K);
+            $ = J, W = re;
+          }
+          return E.normalizeZ([$, W])[0];
+        }
+        /**
+         * Efficiently calculate `aP + bQ`. Unsafe, can expose private key, if used incorrectly.
+         * Not using Strauss-Shamir trick: precomputation tables are faster.
+         * The trick could be useful if both P and Q are not G (not in our case).
+         * @returns non-zero affine point
+         */
+        multiplyAndAddUnsafe(H, K, $) {
+          const W = E.BASE, G = (re, x) => x === d || x === u || !re.equals(W) ? re.multiplyUnsafe(x) : re.multiply(x), J = G(this, K).add(G(H, $));
+          return J.is0() ? void 0 : J;
+        }
+        // Converts Projective point to affine (x, y) coordinates.
+        // Can accept precomputed Z^-1 - for example, from invertBatch.
+        // (x, y, z) ∋ (x=x/z, y=y/z)
+        toAffine(H) {
+          const { px: K, py: $, pz: W } = this, G = this.is0();
+          H == null && (H = G ? y.ONE : y.inv(W));
+          const J = y.mul(K, H), re = y.mul($, H), x = y.mul(W, H);
+          if (G)
+            return { x: y.ZERO, y: y.ZERO };
+          if (!y.eql(x, y.ONE))
+            throw new Error("invZ was invalid");
+          return { x: J, y: re };
+        }
+        isTorsionFree() {
+          const { h: H, isTorsionFree: K } = _;
+          if (H === u)
+            return !0;
+          if (K)
+            return K(E, this);
+          throw new Error("isTorsionFree() has not been declared for the elliptic curve");
+        }
+        clearCofactor() {
+          const { h: H, clearCofactor: K } = _;
+          return H === u ? this : K ? K(E, this) : this.multiplyUnsafe(_.h);
+        }
+        toRawBytes(H = !0) {
+          return this.assertValidity(), c(E, this, H);
+        }
+        toHex(H = !0) {
+          return t.bytesToHex(this.toRawBytes(H));
+        }
+      }
+      E.BASE = new E(_.Gx, _.Gy, y.ONE), E.ZERO = new E(y.ZERO, y.ONE, y.ZERO);
+      const S = _.nBitLength, L = (0, n.wNAF)(E, _.endo ? Math.ceil(S / 2) : S);
+      return {
+        CURVE: _,
+        ProjectivePoint: E,
+        normPrivateKeyToScalar: f,
+        weierstrassEquation: D,
+        isWithinCurveOrder: N
+      };
+    }
+    e.weierstrassPoints = p;
+    function w(h) {
+      const _ = (0, n.validateBasic)(h);
+      return t.validateObject(_, {
+        hash: "hash",
+        hmac: "function",
+        randomBytes: "function"
+      }, {
+        bits2int: "function",
+        bits2int_modN: "function",
+        lowS: "boolean"
+      }), Object.freeze({ lowS: !0, ..._ });
+    }
+    function I(h) {
+      const _ = w(h), { Fp: y, n: c } = _, R = y.BYTES + 1, D = 2 * y.BYTES + 1;
+      function N(k) {
+        return d < k && k < y.ORDER;
+      }
+      function T(k) {
+        return r.mod(k, c);
+      }
+      function f(k) {
+        return r.invert(k, c);
+      }
+      const { ProjectivePoint: C, normPrivateKeyToScalar: A, weierstrassEquation: E, isWithinCurveOrder: S } = p({
+        ..._,
+        toBytes(k, F, V) {
+          const X = F.toAffine(), O = y.toBytes(X.x), P = t.concatBytes;
+          return V ? P(Uint8Array.from([F.hasEvenY() ? 2 : 3]), O) : P(Uint8Array.from([4]), O, y.toBytes(X.y));
+        },
+        fromBytes(k) {
+          const F = k.length, V = k[0], X = k.subarray(1);
+          if (F === R && (V === 2 || V === 3)) {
+            const O = t.bytesToNumberBE(X);
+            if (!N(O))
+              throw new Error("Point is not on curve");
+            const P = E(O);
+            let z;
+            try {
+              z = y.sqrt(P);
+            } catch (te) {
+              const ne = te instanceof Error ? ": " + te.message : "";
+              throw new Error("Point is not on curve" + ne);
+            }
+            const j = (z & u) === u;
+            return (V & 1) === 1 !== j && (z = y.neg(z)), { x: O, y: z };
+          } else if (F === D && V === 4) {
+            const O = y.fromBytes(X.subarray(0, y.BYTES)), P = y.fromBytes(X.subarray(y.BYTES, 2 * y.BYTES));
+            return { x: O, y: P };
+          } else
+            throw new Error(`Point of length ${F} was invalid. Expected ${R} compressed bytes or ${D} uncompressed bytes`);
+        }
+      }), L = (k) => t.bytesToHex(t.numberToBytesBE(k, _.nByteLength));
+      function U(k) {
+        const F = c >> u;
+        return k > F;
+      }
+      function H(k) {
+        return U(k) ? T(-k) : k;
+      }
+      const K = (k, F, V) => t.bytesToNumberBE(k.slice(F, V));
+      class $ {
+        constructor(F, V, X) {
+          this.r = F, this.s = V, this.recovery = X, this.assertValidity();
+        }
+        // pair (bytes of r, bytes of s)
+        static fromCompact(F) {
+          const V = _.nByteLength;
+          return F = (0, i.ensureBytes)("compactSignature", F, V * 2), new $(K(F, 0, V), K(F, V, 2 * V));
+        }
+        // DER encoded ECDSA signature
+        // https://bitcoin.stackexchange.com/questions/57644/what-are-the-parts-of-a-bitcoin-transaction-input-script
+        static fromDER(F) {
+          const { r: V, s: X } = e.DER.toSig((0, i.ensureBytes)("DER", F));
+          return new $(V, X);
+        }
+        assertValidity() {
+          if (!S(this.r))
+            throw new Error("r must be 0 < r < CURVE.n");
+          if (!S(this.s))
+            throw new Error("s must be 0 < s < CURVE.n");
+        }
+        addRecoveryBit(F) {
+          return new $(this.r, this.s, F);
+        }
+        recoverPublicKey(F) {
+          const { r: V, s: X, recovery: O } = this, P = Q((0, i.ensureBytes)("msgHash", F));
+          if (O == null || ![0, 1, 2, 3].includes(O))
+            throw new Error("recovery id invalid");
+          const z = O === 2 || O === 3 ? V + _.n : V;
+          if (z >= y.ORDER)
+            throw new Error("recovery id 2 or 3 invalid");
+          const j = (O & 1) === 0 ? "02" : "03", Y = C.fromHex(j + L(z)), te = f(z), ne = T(-P * te), ae = T(X * te), le = C.BASE.multiplyAndAddUnsafe(Y, ne, ae);
+          if (!le)
+            throw new Error("point at infinify");
+          return le.assertValidity(), le;
+        }
+        // Signatures should be low-s, to prevent malleability.
+        hasHighS() {
+          return U(this.s);
+        }
+        normalizeS() {
+          return this.hasHighS() ? new $(this.r, T(-this.s), this.recovery) : this;
+        }
+        // DER-encoded
+        toDERRawBytes() {
+          return t.hexToBytes(this.toDERHex());
+        }
+        toDERHex() {
+          return e.DER.hexFromSig({ r: this.r, s: this.s });
+        }
+        // padded bytes of r, then padded bytes of s
+        toCompactRawBytes() {
+          return t.hexToBytes(this.toCompactHex());
+        }
+        toCompactHex() {
+          return L(this.r) + L(this.s);
+        }
+      }
+      const W = {
+        isValidPrivateKey(k) {
+          try {
+            return A(k), !0;
+          } catch {
+            return !1;
+          }
+        },
+        normPrivateKeyToScalar: A,
+        /**
+         * Produces cryptographically secure private key from random of size
+         * (groupLen + ceil(groupLen / 2)) with modulo bias being negligible.
+         */
+        randomPrivateKey: () => {
+          const k = r.getMinHashLength(_.n);
+          return r.mapHashToField(_.randomBytes(k), _.n);
+        },
+        /**
+         * Creates precompute table for an arbitrary EC point. Makes point "cached".
+         * Allows to massively speed-up `point.multiply(scalar)`.
+         * @returns cached point
+         * @example
+         * const fast = utils.precompute(8, ProjectivePoint.fromHex(someonesPubKey));
+         * fast.multiply(privKey); // much faster ECDH now
+         */
+        precompute(k = 8, F = C.BASE) {
+          return F._setWindowSize(k), F.multiply(BigInt(3)), F;
+        }
+      };
+      function G(k, F = !0) {
+        return C.fromPrivateKey(k).toRawBytes(F);
+      }
+      function J(k) {
+        const F = t.isBytes(k), V = typeof k == "string", X = (F || V) && k.length;
+        return F ? X === R || X === D : V ? X === 2 * R || X === 2 * D : k instanceof C;
+      }
+      function re(k, F, V = !0) {
+        if (J(k))
+          throw new Error("first arg must be private key");
+        if (!J(F))
+          throw new Error("second arg must be public key");
+        return C.fromHex(F).multiply(A(k)).toRawBytes(V);
+      }
+      const x = _.bits2int || function(k) {
+        const F = t.bytesToNumberBE(k), V = k.length * 8 - _.nBitLength;
+        return V > 0 ? F >> BigInt(V) : F;
+      }, Q = _.bits2int_modN || function(k) {
+        return T(x(k));
+      }, se = t.bitMask(_.nBitLength);
+      function ue(k) {
+        if (typeof k != "bigint")
+          throw new Error("bigint expected");
+        if (!(d <= k && k < se))
+          throw new Error(`bigint expected < 2^${_.nBitLength}`);
+        return t.numberToBytesBE(k, _.nByteLength);
+      }
+      function oe(k, F, V = Z) {
+        if (["recovered", "canonical"].some((ce) => ce in V))
+          throw new Error("sign() legacy options not supported");
+        const { hash: X, randomBytes: O } = _;
+        let { lowS: P, prehash: z, extraEntropy: j } = V;
+        P == null && (P = !0), k = (0, i.ensureBytes)("msgHash", k), z && (k = (0, i.ensureBytes)("prehashed msgHash", X(k)));
+        const Y = Q(k), te = A(F), ne = [ue(te), ue(Y)];
+        if (j != null && j !== !1) {
+          const ce = j === !0 ? O(y.BYTES) : j;
+          ne.push((0, i.ensureBytes)("extraEntropy", ce));
+        }
+        const ae = t.concatBytes(...ne), le = Y;
+        function fe(ce) {
+          const de = x(ce);
+          if (!S(de))
+            return;
+          const he = f(de), me = C.BASE.multiply(de).toAffine(), ie = T(me.x);
+          if (ie === d)
+            return;
+          const Ae = T(he * T(le + ie * te));
+          if (Ae === d)
+            return;
+          let Ee = (me.x === ie ? 0 : 2) | Number(me.y & u), be = Ae;
+          return P && U(Ae) && (be = H(Ae), Ee ^= 1), new $(ie, be, Ee);
+        }
+        return { seed: ae, k2sig: fe };
+      }
+      const Z = { lowS: _.lowS, prehash: !1 }, B = { lowS: _.lowS, prehash: !1 };
+      function q(k, F, V = Z) {
+        const { seed: X, k2sig: O } = oe(k, F, V), P = _;
+        return t.createHmacDrbg(P.hash.outputLen, P.nByteLength, P.hmac)(X, O);
+      }
+      C.BASE._setWindowSize(8);
+      function M(k, F, V, X = B) {
+        const O = k;
+        if (F = (0, i.ensureBytes)("msgHash", F), V = (0, i.ensureBytes)("publicKey", V), "strict" in X)
+          throw new Error("options.strict was renamed to lowS");
+        const { lowS: P, prehash: z } = X;
+        let j, Y;
+        try {
+          if (typeof O == "string" || t.isBytes(O))
+            try {
+              j = $.fromDER(O);
+            } catch (me) {
+              if (!(me instanceof e.DER.Err))
+                throw me;
+              j = $.fromCompact(O);
+            }
+          else if (typeof O == "object" && typeof O.r == "bigint" && typeof O.s == "bigint") {
+            const { r: me, s: ie } = O;
+            j = new $(me, ie);
+          } else
+            throw new Error("PARSE");
+          Y = C.fromHex(V);
+        } catch (me) {
+          if (me.message === "PARSE")
+            throw new Error("signature must be Signature instance, Uint8Array or hex string");
+          return !1;
+        }
+        if (P && j.hasHighS())
+          return !1;
+        z && (F = _.hash(F));
+        const { r: te, s: ne } = j, ae = Q(F), le = f(ne), fe = T(ae * le), ce = T(te * le), de = C.BASE.multiplyAndAddUnsafe(Y, fe, ce)?.toAffine();
+        return de ? T(de.x) === te : !1;
+      }
+      return {
+        CURVE: _,
+        getPublicKey: G,
+        getSharedSecret: re,
+        sign: q,
+        verify: M,
+        ProjectivePoint: C,
+        Signature: $,
+        utils: W
+      };
+    }
+    e.weierstrass = I;
+    function m(h, _) {
+      const y = h.ORDER;
+      let c = d;
+      for (let U = y - u; U % b === d; U /= b)
+        c += u;
+      const R = c, D = b << R - u - u, N = D * b, T = (y - u) / N, f = (T - u) / b, C = N - u, A = D, E = h.pow(_, T), S = h.pow(_, (T + u) / b);
+      let L = (U, H) => {
+        let K = E, $ = h.pow(H, C), W = h.sqr($);
+        W = h.mul(W, H);
+        let G = h.mul(U, W);
+        G = h.pow(G, f), G = h.mul(G, $), $ = h.mul(G, H), W = h.mul(G, U);
+        let J = h.mul(W, $);
+        G = h.pow(J, A);
+        let re = h.eql(G, h.ONE);
+        $ = h.mul(W, S), G = h.mul(J, K), W = h.cmov($, W, re), J = h.cmov(G, J, re);
+        for (let x = R; x > u; x--) {
+          let Q = x - b;
+          Q = b << Q - u;
+          let se = h.pow(J, Q);
+          const ue = h.eql(se, h.ONE);
+          $ = h.mul(W, K), K = h.mul(K, K), se = h.mul(J, K), W = h.cmov($, W, ue), J = h.cmov(se, J, ue);
+        }
+        return { isValid: re, value: W };
+      };
+      if (h.ORDER % g === l) {
+        const U = (h.ORDER - l) / g, H = h.sqrt(h.neg(_));
+        L = (K, $) => {
+          let W = h.sqr($);
+          const G = h.mul(K, $);
+          W = h.mul(W, G);
+          let J = h.pow(W, U);
+          J = h.mul(J, G);
+          const re = h.mul(J, H), x = h.mul(h.sqr(J), $), Q = h.eql(x, K);
+          let se = h.cmov(re, J, Q);
+          return { isValid: Q, value: se };
+        };
+      }
+      return L;
+    }
+    e.SWUFpSqrtRatio = m;
+    function v(h, _) {
+      if (r.validateField(h), !h.isValid(_.A) || !h.isValid(_.B) || !h.isValid(_.Z))
+        throw new Error("mapToCurveSimpleSWU: invalid opts");
+      const y = m(h, _.Z);
+      if (!h.isOdd)
+        throw new Error("Fp.isOdd is not implemented!");
+      return (c) => {
+        let R, D, N, T, f, C, A, E;
+        R = h.sqr(c), R = h.mul(R, _.Z), D = h.sqr(R), D = h.add(D, R), N = h.add(D, h.ONE), N = h.mul(N, _.B), T = h.cmov(_.Z, h.neg(D), !h.eql(D, h.ZERO)), T = h.mul(T, _.A), D = h.sqr(N), C = h.sqr(T), f = h.mul(C, _.A), D = h.add(D, f), D = h.mul(D, N), C = h.mul(C, T), f = h.mul(C, _.B), D = h.add(D, f), A = h.mul(R, N);
+        const { isValid: S, value: L } = y(D, C);
+        E = h.mul(R, c), E = h.mul(E, L), A = h.cmov(A, N, S), E = h.cmov(E, L, S);
+        const U = h.isOdd(c) === h.isOdd(E);
+        return E = h.cmov(h.neg(E), E, U), A = h.div(A, T), { x: A, y: E };
+      };
+    }
+    e.mapToCurveSimpleSWU = v;
+  })(weierstrass)), weierstrass;
+}
+var hashToCurve = {}, hasRequiredHashToCurve;
+function requireHashToCurve() {
+  if (hasRequiredHashToCurve) return hashToCurve;
+  hasRequiredHashToCurve = 1, Object.defineProperty(hashToCurve, "__esModule", { value: !0 }), hashToCurve.createHasher = hashToCurve.isogenyMap = hashToCurve.hash_to_field = hashToCurve.expand_message_xof = hashToCurve.expand_message_xmd = void 0;
+  const e = /* @__PURE__ */ requireModular(), r = /* @__PURE__ */ requireUtils$7(), t = r.bytesToNumberBE;
+  function i(l, g) {
+    if (l < 0 || l >= 1 << 8 * g)
+      throw new Error(`bad I2OSP call: value=${l} length=${g}`);
+    const p = Array.from({ length: g }).fill(0);
+    for (let w = g - 1; w >= 0; w--)
+      p[w] = l & 255, l >>>= 8;
+    return new Uint8Array(p);
+  }
+  function n(l, g) {
+    const p = new Uint8Array(l.length);
+    for (let w = 0; w < l.length; w++)
+      p[w] = l[w] ^ g[w];
+    return p;
+  }
+  function s(l) {
+    if (!Number.isSafeInteger(l))
+      throw new Error("number expected");
+  }
+  function a(l, g, p, w) {
+    (0, r.abytes)(l), (0, r.abytes)(g), s(p), g.length > 255 && (g = w((0, r.concatBytes)((0, r.utf8ToBytes)("H2C-OVERSIZE-DST-"), g)));
+    const { outputLen: I, blockLen: m } = w, v = Math.ceil(p / I);
+    if (v > 255)
+      throw new Error("Invalid xmd length");
+    const h = (0, r.concatBytes)(g, i(g.length, 1)), _ = i(0, m), y = i(p, 2), c = new Array(v), R = w((0, r.concatBytes)(_, l, y, i(0, 1), h));
+    c[0] = w((0, r.concatBytes)(R, i(1, 1), h));
+    for (let N = 1; N <= v; N++) {
+      const T = [n(R, c[N - 1]), i(N + 1, 1), h];
+      c[N] = w((0, r.concatBytes)(...T));
+    }
+    return (0, r.concatBytes)(...c).slice(0, p);
+  }
+  hashToCurve.expand_message_xmd = a;
+  function o(l, g, p, w, I) {
+    if ((0, r.abytes)(l), (0, r.abytes)(g), s(p), g.length > 255) {
+      const m = Math.ceil(2 * w / 8);
+      g = I.create({ dkLen: m }).update((0, r.utf8ToBytes)("H2C-OVERSIZE-DST-")).update(g).digest();
+    }
+    if (p > 65535 || g.length > 255)
+      throw new Error("expand_message_xof: invalid lenInBytes");
+    return I.create({ dkLen: p }).update(l).update(i(p, 2)).update(g).update(i(g.length, 1)).digest();
+  }
+  hashToCurve.expand_message_xof = o;
+  function d(l, g, p) {
+    (0, r.validateObject)(p, {
+      DST: "stringOrUint8Array",
+      p: "bigint",
+      m: "isSafeInteger",
+      k: "isSafeInteger",
+      hash: "hash"
+    });
+    const { p: w, k: I, m, hash: v, expand: h, DST: _ } = p;
+    (0, r.abytes)(l), s(g);
+    const y = typeof _ == "string" ? (0, r.utf8ToBytes)(_) : _, c = w.toString(2).length, R = Math.ceil((c + I) / 8), D = g * m * R;
+    let N;
+    if (h === "xmd")
+      N = a(l, y, D, v);
+    else if (h === "xof")
+      N = o(l, y, D, I, v);
+    else if (h === "_internal_pass")
+      N = l;
+    else
+      throw new Error('expand must be "xmd" or "xof"');
+    const T = new Array(g);
+    for (let f = 0; f < g; f++) {
+      const C = new Array(m);
+      for (let A = 0; A < m; A++) {
+        const E = R * (A + f * m), S = N.subarray(E, E + R);
+        C[A] = (0, e.mod)(t(S), w);
+      }
+      T[f] = C;
+    }
+    return T;
+  }
+  hashToCurve.hash_to_field = d;
+  function u(l, g) {
+    const p = g.map((w) => Array.from(w).reverse());
+    return (w, I) => {
+      const [m, v, h, _] = p.map((y) => y.reduce((c, R) => l.add(l.mul(c, w), R)));
+      return w = l.div(m, v), I = l.mul(I, l.div(h, _)), { x: w, y: I };
+    };
+  }
+  hashToCurve.isogenyMap = u;
+  function b(l, g, p) {
+    if (typeof g != "function")
+      throw new Error("mapToCurve() must be defined");
+    return {
+      // Encodes byte string to elliptic curve.
+      // hash_to_curve from https://www.rfc-editor.org/rfc/rfc9380#section-3
+      hashToCurve(w, I) {
+        const m = d(w, 2, { ...p, DST: p.DST, ...I }), v = l.fromAffine(g(m[0])), h = l.fromAffine(g(m[1])), _ = v.add(h).clearCofactor();
+        return _.assertValidity(), _;
+      },
+      // Encodes byte string to elliptic curve.
+      // encode_to_curve from https://www.rfc-editor.org/rfc/rfc9380#section-3
+      encodeToCurve(w, I) {
+        const m = d(w, 1, { ...p, DST: p.encodeDST, ...I }), v = l.fromAffine(g(m[0])).clearCofactor();
+        return v.assertValidity(), v;
+      }
+    };
+  }
+  return hashToCurve.createHasher = b, hashToCurve;
+}
+var _shortw_utils = {}, hmac = {}, hasRequiredHmac;
+function requireHmac() {
+  return hasRequiredHmac || (hasRequiredHmac = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.hmac = e.HMAC = void 0;
+    const r = /* @__PURE__ */ require_assert(), t = /* @__PURE__ */ requireUtils$b();
+    class i extends t.Hash {
+      constructor(a, o) {
+        super(), this.finished = !1, this.destroyed = !1, (0, r.hash)(a);
+        const d = (0, t.toBytes)(o);
+        if (this.iHash = a.create(), typeof this.iHash.update != "function")
+          throw new Error("Expected instance of class which extends utils.Hash");
+        this.blockLen = this.iHash.blockLen, this.outputLen = this.iHash.outputLen;
+        const u = this.blockLen, b = new Uint8Array(u);
+        b.set(d.length > u ? a.create().update(d).digest() : d);
+        for (let l = 0; l < b.length; l++)
+          b[l] ^= 54;
+        this.iHash.update(b), this.oHash = a.create();
+        for (let l = 0; l < b.length; l++)
+          b[l] ^= 106;
+        this.oHash.update(b), b.fill(0);
+      }
+      update(a) {
+        return (0, r.exists)(this), this.iHash.update(a), this;
+      }
+      digestInto(a) {
+        (0, r.exists)(this), (0, r.bytes)(a, this.outputLen), this.finished = !0, this.iHash.digestInto(a), this.oHash.update(a), this.oHash.digestInto(a), this.destroy();
+      }
+      digest() {
+        const a = new Uint8Array(this.oHash.outputLen);
+        return this.digestInto(a), a;
+      }
+      _cloneInto(a) {
+        a || (a = Object.create(Object.getPrototypeOf(this), {}));
+        const { oHash: o, iHash: d, finished: u, destroyed: b, blockLen: l, outputLen: g } = this;
+        return a = a, a.finished = u, a.destroyed = b, a.blockLen = l, a.outputLen = g, a.oHash = o._cloneInto(a.oHash), a.iHash = d._cloneInto(a.iHash), a;
+      }
+      destroy() {
+        this.destroyed = !0, this.oHash.destroy(), this.iHash.destroy();
+      }
+    }
+    e.HMAC = i;
+    const n = (s, a, o) => new i(s, a).update(o).digest();
+    e.hmac = n, e.hmac.create = (s, a) => new i(s, a);
+  })(hmac)), hmac;
+}
+var hasRequired_shortw_utils;
+function require_shortw_utils() {
+  if (hasRequired_shortw_utils) return _shortw_utils;
+  hasRequired_shortw_utils = 1, Object.defineProperty(_shortw_utils, "__esModule", { value: !0 }), _shortw_utils.createCurve = _shortw_utils.getHash = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ requireHmac(), r = /* @__PURE__ */ requireUtils$b(), t = /* @__PURE__ */ requireWeierstrass();
+  function i(s) {
+    return {
+      hash: s,
+      hmac: (a, ...o) => (0, e.hmac)(s, a, (0, r.concatBytes)(...o)),
+      randomBytes: r.randomBytes
+    };
+  }
+  _shortw_utils.getHash = i;
+  function n(s, a) {
+    const o = (d) => (0, t.weierstrass)({ ...s, ...i(d) });
+    return Object.freeze({ ...o(a), create: o });
+  }
+  return _shortw_utils.createCurve = n, _shortw_utils;
+}
+var hasRequiredSecp256k1$1;
+function requireSecp256k1$1() {
+  return hasRequiredSecp256k1$1 || (hasRequiredSecp256k1$1 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.encodeToCurve = e.hashToCurve = e.schnorr = e.secp256k1 = void 0;
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    const r = /* @__PURE__ */ requireSha256(), t = /* @__PURE__ */ requireUtils$b(), i = /* @__PURE__ */ requireModular(), n = /* @__PURE__ */ requireWeierstrass(), s = /* @__PURE__ */ requireUtils$7(), a = /* @__PURE__ */ requireHashToCurve(), o = /* @__PURE__ */ require_shortw_utils(), d = BigInt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"), u = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"), b = BigInt(1), l = BigInt(2), g = ($, W) => ($ + W / l) / W;
+    function p($) {
+      const W = d, G = BigInt(3), J = BigInt(6), re = BigInt(11), x = BigInt(22), Q = BigInt(23), se = BigInt(44), ue = BigInt(88), oe = $ * $ * $ % W, Z = oe * oe * $ % W, B = (0, i.pow2)(Z, G, W) * Z % W, q = (0, i.pow2)(B, G, W) * Z % W, M = (0, i.pow2)(q, l, W) * oe % W, k = (0, i.pow2)(M, re, W) * M % W, F = (0, i.pow2)(k, x, W) * k % W, V = (0, i.pow2)(F, se, W) * F % W, X = (0, i.pow2)(V, ue, W) * V % W, O = (0, i.pow2)(X, se, W) * F % W, P = (0, i.pow2)(O, G, W) * Z % W, z = (0, i.pow2)(P, Q, W) * k % W, j = (0, i.pow2)(z, J, W) * oe % W, Y = (0, i.pow2)(j, l, W);
+      if (!w.eql(w.sqr(Y), $))
+        throw new Error("Cannot find square root");
+      return Y;
+    }
+    const w = (0, i.Field)(d, void 0, void 0, { sqrt: p });
+    e.secp256k1 = (0, o.createCurve)({
+      a: BigInt(0),
+      // equation params: a, b
+      b: BigInt(7),
+      // Seem to be rigid: bitcointalk.org/index.php?topic=289795.msg3183975#msg3183975
+      Fp: w,
+      // Field's prime: 2n**256n - 2n**32n - 2n**9n - 2n**8n - 2n**7n - 2n**6n - 2n**4n - 1n
+      n: u,
+      // Curve order, total count of valid points in the field
+      // Base point (x, y) aka generator point
+      Gx: BigInt("55066263022277343669578718895168534326250603453777594175500187360389116729240"),
+      Gy: BigInt("32670510020758816978083085130507043184471273380659243275938904335757337482424"),
+      h: BigInt(1),
+      // Cofactor
+      lowS: !0,
+      // Allow only low-S signatures by default in sign() and verify()
+      /**
+       * secp256k1 belongs to Koblitz curves: it has efficiently computable endomorphism.
+       * Endomorphism uses 2x less RAM, speeds up precomputation by 2x and ECDH / key recovery by 20%.
+       * For precomputed wNAF it trades off 1/2 init time & 1/3 ram for 20% perf hit.
+       * Explanation: https://gist.github.com/paulmillr/eb670806793e84df628a7c434a873066
+       */
+      endo: {
+        beta: BigInt("0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee"),
+        splitScalar: ($) => {
+          const W = u, G = BigInt("0x3086d221a7d46bcde86c90e49284eb15"), J = -b * BigInt("0xe4437ed6010e88286f547fa90abfe4c3"), re = BigInt("0x114ca50f7a8e2f3f657c1108d9d44cfd8"), x = G, Q = BigInt("0x100000000000000000000000000000000"), se = g(x * $, W), ue = g(-J * $, W);
+          let oe = (0, i.mod)($ - se * G - ue * re, W), Z = (0, i.mod)(-se * J - ue * x, W);
+          const B = oe > Q, q = Z > Q;
+          if (B && (oe = W - oe), q && (Z = W - Z), oe > Q || Z > Q)
+            throw new Error("splitScalar: Endomorphism failed, k=" + $);
+          return { k1neg: B, k1: oe, k2neg: q, k2: Z };
+        }
+      }
+    }, r.sha256);
+    const I = BigInt(0), m = ($) => typeof $ == "bigint" && I < $ && $ < d, v = ($) => typeof $ == "bigint" && I < $ && $ < u, h = {};
+    function _($, ...W) {
+      let G = h[$];
+      if (G === void 0) {
+        const J = (0, r.sha256)(Uint8Array.from($, (re) => re.charCodeAt(0)));
+        G = (0, s.concatBytes)(J, J), h[$] = G;
+      }
+      return (0, r.sha256)((0, s.concatBytes)(G, ...W));
+    }
+    const y = ($) => $.toRawBytes(!0).slice(1), c = ($) => (0, s.numberToBytesBE)($, 32), R = ($) => (0, i.mod)($, d), D = ($) => (0, i.mod)($, u), N = e.secp256k1.ProjectivePoint, T = ($, W, G) => N.BASE.multiplyAndAddUnsafe($, W, G);
+    function f($) {
+      let W = e.secp256k1.utils.normPrivateKeyToScalar($), G = N.fromPrivateKey(W);
+      return { scalar: G.hasEvenY() ? W : D(-W), bytes: y(G) };
+    }
+    function C($) {
+      if (!m($))
+        throw new Error("bad x: need 0 < x < p");
+      const W = R($ * $), G = R(W * $ + BigInt(7));
+      let J = p(G);
+      J % l !== I && (J = R(-J));
+      const re = new N($, J, b);
+      return re.assertValidity(), re;
+    }
+    function A(...$) {
+      return D((0, s.bytesToNumberBE)(_("BIP0340/challenge", ...$)));
+    }
+    function E($) {
+      return f($).bytes;
+    }
+    function S($, W, G = (0, t.randomBytes)(32)) {
+      const J = (0, s.ensureBytes)("message", $), { bytes: re, scalar: x } = f(W), Q = (0, s.ensureBytes)("auxRand", G, 32), se = c(x ^ (0, s.bytesToNumberBE)(_("BIP0340/aux", Q))), ue = _("BIP0340/nonce", se, re, J), oe = D((0, s.bytesToNumberBE)(ue));
+      if (oe === I)
+        throw new Error("sign failed: k is zero");
+      const { bytes: Z, scalar: B } = f(oe), q = A(Z, re, J), M = new Uint8Array(64);
+      if (M.set(Z, 0), M.set(c(D(B + q * x)), 32), !L(M, J, re))
+        throw new Error("sign: Invalid signature produced");
+      return M;
+    }
+    function L($, W, G) {
+      const J = (0, s.ensureBytes)("signature", $, 64), re = (0, s.ensureBytes)("message", W), x = (0, s.ensureBytes)("publicKey", G, 32);
+      try {
+        const Q = C((0, s.bytesToNumberBE)(x)), se = (0, s.bytesToNumberBE)(J.subarray(0, 32));
+        if (!m(se))
+          return !1;
+        const ue = (0, s.bytesToNumberBE)(J.subarray(32, 64));
+        if (!v(ue))
+          return !1;
+        const oe = A(c(se), y(Q), re), Z = T(Q, ue, D(-oe));
+        return !(!Z || !Z.hasEvenY() || Z.toAffine().x !== se);
+      } catch {
+        return !1;
+      }
+    }
+    e.schnorr = {
+      getPublicKey: E,
+      sign: S,
+      verify: L,
+      utils: {
+        randomPrivateKey: e.secp256k1.utils.randomPrivateKey,
+        lift_x: C,
+        pointToBytes: y,
+        numberToBytesBE: s.numberToBytesBE,
+        bytesToNumberBE: s.bytesToNumberBE,
+        taggedHash: _,
+        mod: i.mod
+      }
+    };
+    const U = (0, a.isogenyMap)(w, [
+      // xNum
+      [
+        "0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa8c7",
+        "0x7d3d4c80bc321d5b9f315cea7fd44c5d595d2fc0bf63b92dfff1044f17c6581",
+        "0x534c328d23f234e6e2a413deca25caece4506144037c40314ecbd0b53d9dd262",
+        "0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa88c"
+      ],
+      // xDen
+      [
+        "0xd35771193d94918a9ca34ccbb7b640dd86cd409542f8487d9fe6b745781eb49b",
+        "0xedadc6f64383dc1df7c4b2d51b54225406d36b641f5e41bbc52a56612a8c6d14",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+        // LAST 1
+      ],
+      // yNum
+      [
+        "0x4bda12f684bda12f684bda12f684bda12f684bda12f684bda12f684b8e38e23c",
+        "0xc75e0c32d5cb7c0fa9d0a54b12a0a6d5647ab046d686da6fdffc90fc201d71a3",
+        "0x29a6194691f91a73715209ef6512e576722830a201be2018a765e85a9ecee931",
+        "0x2f684bda12f684bda12f684bda12f684bda12f684bda12f684bda12f38e38d84"
+      ],
+      // yDen
+      [
+        "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffff93b",
+        "0x7a06534bb8bdb49fd5e9e6632722c2989467c1bfc8e8d978dfb425d2685c2573",
+        "0x6484aa716545ca2cf3a70c3fa8fe337e0a3d21162f0d6299a7bf8192bfd2a76f",
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+        // LAST 1
+      ]
+    ].map(($) => $.map((W) => BigInt(W)))), H = (0, n.mapToCurveSimpleSWU)(w, {
+      A: BigInt("0x3f8731abdd661adca08a5558f0f5d272e953d363cb6f0e5d405447c01a444533"),
+      B: BigInt("1771"),
+      Z: w.create(BigInt("-11"))
+    }), K = (0, a.createHasher)(e.secp256k1.ProjectivePoint, ($) => {
+      const { x: W, y: G } = H(w.create($[0]));
+      return U(W, G);
+    }, {
+      DST: "secp256k1_XMD:SHA-256_SSWU_RO_",
+      encodeDST: "secp256k1_XMD:SHA-256_SSWU_NU_",
+      p: w.ORDER,
+      m: 1,
+      k: 128,
+      expand: "xmd",
+      hash: r.sha256
+    });
+    e.hashToCurve = K.hashToCurve, e.encodeToCurve = K.encodeToCurve;
+  })(secp256k1$1)), secp256k1$1;
+}
+var Sha512 = {}, hasRequiredSha512;
+function requireSha512() {
+  if (hasRequiredSha512) return Sha512;
+  hasRequiredSha512 = 1, Object.defineProperty(Sha512, "__esModule", { value: !0 });
+  const e = requireBrowser$2(), r = /* @__PURE__ */ requireUtils$7();
+  let t = class we {
+    constructor() {
+      this.hash = e.sha512.create();
+    }
+    static half(n) {
+      return new we().add(n).first256();
+    }
+    add(n) {
+      return this.hash.update(n), this;
+    }
+    addU32(n) {
+      const s = new Uint8Array(4);
+      return new DataView(s.buffer).setUint32(0, n), this.add(s);
+    }
+    finish() {
+      return this.hash.digest();
+    }
+    first256() {
+      return this.finish().slice(0, 32);
+    }
+    first256BigInt() {
+      return (0, r.bytesToNumberBE)(this.first256());
+    }
+  };
+  return Sha512.default = t, Sha512;
+}
+var hasRequiredUtils$6;
+function requireUtils$6() {
+  if (hasRequiredUtils$6) return utils$6;
+  hasRequiredUtils$6 = 1;
+  var e = utils$6 && utils$6.__importDefault || function(o) {
+    return o && o.__esModule ? o : { default: o };
+  };
+  Object.defineProperty(utils$6, "__esModule", { value: !0 }), utils$6.accountPublicFromPublicGenerator = utils$6.derivePrivateKey = void 0;
+  const r = /* @__PURE__ */ requireSecp256k1$1(), t = e(requireSha512()), i = BigInt(0);
+  function n(o, d) {
+    const u = r.secp256k1.CURVE.n;
+    for (let b = 0; b <= 4294967295; b++) {
+      const l = new t.default().add(o);
+      d !== void 0 && l.addU32(d), l.addU32(b);
+      const g = l.first256BigInt();
+      if (g > i && g < u)
+        return g;
+    }
+    throw new Error("impossible unicorn ;)");
+  }
+  function s(o, d = {}) {
+    const u = d.validator, b = r.secp256k1.CURVE.n, l = n(o);
+    if (u)
+      return l;
+    const g = r.secp256k1.ProjectivePoint.BASE.multiply(l).toRawBytes(!0), p = d.accountIndex || 0;
+    return (n(g, p) + l) % b;
+  }
+  utils$6.derivePrivateKey = s;
+  function a(o) {
+    const d = r.secp256k1.ProjectivePoint.fromHex(o), u = n(o, 0), b = r.secp256k1.ProjectivePoint.BASE.multiply(u);
+    return d.add(b).toRawBytes(!0);
+  }
+  return utils$6.accountPublicFromPublicGenerator = a, utils$6;
+}
+var assert = {}, hasRequiredAssert;
+function requireAssert() {
+  if (hasRequiredAssert) return assert;
+  hasRequiredAssert = 1, Object.defineProperty(assert, "__esModule", { value: !0 });
+  const e = {
+    ok(r, t) {
+      if (!r)
+        throw new Error(t);
+    }
+  };
+  return assert.default = e, assert;
+}
+var getAlgorithmFromKey = {}, hasRequiredGetAlgorithmFromKey;
+function requireGetAlgorithmFromKey() {
+  if (hasRequiredGetAlgorithmFromKey) return getAlgorithmFromKey;
+  hasRequiredGetAlgorithmFromKey = 1, Object.defineProperty(getAlgorithmFromKey, "__esModule", { value: !0 }), getAlgorithmFromKey.getAlgorithmFromPrivateKey = getAlgorithmFromKey.getAlgorithmFromPublicKey = getAlgorithmFromKey.getAlgorithmFromKey = void 0;
+  var e;
+  (function(u) {
+    u[u.NONE = -1] = "NONE", u[u.ED25519 = 237] = "ED25519", u[u.SECP256K1_PUB_X = 2] = "SECP256K1_PUB_X", u[u.SECP256K1_PUB_X_ODD_Y = 3] = "SECP256K1_PUB_X_ODD_Y", u[u.SECP256K1_PUB_XY = 4] = "SECP256K1_PUB_XY", u[u.SECP256K1_PRIVATE = 0] = "SECP256K1_PRIVATE";
+  })(e || (e = {}));
+  const r = {
+    [`private_${e.NONE}_32`]: "ecdsa-secp256k1",
+    [`private_${e.SECP256K1_PRIVATE}_33`]: "ecdsa-secp256k1",
+    [`private_${e.ED25519}_33`]: "ed25519",
+    [`public_${e.ED25519}_33`]: "ed25519",
+    [`public_${e.SECP256K1_PUB_X}_33`]: "ecdsa-secp256k1",
+    [`public_${e.SECP256K1_PUB_X_ODD_Y}_33`]: "ecdsa-secp256k1",
+    [`public_${e.SECP256K1_PUB_XY}_65`]: "ecdsa-secp256k1"
+  };
+  function t(u) {
+    return {
+      prefix: u.length < 2 ? e.NONE : parseInt(u.slice(0, 2), 16),
+      len: u.length / 2
+    };
+  }
+  function i(u) {
+    return u === e.NONE ? "None" : `0x${u.toString(16).padStart(2, "0")}`;
+  }
+  function n(u) {
+    const l = {
+      algorithm: 17,
+      prefix: 6
+    };
+    return Object.entries(r).filter(([g]) => g.startsWith(u)).map(([g, p]) => {
+      const [, w, I] = g.split("_"), m = p.padEnd(l.algorithm), v = i(Number(w)).padEnd(l.prefix);
+      return `${m} - Prefix: ${v} Length: ${I} bytes`;
+    }).join(`
+`);
+  }
+  function s({ key: u, type: b, prefix: l, len: g }) {
+    const p = n(b);
+    return `invalid_key:
+
+Type: ${b}
+Key: ${u}
+Prefix: ${i(l)} 
+Length: ${g} bytes
+
+Acceptable ${b} formats are:
+${p}
+`;
+  }
+  function a(u, b) {
+    const { prefix: l, len: g } = t(u), p = b === "private" && g === 32 ? e.NONE : l, w = r[`${b}_${p}_${g}`];
+    if (!w)
+      throw new Error(s({ key: u, type: b, len: g, prefix: p }));
+    return w;
+  }
+  getAlgorithmFromKey.getAlgorithmFromKey = a;
+  function o(u) {
+    return a(u, "public");
+  }
+  getAlgorithmFromKey.getAlgorithmFromPublicKey = o;
+  function d(u) {
+    return a(u, "private");
+  }
+  return getAlgorithmFromKey.getAlgorithmFromPrivateKey = d, getAlgorithmFromKey;
+}
+var secp256k1 = {}, hasRequiredSecp256k1;
+function requireSecp256k1() {
+  if (hasRequiredSecp256k1) return secp256k1;
+  hasRequiredSecp256k1 = 1;
+  var e = secp256k1 && secp256k1.__importDefault || function(u) {
+    return u && u.__esModule ? u : { default: u };
+  };
+  Object.defineProperty(secp256k1, "__esModule", { value: !0 });
+  const r = /* @__PURE__ */ requireUtils$7(), t = /* @__PURE__ */ requireSecp256k1$1(), i = requireBrowser$4(), n = requireUtils$6(), s = e(requireAssert()), a = e(requireSha512()), o = "00", d = {
+    deriveKeypair(u, b) {
+      const l = (0, n.derivePrivateKey)(u, b), g = o + (0, i.bytesToHex)((0, r.numberToBytesBE)(l, 32)), p = (0, i.bytesToHex)(t.secp256k1.getPublicKey(l, !0));
+      return { privateKey: g, publicKey: p };
+    },
+    sign(u, b) {
+      s.default.ok(b.length === 66 && b.startsWith(o) || b.length === 64);
+      const l = b.length === 66 ? b.slice(2) : b;
+      return t.secp256k1.sign(a.default.half(u), l, {
+        // "Canonical" signatures
+        lowS: !0,
+        // Would fail tests if signatures aren't deterministic
+        extraEntropy: void 0
+      }).toDERHex(!0).toUpperCase();
+    },
+    verify(u, b, l) {
+      const g = t.secp256k1.Signature.fromDER(b);
+      return t.secp256k1.verify(g, a.default.half(u), l);
+    }
+  };
+  return secp256k1.default = d, secp256k1;
+}
+var ed25519$1 = {}, ed25519 = {}, edwards = {}, hasRequiredEdwards;
+function requireEdwards() {
+  if (hasRequiredEdwards) return edwards;
+  hasRequiredEdwards = 1, Object.defineProperty(edwards, "__esModule", { value: !0 }), edwards.twistedEdwards = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ requireModular(), r = /* @__PURE__ */ requireUtils$7(), t = /* @__PURE__ */ requireUtils$7(), i = /* @__PURE__ */ requireCurve(), n = BigInt(0), s = BigInt(1), a = BigInt(2), o = BigInt(8), d = { zip215: !0 };
+  function u(l) {
+    const g = (0, i.validateBasic)(l);
+    return r.validateObject(l, {
+      hash: "function",
+      a: "bigint",
+      d: "bigint",
+      randomBytes: "function"
+    }, {
+      adjustScalarBytes: "function",
+      domain: "function",
+      uvRatio: "function",
+      mapToCurve: "function"
+    }), Object.freeze({ ...g });
+  }
+  function b(l) {
+    const g = u(l), { Fp: p, n: w, prehash: I, hash: m, randomBytes: v, nByteLength: h, h: _ } = g, y = a << BigInt(h * 8) - s, c = p.create, R = g.uvRatio || ((Z, B) => {
+      try {
+        return { isValid: !0, value: p.sqrt(Z * p.inv(B)) };
+      } catch {
+        return { isValid: !1, value: n };
+      }
+    }), D = g.adjustScalarBytes || ((Z) => Z), N = g.domain || ((Z, B, q) => {
+      if (B.length || q)
+        throw new Error("Contexts/pre-hash are not supported");
+      return Z;
+    }), T = (Z) => typeof Z == "bigint" && n < Z, f = (Z, B) => T(Z) && T(B) && Z < B, C = (Z) => Z === n || f(Z, y);
+    function A(Z, B) {
+      if (f(Z, B))
+        return Z;
+      throw new Error(`Expected valid scalar < ${B}, got ${typeof Z} ${Z}`);
+    }
+    function E(Z) {
+      return Z === n ? Z : A(Z, w);
+    }
+    const S = /* @__PURE__ */ new Map();
+    function L(Z) {
+      if (!(Z instanceof U))
+        throw new Error("ExtendedPoint expected");
+    }
+    class U {
+      constructor(B, q, M, k) {
+        if (this.ex = B, this.ey = q, this.ez = M, this.et = k, !C(B))
+          throw new Error("x required");
+        if (!C(q))
+          throw new Error("y required");
+        if (!C(M))
+          throw new Error("z required");
+        if (!C(k))
+          throw new Error("t required");
+      }
+      get x() {
+        return this.toAffine().x;
+      }
+      get y() {
+        return this.toAffine().y;
+      }
+      static fromAffine(B) {
+        if (B instanceof U)
+          throw new Error("extended point not allowed");
+        const { x: q, y: M } = B || {};
+        if (!C(q) || !C(M))
+          throw new Error("invalid affine point");
+        return new U(q, M, s, c(q * M));
+      }
+      static normalizeZ(B) {
+        const q = p.invertBatch(B.map((M) => M.ez));
+        return B.map((M, k) => M.toAffine(q[k])).map(U.fromAffine);
+      }
+      // "Private method", don't use it directly
+      _setWindowSize(B) {
+        this._WINDOW_SIZE = B, S.delete(this);
+      }
+      // Not required for fromHex(), which always creates valid points.
+      // Could be useful for fromAffine().
+      assertValidity() {
+        const { a: B, d: q } = g;
+        if (this.is0())
+          throw new Error("bad point: ZERO");
+        const { ex: M, ey: k, ez: F, et: V } = this, X = c(M * M), O = c(k * k), P = c(F * F), z = c(P * P), j = c(X * B), Y = c(P * c(j + O)), te = c(z + c(q * c(X * O)));
+        if (Y !== te)
+          throw new Error("bad point: equation left != right (1)");
+        const ne = c(M * k), ae = c(F * V);
+        if (ne !== ae)
+          throw new Error("bad point: equation left != right (2)");
+      }
+      // Compare one point to another.
+      equals(B) {
+        L(B);
+        const { ex: q, ey: M, ez: k } = this, { ex: F, ey: V, ez: X } = B, O = c(q * X), P = c(F * k), z = c(M * X), j = c(V * k);
+        return O === P && z === j;
+      }
+      is0() {
+        return this.equals(U.ZERO);
+      }
+      negate() {
+        return new U(c(-this.ex), this.ey, this.ez, c(-this.et));
+      }
+      // Fast algo for doubling Extended Point.
+      // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#doubling-dbl-2008-hwcd
+      // Cost: 4M + 4S + 1*a + 6add + 1*2.
+      double() {
+        const { a: B } = g, { ex: q, ey: M, ez: k } = this, F = c(q * q), V = c(M * M), X = c(a * c(k * k)), O = c(B * F), P = q + M, z = c(c(P * P) - F - V), j = O + V, Y = j - X, te = O - V, ne = c(z * Y), ae = c(j * te), le = c(z * te), fe = c(Y * j);
+        return new U(ne, ae, fe, le);
+      }
+      // Fast algo for adding 2 Extended Points.
+      // https://hyperelliptic.org/EFD/g1p/auto-twisted-extended.html#addition-add-2008-hwcd
+      // Cost: 9M + 1*a + 1*d + 7add.
+      add(B) {
+        L(B);
+        const { a: q, d: M } = g, { ex: k, ey: F, ez: V, et: X } = this, { ex: O, ey: P, ez: z, et: j } = B;
+        if (q === BigInt(-1)) {
+          const Ee = c((F - k) * (P + O)), be = c((F + k) * (P - O)), ye = c(be - Ee);
+          if (ye === n)
+            return this.double();
+          const pe = c(V * a * j), ge = c(X * a * z), _e = ge + pe, Te = be + Ee, ve = ge - pe, Ce = c(_e * ye), Oe = c(Te * ve), Re = c(_e * ve), Ie = c(ye * Te);
+          return new U(Ce, Oe, Ie, Re);
+        }
+        const Y = c(k * O), te = c(F * P), ne = c(X * M * j), ae = c(V * z), le = c((k + F) * (O + P) - Y - te), fe = ae - ne, ce = ae + ne, de = c(te - q * Y), he = c(le * fe), me = c(ce * de), ie = c(le * de), Ae = c(fe * ce);
+        return new U(he, me, Ae, ie);
+      }
+      subtract(B) {
+        return this.add(B.negate());
+      }
+      wNAF(B) {
+        return $.wNAFCached(this, S, B, U.normalizeZ);
+      }
+      // Constant-time multiplication.
+      multiply(B) {
+        const { p: q, f: M } = this.wNAF(A(B, w));
+        return U.normalizeZ([q, M])[0];
+      }
+      // Non-constant-time multiplication. Uses double-and-add algorithm.
+      // It's faster, but should only be used when you don't care about
+      // an exposed private key e.g. sig verification.
+      // Does NOT allow scalars higher than CURVE.n.
+      multiplyUnsafe(B) {
+        let q = E(B);
+        return q === n ? K : this.equals(K) || q === s ? this : this.equals(H) ? this.wNAF(q).p : $.unsafeLadder(this, q);
+      }
+      // Checks if point is of small order.
+      // If you add something to small order point, you will have "dirty"
+      // point with torsion component.
+      // Multiplies point by cofactor and checks if the result is 0.
+      isSmallOrder() {
+        return this.multiplyUnsafe(_).is0();
+      }
+      // Multiplies point by curve order and checks if the result is 0.
+      // Returns `false` is the point is dirty.
+      isTorsionFree() {
+        return $.unsafeLadder(this, w).is0();
+      }
+      // Converts Extended point to default (x, y) coordinates.
+      // Can accept precomputed Z^-1 - for example, from invertBatch.
+      toAffine(B) {
+        const { ex: q, ey: M, ez: k } = this, F = this.is0();
+        B == null && (B = F ? o : p.inv(k));
+        const V = c(q * B), X = c(M * B), O = c(k * B);
+        if (F)
+          return { x: n, y: s };
+        if (O !== s)
+          throw new Error("invZ was invalid");
+        return { x: V, y: X };
+      }
+      clearCofactor() {
+        const { h: B } = g;
+        return B === s ? this : this.multiplyUnsafe(B);
+      }
+      // Converts hash string or Uint8Array to Point.
+      // Uses algo from RFC8032 5.1.3.
+      static fromHex(B, q = !1) {
+        const { d: M, a: k } = g, F = p.BYTES;
+        B = (0, t.ensureBytes)("pointHex", B, F);
+        const V = B.slice(), X = B[F - 1];
+        V[F - 1] = X & -129;
+        const O = r.bytesToNumberLE(V);
+        O === n || (q ? A(O, y) : A(O, p.ORDER));
+        const P = c(O * O), z = c(P - s), j = c(M * P - k);
+        let { isValid: Y, value: te } = R(z, j);
+        if (!Y)
+          throw new Error("Point.fromHex: invalid y coordinate");
+        const ne = (te & s) === s, ae = (X & 128) !== 0;
+        if (!q && te === n && ae)
+          throw new Error("Point.fromHex: x=0 and x_0=1");
+        return ae !== ne && (te = c(-te)), U.fromAffine({ x: te, y: O });
+      }
+      static fromPrivateKey(B) {
+        return J(B).point;
+      }
+      toRawBytes() {
+        const { x: B, y: q } = this.toAffine(), M = r.numberToBytesLE(q, p.BYTES);
+        return M[M.length - 1] |= B & s ? 128 : 0, M;
+      }
+      toHex() {
+        return r.bytesToHex(this.toRawBytes());
+      }
+    }
+    U.BASE = new U(g.Gx, g.Gy, s, c(g.Gx * g.Gy)), U.ZERO = new U(n, s, s, n);
+    const { BASE: H, ZERO: K } = U, $ = (0, i.wNAF)(U, h * 8);
+    function W(Z) {
+      return (0, e.mod)(Z, w);
+    }
+    function G(Z) {
+      return W(r.bytesToNumberLE(Z));
+    }
+    function J(Z) {
+      const B = h;
+      Z = (0, t.ensureBytes)("private key", Z, B);
+      const q = (0, t.ensureBytes)("hashed private key", m(Z), 2 * B), M = D(q.slice(0, B)), k = q.slice(B, 2 * B), F = G(M), V = H.multiply(F), X = V.toRawBytes();
+      return { head: M, prefix: k, scalar: F, point: V, pointBytes: X };
+    }
+    function re(Z) {
+      return J(Z).pointBytes;
+    }
+    function x(Z = new Uint8Array(), ...B) {
+      const q = r.concatBytes(...B);
+      return G(m(N(q, (0, t.ensureBytes)("context", Z), !!I)));
+    }
+    function Q(Z, B, q = {}) {
+      Z = (0, t.ensureBytes)("message", Z), I && (Z = I(Z));
+      const { prefix: M, scalar: k, pointBytes: F } = J(B), V = x(q.context, M, Z), X = H.multiply(V).toRawBytes(), O = x(q.context, X, F, Z), P = W(V + O * k);
+      E(P);
+      const z = r.concatBytes(X, r.numberToBytesLE(P, p.BYTES));
+      return (0, t.ensureBytes)("result", z, h * 2);
+    }
+    const se = d;
+    function ue(Z, B, q, M = se) {
+      const { context: k, zip215: F } = M, V = p.BYTES;
+      Z = (0, t.ensureBytes)("signature", Z, 2 * V), B = (0, t.ensureBytes)("message", B), I && (B = I(B));
+      const X = r.bytesToNumberLE(Z.slice(V, 2 * V));
+      let O, P, z;
+      try {
+        O = U.fromHex(q, F), P = U.fromHex(Z.slice(0, V), F), z = H.multiplyUnsafe(X);
+      } catch {
+        return !1;
+      }
+      if (!F && O.isSmallOrder())
+        return !1;
+      const j = x(k, P.toRawBytes(), O.toRawBytes(), B);
+      return P.add(O.multiplyUnsafe(j)).subtract(z).clearCofactor().equals(U.ZERO);
+    }
+    return H._setWindowSize(8), {
+      CURVE: g,
+      getPublicKey: re,
+      sign: Q,
+      verify: ue,
+      ExtendedPoint: U,
+      utils: {
+        getExtendedPublicKey: J,
+        // ed25519 private keys are uniform 32b. No need to check for modulo bias, like in secp256k1.
+        randomPrivateKey: () => v(p.BYTES),
+        /**
+         * We're doing scalar multiplication (used in getPublicKey etc) with precomputed BASE_POINT
+         * values. This slows down first getPublicKey() by milliseconds (see Speed section),
+         * but allows to speed-up subsequent getPublicKey() calls up to 20x.
+         * @param windowSize 2, 4, 8, 16
+         */
+        precompute(Z = 8, B = U.BASE) {
+          return B._setWindowSize(Z), B.multiply(BigInt(3)), B;
+        }
+      }
+    };
+  }
+  return edwards.twistedEdwards = b, edwards;
+}
+var montgomery = {}, hasRequiredMontgomery;
+function requireMontgomery() {
+  if (hasRequiredMontgomery) return montgomery;
+  hasRequiredMontgomery = 1, Object.defineProperty(montgomery, "__esModule", { value: !0 }), montgomery.montgomery = void 0;
+  /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ requireModular(), r = /* @__PURE__ */ requireUtils$7(), t = BigInt(0), i = BigInt(1);
+  function n(a) {
+    return (0, r.validateObject)(a, {
+      a: "bigint"
+    }, {
+      montgomeryBits: "isSafeInteger",
+      nByteLength: "isSafeInteger",
+      adjustScalarBytes: "function",
+      domain: "function",
+      powPminus2: "function",
+      Gu: "bigint"
+    }), Object.freeze({ ...a });
+  }
+  function s(a) {
+    const o = n(a), { P: d } = o, u = (T) => (0, e.mod)(T, d), b = o.montgomeryBits, l = Math.ceil(b / 8), g = o.nByteLength, p = o.adjustScalarBytes || ((T) => T), w = o.powPminus2 || ((T) => (0, e.pow)(T, d - BigInt(2), d));
+    function I(T, f, C) {
+      const A = u(T * (f - C));
+      return f = u(f - A), C = u(C + A), [f, C];
+    }
+    function m(T) {
+      if (typeof T == "bigint" && t <= T && T < d)
+        return T;
+      throw new Error("Expected valid scalar 0 < scalar < CURVE.P");
+    }
+    const v = (o.a - BigInt(2)) / BigInt(4);
+    function h(T, f) {
+      const C = m(T), A = m(f), E = C;
+      let S = i, L = t, U = C, H = i, K = t, $;
+      for (let G = BigInt(b - 1); G >= t; G--) {
+        const J = A >> G & i;
+        K ^= J, $ = I(K, S, U), S = $[0], U = $[1], $ = I(K, L, H), L = $[0], H = $[1], K = J;
+        const re = S + L, x = u(re * re), Q = S - L, se = u(Q * Q), ue = x - se, oe = U + H, Z = U - H, B = u(Z * re), q = u(oe * Q), M = B + q, k = B - q;
+        U = u(M * M), H = u(E * u(k * k)), S = u(x * se), L = u(ue * (x + u(v * ue)));
+      }
+      $ = I(K, S, U), S = $[0], U = $[1], $ = I(K, L, H), L = $[0], H = $[1];
+      const W = w(L);
+      return u(S * W);
+    }
+    function _(T) {
+      return (0, r.numberToBytesLE)(u(T), l);
+    }
+    function y(T) {
+      const f = (0, r.ensureBytes)("u coordinate", T, l);
+      return g === 32 && (f[31] &= 127), (0, r.bytesToNumberLE)(f);
+    }
+    function c(T) {
+      const f = (0, r.ensureBytes)("scalar", T), C = f.length;
+      if (C !== l && C !== g)
+        throw new Error(`Expected ${l} or ${g} bytes, got ${C}`);
+      return (0, r.bytesToNumberLE)(p(f));
+    }
+    function R(T, f) {
+      const C = y(f), A = c(T), E = h(C, A);
+      if (E === t)
+        throw new Error("Invalid private or public key received");
+      return _(E);
+    }
+    const D = _(o.Gu);
+    function N(T) {
+      return R(T, D);
+    }
+    return {
+      scalarMult: R,
+      scalarMultBase: N,
+      getSharedSecret: (T, f) => R(T, f),
+      getPublicKey: (T) => N(T),
+      utils: { randomPrivateKey: () => o.randomBytes(o.nByteLength) },
+      GuBytes: D
+    };
+  }
+  return montgomery.montgomery = s, montgomery;
+}
+var hasRequiredEd25519$1;
+function requireEd25519$1() {
+  return hasRequiredEd25519$1 || (hasRequiredEd25519$1 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.hash_to_ristretto255 = e.hashToRistretto255 = e.RistrettoPoint = e.encodeToCurve = e.hashToCurve = e.edwardsToMontgomeryPriv = e.edwardsToMontgomery = e.edwardsToMontgomeryPub = e.x25519 = e.ed25519ph = e.ed25519ctx = e.ed25519 = e.ED25519_TORSION_SUBGROUP = void 0;
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    const r = /* @__PURE__ */ requireSha512$1(), t = /* @__PURE__ */ requireUtils$b(), i = /* @__PURE__ */ requireEdwards(), n = /* @__PURE__ */ requireMontgomery(), s = /* @__PURE__ */ requireModular(), a = /* @__PURE__ */ requireUtils$7(), o = /* @__PURE__ */ requireHashToCurve(), d = BigInt("57896044618658097711785492504343953926634992332820282019728792003956564819949"), u = BigInt("19681161376707505956807079304988542015446066515923890162744021073123829784752"), b = BigInt(0), l = BigInt(1), g = BigInt(2), p = BigInt(5), w = BigInt(10), I = BigInt(20), m = BigInt(40), v = BigInt(80);
+    function h(q) {
+      const M = d, F = q * q % M * q % M, V = (0, s.pow2)(F, g, M) * F % M, X = (0, s.pow2)(V, l, M) * q % M, O = (0, s.pow2)(X, p, M) * X % M, P = (0, s.pow2)(O, w, M) * O % M, z = (0, s.pow2)(P, I, M) * P % M, j = (0, s.pow2)(z, m, M) * z % M, Y = (0, s.pow2)(j, v, M) * j % M, te = (0, s.pow2)(Y, v, M) * j % M, ne = (0, s.pow2)(te, w, M) * O % M;
+      return { pow_p_5_8: (0, s.pow2)(ne, g, M) * q % M, b2: F };
+    }
+    function _(q) {
+      return q[0] &= 248, q[31] &= 127, q[31] |= 64, q;
+    }
+    function y(q, M) {
+      const k = d, F = (0, s.mod)(M * M * M, k), V = (0, s.mod)(F * F * M, k), X = h(q * V).pow_p_5_8;
+      let O = (0, s.mod)(q * F * X, k);
+      const P = (0, s.mod)(M * O * O, k), z = O, j = (0, s.mod)(O * u, k), Y = P === q, te = P === (0, s.mod)(-q, k), ne = P === (0, s.mod)(-q * u, k);
+      return Y && (O = z), (te || ne) && (O = j), (0, s.isNegativeLE)(O, k) && (O = (0, s.mod)(-O, k)), { isValid: Y || te, value: O };
+    }
+    e.ED25519_TORSION_SUBGROUP = [
+      "0100000000000000000000000000000000000000000000000000000000000000",
+      "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a",
+      "0000000000000000000000000000000000000000000000000000000000000080",
+      "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+      "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+      "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85",
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa"
+    ];
+    const c = (0, s.Field)(d, void 0, !0), R = {
+      // Param: a
+      a: BigInt(-1),
+      // Fp.create(-1) is proper; our way still works and is faster
+      // d is equal to -121665/121666 over finite field.
+      // Negative number is P - number, and division is invert(number, P)
+      d: BigInt("37095705934669439343138083508754565189542113879843219016388785533085940283555"),
+      // Finite field 𝔽p over which we'll do calculations; 2n**255n - 19n
+      Fp: c,
+      // Subgroup order: how many points curve has
+      // 2n**252n + 27742317777372353535851937790883648493n;
+      n: BigInt("7237005577332262213973186563042994240857116359379907606001950938285454250989"),
+      // Cofactor
+      h: BigInt(8),
+      // Base point (x, y) aka generator point
+      Gx: BigInt("15112221349535400772501151409588531511454012693041857206046113283949847762202"),
+      Gy: BigInt("46316835694926478169428394003475163141307993866256225615783033603165251855960"),
+      hash: r.sha512,
+      randomBytes: t.randomBytes,
+      adjustScalarBytes: _,
+      // dom2
+      // Ratio of u to v. Allows us to combine inversion and square root. Uses algo from RFC8032 5.1.3.
+      // Constant-time, u/√v
+      uvRatio: y
+    };
+    e.ed25519 = (0, i.twistedEdwards)(R);
+    function D(q, M, k) {
+      if (M.length > 255)
+        throw new Error("Context is too big");
+      return (0, t.concatBytes)((0, t.utf8ToBytes)("SigEd25519 no Ed25519 collisions"), new Uint8Array([k ? 1 : 0, M.length]), M, q);
+    }
+    e.ed25519ctx = (0, i.twistedEdwards)({
+      ...R,
+      domain: D
+    }), e.ed25519ph = (0, i.twistedEdwards)({
+      ...R,
+      domain: D,
+      prehash: r.sha512
+    }), e.x25519 = (0, n.montgomery)({
+      P: d,
+      a: BigInt(486662),
+      montgomeryBits: 255,
+      // n is 253 bits
+      nByteLength: 32,
+      Gu: BigInt(9),
+      powPminus2: (q) => {
+        const M = d, { pow_p_5_8: k, b2: F } = h(q);
+        return (0, s.mod)((0, s.pow2)(k, BigInt(3), M) * F, M);
+      },
+      adjustScalarBytes: _,
+      randomBytes: t.randomBytes
+    });
+    function N(q) {
+      const { y: M } = e.ed25519.ExtendedPoint.fromHex(q), k = BigInt(1);
+      return c.toBytes(c.create((k + M) * c.inv(k - M)));
+    }
+    e.edwardsToMontgomeryPub = N, e.edwardsToMontgomery = N;
+    function T(q) {
+      const M = R.hash(q.subarray(0, 32));
+      return R.adjustScalarBytes(M).subarray(0, 32);
+    }
+    e.edwardsToMontgomeryPriv = T;
+    const f = (c.ORDER + BigInt(3)) / BigInt(8), C = c.pow(g, f), A = c.sqrt(c.neg(c.ONE)), E = (c.ORDER - BigInt(5)) / BigInt(8), S = BigInt(486662);
+    function L(q) {
+      let M = c.sqr(q);
+      M = c.mul(M, g);
+      let k = c.add(M, c.ONE), F = c.neg(S), V = c.sqr(k), X = c.mul(V, k), O = c.mul(M, S);
+      O = c.mul(O, F), O = c.add(O, V), O = c.mul(O, F);
+      let P = c.sqr(X);
+      V = c.sqr(P), P = c.mul(P, X), P = c.mul(P, O), V = c.mul(V, P);
+      let z = c.pow(V, E);
+      z = c.mul(z, P);
+      let j = c.mul(z, A);
+      V = c.sqr(z), V = c.mul(V, X);
+      let Y = c.eql(V, O), te = c.cmov(j, z, Y), ne = c.mul(F, M), ae = c.mul(z, q);
+      ae = c.mul(ae, C);
+      let le = c.mul(ae, A), fe = c.mul(O, M);
+      V = c.sqr(ae), V = c.mul(V, X);
+      let ce = c.eql(V, fe), de = c.cmov(le, ae, ce);
+      V = c.sqr(te), V = c.mul(V, X);
+      let he = c.eql(V, O), me = c.cmov(ne, F, he), ie = c.cmov(de, te, he), Ae = c.isOdd(ie);
+      return ie = c.cmov(ie, c.neg(ie), he !== Ae), { xMn: me, xMd: k, yMn: ie, yMd: l };
+    }
+    const U = (0, s.FpSqrtEven)(c, c.neg(BigInt(486664)));
+    function H(q) {
+      const { xMn: M, xMd: k, yMn: F, yMd: V } = L(q);
+      let X = c.mul(M, V);
+      X = c.mul(X, U);
+      let O = c.mul(k, F), P = c.sub(M, k), z = c.add(M, k), j = c.mul(O, z), Y = c.eql(j, c.ZERO);
+      X = c.cmov(X, c.ZERO, Y), O = c.cmov(O, c.ONE, Y), P = c.cmov(P, c.ONE, Y), z = c.cmov(z, c.ONE, Y);
+      const te = c.invertBatch([O, z]);
+      return { x: c.mul(X, te[0]), y: c.mul(P, te[1]) };
+    }
+    const K = (0, o.createHasher)(e.ed25519.ExtendedPoint, (q) => H(q[0]), {
+      DST: "edwards25519_XMD:SHA-512_ELL2_RO_",
+      encodeDST: "edwards25519_XMD:SHA-512_ELL2_NU_",
+      p: c.ORDER,
+      m: 1,
+      k: 128,
+      expand: "xmd",
+      hash: r.sha512
+    });
+    e.hashToCurve = K.hashToCurve, e.encodeToCurve = K.encodeToCurve;
+    function $(q) {
+      if (!(q instanceof Z))
+        throw new Error("RistrettoPoint expected");
+    }
+    const W = u, G = BigInt("25063068953384623474111414158702152701244531502492656460079210482610430750235"), J = BigInt("54469307008909316920995813868745141605393597292927456921205312896311721017578"), re = BigInt("1159843021668779879193775521855586647937357759715417654439879720876111806838"), x = BigInt("40440834346308536858101042469323190826248399146238708352240133220865137265952"), Q = (q) => y(l, q), se = BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"), ue = (q) => e.ed25519.CURVE.Fp.create((0, a.bytesToNumberLE)(q) & se);
+    function oe(q) {
+      const { d: M } = e.ed25519.CURVE, k = e.ed25519.CURVE.Fp.ORDER, F = e.ed25519.CURVE.Fp.create, V = F(W * q * q), X = F((V + l) * re);
+      let O = BigInt(-1);
+      const P = F((O - M * V) * F(V + M));
+      let { isValid: z, value: j } = y(X, P), Y = F(j * q);
+      (0, s.isNegativeLE)(Y, k) || (Y = F(-Y)), z || (j = Y), z || (O = V);
+      const te = F(O * (V - l) * x - P), ne = j * j, ae = F((j + j) * P), le = F(te * G), fe = F(l - ne), ce = F(l + ne);
+      return new e.ed25519.ExtendedPoint(F(ae * ce), F(fe * le), F(le * ce), F(ae * fe));
+    }
+    class Z {
+      // Private property to discourage combining ExtendedPoint + RistrettoPoint
+      // Always use Ristretto encoding/decoding instead.
+      constructor(M) {
+        this.ep = M;
+      }
+      static fromAffine(M) {
+        return new Z(e.ed25519.ExtendedPoint.fromAffine(M));
+      }
+      /**
+       * Takes uniform output of 64-byte hash function like sha512 and converts it to `RistrettoPoint`.
+       * The hash-to-group operation applies Elligator twice and adds the results.
+       * **Note:** this is one-way map, there is no conversion from point to hash.
+       * https://ristretto.group/formulas/elligator.html
+       * @param hex 64-byte output of a hash function
+       */
+      static hashToCurve(M) {
+        M = (0, a.ensureBytes)("ristrettoHash", M, 64);
+        const k = ue(M.slice(0, 32)), F = oe(k), V = ue(M.slice(32, 64)), X = oe(V);
+        return new Z(F.add(X));
+      }
+      /**
+       * Converts ristretto-encoded string to ristretto point.
+       * https://ristretto.group/formulas/decoding.html
+       * @param hex Ristretto-encoded 32 bytes. Not every 32-byte string is valid ristretto encoding
+       */
+      static fromHex(M) {
+        M = (0, a.ensureBytes)("ristrettoHex", M, 32);
+        const { a: k, d: F } = e.ed25519.CURVE, V = e.ed25519.CURVE.Fp.ORDER, X = e.ed25519.CURVE.Fp.create, O = "RistrettoPoint.fromHex: the hex is not valid encoding of RistrettoPoint", P = ue(M);
+        if (!(0, a.equalBytes)((0, a.numberToBytesLE)(P, 32), M) || (0, s.isNegativeLE)(P, V))
+          throw new Error(O);
+        const z = X(P * P), j = X(l + k * z), Y = X(l - k * z), te = X(j * j), ne = X(Y * Y), ae = X(k * F * te - ne), { isValid: le, value: fe } = Q(X(ae * ne)), ce = X(fe * Y), de = X(fe * ce * ae);
+        let he = X((P + P) * ce);
+        (0, s.isNegativeLE)(he, V) && (he = X(-he));
+        const me = X(j * de), ie = X(he * me);
+        if (!le || (0, s.isNegativeLE)(ie, V) || me === b)
+          throw new Error(O);
+        return new Z(new e.ed25519.ExtendedPoint(he, me, l, ie));
+      }
+      /**
+       * Encodes ristretto point to Uint8Array.
+       * https://ristretto.group/formulas/encoding.html
+       */
+      toRawBytes() {
+        let { ex: M, ey: k, ez: F, et: V } = this.ep;
+        const X = e.ed25519.CURVE.Fp.ORDER, O = e.ed25519.CURVE.Fp.create, P = O(O(F + k) * O(F - k)), z = O(M * k), j = O(z * z), { value: Y } = Q(O(P * j)), te = O(Y * P), ne = O(Y * z), ae = O(te * ne * V);
+        let le;
+        if ((0, s.isNegativeLE)(V * ae, X)) {
+          let ce = O(k * W), de = O(M * W);
+          M = ce, k = de, le = O(te * J);
+        } else
+          le = ne;
+        (0, s.isNegativeLE)(M * ae, X) && (k = O(-k));
+        let fe = O((F - k) * le);
+        return (0, s.isNegativeLE)(fe, X) && (fe = O(-fe)), (0, a.numberToBytesLE)(fe, 32);
+      }
+      toHex() {
+        return (0, a.bytesToHex)(this.toRawBytes());
+      }
+      toString() {
+        return this.toHex();
+      }
+      // Compare one point to another.
+      equals(M) {
+        $(M);
+        const { ex: k, ey: F } = this.ep, { ex: V, ey: X } = M.ep, O = e.ed25519.CURVE.Fp.create, P = O(k * X) === O(F * V), z = O(F * X) === O(k * V);
+        return P || z;
+      }
+      add(M) {
+        return $(M), new Z(this.ep.add(M.ep));
+      }
+      subtract(M) {
+        return $(M), new Z(this.ep.subtract(M.ep));
+      }
+      multiply(M) {
+        return new Z(this.ep.multiply(M));
+      }
+      multiplyUnsafe(M) {
+        return new Z(this.ep.multiplyUnsafe(M));
+      }
+      double() {
+        return new Z(this.ep.double());
+      }
+      negate() {
+        return new Z(this.ep.negate());
+      }
+    }
+    e.RistrettoPoint = (Z.BASE || (Z.BASE = new Z(e.ed25519.ExtendedPoint.BASE)), Z.ZERO || (Z.ZERO = new Z(e.ed25519.ExtendedPoint.ZERO)), Z);
+    const B = (q, M) => {
+      const k = M.DST, F = typeof k == "string" ? (0, t.utf8ToBytes)(k) : k, V = (0, o.expand_message_xmd)(q, F, 64, r.sha512);
+      return Z.hashToCurve(V);
+    };
+    e.hashToRistretto255 = B, e.hash_to_ristretto255 = e.hashToRistretto255;
+  })(ed25519)), ed25519;
+}
+var hasRequiredEd25519;
+function requireEd25519() {
+  if (hasRequiredEd25519) return ed25519$1;
+  hasRequiredEd25519 = 1;
+  var e = ed25519$1 && ed25519$1.__importDefault || function(o) {
+    return o && o.__esModule ? o : { default: o };
+  };
+  Object.defineProperty(ed25519$1, "__esModule", { value: !0 });
+  const r = /* @__PURE__ */ requireEd25519$1(), t = requireBrowser$4(), i = e(requireAssert()), n = e(requireSha512()), s = "ED", a = {
+    deriveKeypair(o) {
+      const d = n.default.half(o), u = s + (0, t.bytesToHex)(d), b = s + (0, t.bytesToHex)(r.ed25519.getPublicKey(d));
+      return { privateKey: u, publicKey: b };
+    },
+    sign(o, d) {
+      return i.default.ok(o instanceof Uint8Array, "message must be array of octets"), i.default.ok(d.length === 66, "private key must be 33 bytes including prefix"), (0, t.bytesToHex)(r.ed25519.sign(o, d.slice(2)));
+    },
+    verify(o, d, u) {
+      return i.default.ok(u.length === 66, "public key must be 33 bytes including prefix"), r.ed25519.verify(
+        d,
+        o,
+        // Remove the 0xED prefix
+        u.slice(2),
+        // By default, set zip215 to false for compatibility reasons.
+        // ZIP 215 is a stricter Ed25519 signature verification scheme.
+        // However, setting it to false adheres to the more commonly used
+        // RFC8032 / NIST186-5 standards, making it compatible with systems
+        // like the XRP Ledger.
+        { zip215: !1 }
+      );
+    }
+  };
+  return ed25519$1.default = a, ed25519$1;
+}
+var hasRequiredDist$1;
+function requireDist$1() {
+  return hasRequiredDist$1 || (hasRequiredDist$1 = 1, (function(e) {
+    var r = dist$1 && dist$1.__importDefault || function(c) {
+      return c && c.__esModule ? c : { default: c };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.decodeSeed = e.deriveNodeAddress = e.deriveAddress = e.verify = e.sign = e.deriveKeypair = e.generateSeed = void 0;
+    const t = requireDist$3();
+    Object.defineProperty(e, "decodeSeed", { enumerable: !0, get: function() {
+      return t.decodeSeed;
+    } });
+    const i = requireBrowser$1(), n = requireBrowser$3(), s = requireBrowser$4(), a = requireUtils$6(), o = r(requireSha512()), d = r(requireAssert()), u = requireGetAlgorithmFromKey(), b = r(requireSecp256k1()), l = r(requireEd25519());
+    function g(c) {
+      return { "ecdsa-secp256k1": b.default, ed25519: l.default }[c];
+    }
+    function p(c = {}) {
+      d.default.ok(!c.entropy || c.entropy.length >= 16, "entropy too short");
+      const R = c.entropy ? c.entropy.slice(0, 16) : (0, s.randomBytes)(16), D = c.algorithm === "ed25519" ? "ed25519" : "secp256k1";
+      return (0, t.encodeSeed)(R, D);
+    }
+    e.generateSeed = p;
+    function w(c, R) {
+      var D;
+      const N = (0, t.decodeSeed)(c), f = ((D = R?.algorithm) !== null && D !== void 0 ? D : N.type) === "ed25519" ? "ed25519" : "ecdsa-secp256k1", C = g(f), A = C.deriveKeypair(N.bytes, R), E = o.default.half("This test message should verify."), S = C.sign(E, A.privateKey);
+      if (!C.verify(E, S, A.publicKey))
+        throw new Error("derived keypair did not generate verifiable signature");
+      return A;
+    }
+    e.deriveKeypair = w;
+    function I(c, R) {
+      const D = (0, u.getAlgorithmFromPrivateKey)(R);
+      return g(D).sign((0, s.hexToBytes)(c), R);
+    }
+    e.sign = I;
+    function m(c, R, D) {
+      const N = (0, u.getAlgorithmFromPublicKey)(D);
+      return g(N).verify((0, s.hexToBytes)(c), R, D);
+    }
+    e.verify = m;
+    function v(c) {
+      return (0, i.ripemd160)((0, n.sha256)(c));
+    }
+    function h(c) {
+      return (0, t.encodeAccountID)(v(c));
+    }
+    function _(c) {
+      return h((0, s.hexToBytes)(c));
+    }
+    e.deriveAddress = _;
+    function y(c) {
+      const R = (0, t.decodeNodePublic)(c), D = (0, a.accountPublicFromPublicGenerator)(R);
+      return h(D);
+    }
+    e.deriveNodeAddress = y;
+  })(dist$1)), dist$1;
+}
+var derive = {}, hasRequiredDerive;
+function requireDerive() {
+  return hasRequiredDerive || (hasRequiredDerive = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.deriveXAddress = e.deriveAddress = e.deriveKeypair = void 0;
+    const r = requireDist$3(), t = requireDist$1();
+    Object.defineProperty(e, "deriveKeypair", { enumerable: !0, get: function() {
+      return t.deriveKeypair;
+    } }), Object.defineProperty(e, "deriveAddress", { enumerable: !0, get: function() {
+      return t.deriveAddress;
+    } });
+    function i(n) {
+      const s = (0, t.deriveAddress)(n.publicKey);
+      return (0, r.classicAddressToXAddress)(s, n.tag, n.test);
+    }
+    e.deriveXAddress = i;
+  })(derive)), derive;
+}
+var getBalanceChanges = {}, collections = {}, hasRequiredCollections;
+function requireCollections() {
+  if (hasRequiredCollections) return collections;
+  hasRequiredCollections = 1, Object.defineProperty(collections, "__esModule", { value: !0 }), collections.omitBy = collections.groupBy = void 0;
+  function e(t, i) {
+    function n(s, a, o, d) {
+      const u = i(a, o, d) || 0, b = s[u] || [];
+      return b.push(a), s[u] = b, s;
+    }
+    return t.reduce(n, {});
+  }
+  collections.groupBy = e;
+  function r(t, i) {
+    return Object.keys(t).filter((a) => !i(t[a], a)).reduce((a, o) => (a[o] = t[o], a), {});
+  }
+  return collections.omitBy = r, collections;
+}
+var xrpConversion = {}, hasRequiredXrpConversion;
+function requireXrpConversion() {
+  if (hasRequiredXrpConversion) return xrpConversion;
+  hasRequiredXrpConversion = 1;
+  var e = xrpConversion && xrpConversion.__importDefault || function(u) {
+    return u && u.__esModule ? u : { default: u };
+  };
+  Object.defineProperty(xrpConversion, "__esModule", { value: !0 }), xrpConversion.xrpToDrops = xrpConversion.dropsToXrp = void 0;
+  const r = e(requireBignumber()), t = requireErrors(), i = 1e6, n = 6, s = 10, a = /^-?[0-9.]+$/u;
+  function o(u) {
+    const b = new r.default(u).toString(s);
+    if (typeof u == "string" && b === "NaN")
+      throw new t.ValidationError(`dropsToXrp: invalid value '${u}', should be a BigNumber or string-encoded number.`);
+    if (b.includes("."))
+      throw new t.ValidationError(`dropsToXrp: value '${b}' has too many decimal places.`);
+    if (!a.exec(b))
+      throw new t.ValidationError(`dropsToXrp: failed sanity check - value '${b}', does not match (^-?[0-9]+$).`);
+    return new r.default(b).dividedBy(i).toNumber();
+  }
+  xrpConversion.dropsToXrp = o;
+  function d(u) {
+    const b = new r.default(u).toString(s);
+    if (typeof u == "string" && b === "NaN")
+      throw new t.ValidationError(`xrpToDrops: invalid value '${u}', should be a BigNumber or string-encoded number.`);
+    if (!a.exec(b))
+      throw new t.ValidationError(`xrpToDrops: failed sanity check - value '${b}', does not match (^-?[0-9.]+$).`);
+    const l = b.split(".");
+    if (l.length > 2)
+      throw new t.ValidationError(`xrpToDrops: failed sanity check - value '${b}' has too many decimal points.`);
+    if ((l[1] || "0").length > n)
+      throw new t.ValidationError(`xrpToDrops: value '${b}' has too many decimal places.`);
+    return new r.default(b).times(i).integerValue(r.default.ROUND_FLOOR).toString(s);
+  }
+  return xrpConversion.xrpToDrops = d, xrpConversion;
+}
+var hasRequiredGetBalanceChanges;
+function requireGetBalanceChanges() {
+  if (hasRequiredGetBalanceChanges) return getBalanceChanges;
+  hasRequiredGetBalanceChanges = 1;
+  var e = getBalanceChanges && getBalanceChanges.__importDefault || function(p) {
+    return p && p.__esModule ? p : { default: p };
+  };
+  Object.defineProperty(getBalanceChanges, "__esModule", { value: !0 });
+  const r = e(requireBignumber()), t = requireCollections(), i = requireXrpConversion();
+  function n(p) {
+    const w = Object.keys(p)[0], I = p[w];
+    return Object.assign(Object.assign({}, I), { NodeType: w, LedgerEntryType: I.LedgerEntryType, LedgerIndex: I.LedgerIndex, NewFields: I.NewFields, FinalFields: I.FinalFields, PreviousFields: I.PreviousFields });
+  }
+  function s(p) {
+    return p.AffectedNodes.length === 0 ? [] : p.AffectedNodes.map(n);
+  }
+  function a(p) {
+    const w = (0, t.groupBy)(p, (I) => I.account);
+    return Object.entries(w).map(([I, m]) => ({ account: I, balances: m.map((v) => v.balance) }));
+  }
+  function o(p) {
+    return typeof p == "string" ? new r.default(p) : new r.default(p.value);
+  }
+  function d(p) {
+    var w, I, m;
+    let v = null;
+    return !((w = p.NewFields) === null || w === void 0) && w.Balance ? v = o(p.NewFields.Balance) : !((I = p.PreviousFields) === null || I === void 0) && I.Balance && (!((m = p.FinalFields) === null || m === void 0) && m.Balance) && (v = o(p.FinalFields.Balance).minus(o(p.PreviousFields.Balance))), v === null || v.isZero() ? null : v;
+  }
+  function u(p) {
+    var w, I, m;
+    const v = d(p);
+    return v === null ? null : {
+      account: (I = (w = p.FinalFields) === null || w === void 0 ? void 0 : w.Account) !== null && I !== void 0 ? I : (m = p.NewFields) === null || m === void 0 ? void 0 : m.Account,
+      balance: {
+        currency: "XRP",
+        value: (0, i.dropsToXrp)(v).toString()
+      }
+    };
+  }
+  function b(p) {
+    const w = new r.default(p.balance.value).negated();
+    return {
+      account: p.balance.issuer,
+      balance: {
+        issuer: p.account,
+        currency: p.balance.currency,
+        value: w.toString()
+      }
+    };
+  }
+  function l(p) {
+    var w, I, m;
+    const v = d(p);
+    if (v === null)
+      return null;
+    const h = (w = p.NewFields) !== null && w !== void 0 ? w : p.FinalFields, _ = {
+      account: (I = h?.LowLimit) === null || I === void 0 ? void 0 : I.issuer,
+      balance: {
+        issuer: (m = h?.HighLimit) === null || m === void 0 ? void 0 : m.issuer,
+        currency: (h?.Balance).currency,
+        value: v.toString()
+      }
+    };
+    return [_, b(_)];
+  }
+  function g(p) {
+    const w = s(p).map((I) => {
+      if (I.LedgerEntryType === "AccountRoot") {
+        const m = u(I);
+        return m == null ? [] : [m];
+      }
+      if (I.LedgerEntryType === "RippleState") {
+        const m = l(I);
+        return m ?? [];
+      }
+      return [];
+    });
+    return a(w.flat());
+  }
+  return getBalanceChanges.default = g, getBalanceChanges;
+}
+var getNFTokenID = {}, metadata = {}, hasRequiredMetadata;
+function requireMetadata() {
+  if (hasRequiredMetadata) return metadata;
+  hasRequiredMetadata = 1, Object.defineProperty(metadata, "__esModule", { value: !0 }), metadata.isDeletedNode = metadata.isModifiedNode = metadata.isCreatedNode = void 0;
+  function e(i) {
+    return Object.prototype.hasOwnProperty.call(i, "CreatedNode");
+  }
+  metadata.isCreatedNode = e;
+  function r(i) {
+    return Object.prototype.hasOwnProperty.call(i, "ModifiedNode");
+  }
+  metadata.isModifiedNode = r;
+  function t(i) {
+    return Object.prototype.hasOwnProperty.call(i, "DeletedNode");
+  }
+  return metadata.isDeletedNode = t, metadata;
+}
+var hasRequiredGetNFTokenID;
+function requireGetNFTokenID() {
+  if (hasRequiredGetNFTokenID) return getNFTokenID;
+  hasRequiredGetNFTokenID = 1, Object.defineProperty(getNFTokenID, "__esModule", { value: !0 });
+  const e = requireDist$2(), r = requireMetadata();
+  function t(n) {
+    return typeof n == "string" ? (0, e.decode)(n) : n;
+  }
+  function i(n) {
+    if (typeof n != "string" && n?.AffectedNodes === void 0)
+      throw new TypeError(`Unable to parse the parameter given to getNFTokenID.
+      'meta' must be the metadata from an NFTokenMint transaction. Received ${JSON.stringify(n)} instead.`);
+    const a = t(n).AffectedNodes.filter((b) => {
+      var l;
+      return (0, r.isCreatedNode)(b) ? b.CreatedNode.LedgerEntryType === "NFTokenPage" : (0, r.isModifiedNode)(b) ? b.ModifiedNode.LedgerEntryType === "NFTokenPage" && !!(!((l = b.ModifiedNode.PreviousFields) === null || l === void 0) && l.NFTokens) : !1;
+    }), o = new Set(a.flatMap((b) => {
+      var l;
+      return ((0, r.isModifiedNode)(b) ? (l = b.ModifiedNode.PreviousFields) === null || l === void 0 ? void 0 : l.NFTokens : []).map((p) => p.NFToken.NFTokenID);
+    }).filter((b) => !!b));
+    return a.flatMap((b) => {
+      var l, g, p, w, I, m;
+      return ((m = (p = (g = (l = b.ModifiedNode) === null || l === void 0 ? void 0 : l.FinalFields) === null || g === void 0 ? void 0 : g.NFTokens) !== null && p !== void 0 ? p : (I = (w = b.CreatedNode) === null || w === void 0 ? void 0 : w.NewFields) === null || I === void 0 ? void 0 : I.NFTokens) !== null && m !== void 0 ? m : []).map((v) => v.NFToken.NFTokenID);
+    }).filter((b) => !!b).find((b) => !o.has(b));
+  }
+  return getNFTokenID.default = i, getNFTokenID;
+}
+var getXChainClaimID = {}, hasRequiredGetXChainClaimID;
+function requireGetXChainClaimID() {
+  if (hasRequiredGetXChainClaimID) return getXChainClaimID;
+  hasRequiredGetXChainClaimID = 1, Object.defineProperty(getXChainClaimID, "__esModule", { value: !0 });
+  const e = requireDist$2(), r = requireMetadata();
+  function t(n) {
+    return typeof n == "string" ? (0, e.decode)(n) : n;
+  }
+  function i(n) {
+    if (typeof n != "string" && n?.AffectedNodes === void 0)
+      throw new TypeError(`Unable to parse the parameter given to getXChainClaimID.
+      'meta' must be the metadata from an XChainCreateClaimID transaction. Received ${JSON.stringify(n)} instead.`);
+    const s = t(n);
+    if (!s.TransactionResult)
+      throw new TypeError("Cannot get XChainClaimID from un-validated transaction");
+    return s.TransactionResult !== "tesSUCCESS" ? void 0 : s.AffectedNodes.find((o) => (0, r.isCreatedNode)(o) && o.CreatedNode.LedgerEntryType === "XChainOwnedClaimID").CreatedNode.NewFields.XChainClaimID;
+  }
+  return getXChainClaimID.default = i, getXChainClaimID;
+}
+var hashes = {}, hashLedger = {}, HashPrefix = {}, hasRequiredHashPrefix;
+function requireHashPrefix() {
+  if (hasRequiredHashPrefix) return HashPrefix;
+  hasRequiredHashPrefix = 1, Object.defineProperty(HashPrefix, "__esModule", { value: !0 });
+  var e;
+  return (function(r) {
+    r[r.TRANSACTION_ID = 1415073280] = "TRANSACTION_ID", r[r.TRANSACTION_NODE = 1397638144] = "TRANSACTION_NODE", r[r.INNER_NODE = 1296649728] = "INNER_NODE", r[r.LEAF_NODE = 1296846336] = "LEAF_NODE", r[r.TRANSACTION_SIGN = 1398036480] = "TRANSACTION_SIGN", r[r.TRANSACTION_SIGN_TESTNET = 1937012736] = "TRANSACTION_SIGN_TESTNET", r[r.TRANSACTION_MULTISIGN = 1397576704] = "TRANSACTION_MULTISIGN", r[r.LEDGER = 1280791040] = "LEDGER";
+  })(e || (e = {})), HashPrefix.default = e, HashPrefix;
+}
+var sha512Half = {}, hasRequiredSha512Half;
+function requireSha512Half() {
+  if (hasRequiredSha512Half) return sha512Half;
+  hasRequiredSha512Half = 1, Object.defineProperty(sha512Half, "__esModule", { value: !0 });
+  const e = requireBrowser$2(), r = requireBrowser$4(), t = 32;
+  function i(n) {
+    return (0, r.bytesToHex)((0, e.sha512)((0, r.hexToBytes)(n)).slice(0, t));
+  }
+  return sha512Half.default = i, sha512Half;
+}
+var SHAMap = {}, InnerNode = {}, LeafNode = {}, node = {}, hasRequiredNode;
+function requireNode() {
+  if (hasRequiredNode) return node;
+  hasRequiredNode = 1, Object.defineProperty(node, "__esModule", { value: !0 }), node.Node = node.NodeType = void 0;
+  var e;
+  (function(t) {
+    t[t.INNER = 1] = "INNER", t[t.TRANSACTION_NO_METADATA = 2] = "TRANSACTION_NO_METADATA", t[t.TRANSACTION_METADATA = 3] = "TRANSACTION_METADATA", t[t.ACCOUNT_STATE = 4] = "ACCOUNT_STATE";
+  })(e || (node.NodeType = e = {}));
+  class r {
+  }
+  return node.Node = r, node;
+}
+var hasRequiredLeafNode;
+function requireLeafNode() {
+  if (hasRequiredLeafNode) return LeafNode;
+  hasRequiredLeafNode = 1;
+  var e = LeafNode && LeafNode.__importDefault || function(o) {
+    return o && o.__esModule ? o : { default: o };
+  };
+  Object.defineProperty(LeafNode, "__esModule", { value: !0 });
+  const r = requireErrors(), t = e(requireHashPrefix()), i = e(requireSha512Half()), n = requireNode(), s = 16;
+  let a = class extends n.Node {
+    constructor(d, u, b) {
+      super(), this.tag = d, this.type = b, this.data = u;
+    }
+    get hash() {
+      switch (this.type) {
+        case n.NodeType.ACCOUNT_STATE: {
+          const d = t.default.LEAF_NODE.toString(s);
+          return (0, i.default)(d + this.data + this.tag);
+        }
+        case n.NodeType.TRANSACTION_NO_METADATA: {
+          const d = t.default.TRANSACTION_ID.toString(s);
+          return (0, i.default)(d + this.data);
+        }
+        case n.NodeType.TRANSACTION_METADATA: {
+          const d = t.default.TRANSACTION_NODE.toString(s);
+          return (0, i.default)(d + this.data + this.tag);
+        }
+        default:
+          throw new r.XrplError("Tried to hash a SHAMap node of unknown type.");
+      }
+    }
+    addItem(d, u) {
+      throw new r.XrplError("Cannot call addItem on a LeafNode");
+    }
+  };
+  return LeafNode.default = a, LeafNode;
+}
+var hasRequiredInnerNode;
+function requireInnerNode() {
+  if (hasRequiredInnerNode) return InnerNode;
+  hasRequiredInnerNode = 1;
+  var e = InnerNode && InnerNode.__importDefault || function(b) {
+    return b && b.__esModule ? b : { default: b };
+  };
+  Object.defineProperty(InnerNode, "__esModule", { value: !0 });
+  const r = requireErrors(), t = e(requireHashPrefix()), i = e(requireSha512Half()), n = e(requireLeafNode()), s = requireNode(), a = "0000000000000000000000000000000000000000000000000000000000000000", o = 15, d = 16;
+  let u = class Se extends s.Node {
+    constructor(l = 0) {
+      super(), this.leaves = {}, this.type = s.NodeType.INNER, this.depth = l, this.empty = !0;
+    }
+    get hash() {
+      if (this.empty)
+        return a;
+      let l = "";
+      for (let p = 0; p <= o; p++) {
+        const w = this.leaves[p], I = w == null ? a : w.hash;
+        l += I;
+      }
+      const g = t.default.INNER_NODE.toString(d);
+      return (0, i.default)(g + l);
+    }
+    addItem(l, g) {
+      const p = this.getNode(parseInt(l[this.depth], d));
+      if (p === void 0) {
+        this.setNode(parseInt(l[this.depth], d), g);
+        return;
+      }
+      if (p instanceof Se)
+        p.addItem(l, g);
+      else if (p instanceof n.default) {
+        if (p.tag === l)
+          throw new r.XrplError("Tried to add a node to a SHAMap that was already in there.");
+        {
+          const w = new Se(this.depth + 1);
+          w.addItem(p.tag, p), w.addItem(l, g), this.setNode(parseInt(l[this.depth], d), w);
+        }
+      }
+    }
+    setNode(l, g) {
+      if (l < 0 || l > o)
+        throw new r.XrplError("Invalid slot: slot must be between 0-15.");
+      this.leaves[l] = g, this.empty = !1;
+    }
+    getNode(l) {
+      if (l < 0 || l > o)
+        throw new r.XrplError("Invalid slot: slot must be between 0-15.");
+      return this.leaves[l];
+    }
+  };
+  return InnerNode.default = u, InnerNode;
+}
+var hasRequiredSHAMap;
+function requireSHAMap() {
+  return hasRequiredSHAMap || (hasRequiredSHAMap = 1, (function(e) {
+    var r = SHAMap && SHAMap.__createBinding || (Object.create ? (function(o, d, u, b) {
+      b === void 0 && (b = u);
+      var l = Object.getOwnPropertyDescriptor(d, u);
+      (!l || ("get" in l ? !d.__esModule : l.writable || l.configurable)) && (l = { enumerable: !0, get: function() {
+        return d[u];
+      } }), Object.defineProperty(o, b, l);
+    }) : (function(o, d, u, b) {
+      b === void 0 && (b = u), o[b] = d[u];
+    })), t = SHAMap && SHAMap.__exportStar || function(o, d) {
+      for (var u in o) u !== "default" && !Object.prototype.hasOwnProperty.call(d, u) && r(d, o, u);
+    }, i = SHAMap && SHAMap.__importDefault || function(o) {
+      return o && o.__esModule ? o : { default: o };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 });
+    const n = i(requireInnerNode()), s = i(requireLeafNode());
+    let a = class {
+      constructor() {
+        this.root = new n.default(0);
+      }
+      get hash() {
+        return this.root.hash;
+      }
+      addItem(d, u, b) {
+        this.root.addItem(d, new s.default(d, u, b));
+      }
+    };
+    t(requireNode(), e), e.default = a;
+  })(SHAMap)), SHAMap;
+}
+var hasRequiredHashLedger;
+function requireHashLedger() {
+  if (hasRequiredHashLedger) return hashLedger;
+  hasRequiredHashLedger = 1;
+  var e = hashLedger && hashLedger.__createBinding || (Object.create ? (function(N, T, f, C) {
+    C === void 0 && (C = f);
+    var A = Object.getOwnPropertyDescriptor(T, f);
+    (!A || ("get" in A ? !T.__esModule : A.writable || A.configurable)) && (A = { enumerable: !0, get: function() {
+      return T[f];
+    } }), Object.defineProperty(N, C, A);
+  }) : (function(N, T, f, C) {
+    C === void 0 && (C = f), N[C] = T[f];
+  })), r = hashLedger && hashLedger.__setModuleDefault || (Object.create ? (function(N, T) {
+    Object.defineProperty(N, "default", { enumerable: !0, value: T });
+  }) : function(N, T) {
+    N.default = T;
+  }), t = hashLedger && hashLedger.__importStar || function(N) {
+    if (N && N.__esModule) return N;
+    var T = {};
+    if (N != null) for (var f in N) f !== "default" && Object.prototype.hasOwnProperty.call(N, f) && e(T, N, f);
+    return r(T, N), T;
+  }, i = hashLedger && hashLedger.__importDefault || function(N) {
+    return N && N.__esModule ? N : { default: N };
+  };
+  Object.defineProperty(hashLedger, "__esModule", { value: !0 }), hashLedger.hashStateTree = hashLedger.hashTxTree = hashLedger.hashLedgerHeader = hashLedger.hashSignedTx = void 0;
+  const n = requireBrowser$4(), s = i(requireBignumber()), a = requireDist$2(), o = requireErrors(), d = requireCommon(), u = requireUtils$8(), b = i(requireHashPrefix()), l = i(requireSha512Half()), g = t(requireSHAMap()), p = 16;
+  function w(N, T) {
+    return Number(N).toString(p).padStart(T * 2, "0");
+  }
+  function I(N, T) {
+    return new s.default(N).toString(p).padStart(T * 2, "0");
+  }
+  function m(N) {
+    const T = N.length / 2;
+    if (T <= 192)
+      return (0, n.bytesToHex)([T]) + N;
+    if (T <= 12480) {
+      const f = T - 193;
+      return (0, n.bytesToHex)([193 + (f >>> 8), f & 255]) + N;
+    }
+    if (T <= 918744) {
+      const f = T - 12481;
+      return (0, n.bytesToHex)([
+        241 + (f >>> 16),
+        f >>> 8 & 255,
+        f & 255
+      ]) + N;
+    }
+    throw new o.XrplError("Variable integer overflow.");
+  }
+  function v(N) {
+    let T, f;
+    if (typeof N == "string" ? (T = N, f = (0, a.decode)(N)) : (T = (0, a.encode)(N), f = N), f.TxnSignature === void 0 && f.Signers === void 0 && f.SigningPubKey === void 0 && !(0, u.hasFlag)(f, d.GlobalFlags.tfInnerBatchTxn, "tfInnerBatchTxn"))
+      throw new o.ValidationError("The transaction must be signed to hash it.");
+    const C = b.default.TRANSACTION_ID.toString(16).toUpperCase();
+    return (0, l.default)(C.concat(T));
+  }
+  hashLedger.hashSignedTx = v;
+  function h(N) {
+    const f = b.default.LEDGER.toString(p).toUpperCase() + w(Number(N.ledger_index), 4) + I(N.total_coins, 8) + N.parent_hash + N.transaction_hash + N.account_hash + w(N.parent_close_time, 4) + w(N.close_time, 4) + w(N.close_time_resolution, 1) + w(N.close_flags, 1);
+    return (0, l.default)(f);
+  }
+  hashLedger.hashLedgerHeader = h;
+  function _(N) {
+    var T;
+    const f = new g.default();
+    for (const C of N) {
+      const A = (0, a.encode)(C), E = (0, a.encode)((T = C.metaData) !== null && T !== void 0 ? T : {}), S = v(A), L = m(A) + m(E);
+      f.addItem(S, L, g.NodeType.TRANSACTION_METADATA);
+    }
+    return f.hash;
+  }
+  hashLedger.hashTxTree = _;
+  function y(N) {
+    const T = new g.default();
+    return N.forEach((f) => {
+      const C = (0, a.encode)(f);
+      T.addItem(f.index, C, g.NodeType.ACCOUNT_STATE);
+    }), T.hash;
+  }
+  hashLedger.hashStateTree = y;
+  function c(N, T) {
+    const { transaction_hash: f } = N;
+    if (!T.computeTreeHashes)
+      return f;
+    if (N.transactions == null)
+      throw new o.ValidationError("transactions is missing from the ledger");
+    const C = _(N.transactions);
+    if (f !== C)
+      throw new o.ValidationError("transactionHash in header does not match computed hash of transactions", {
+        transactionHashInHeader: f,
+        computedHashOfTransactions: C
+      });
+    return C;
+  }
+  function R(N, T) {
+    const { account_hash: f } = N;
+    if (!T.computeTreeHashes)
+      return f;
+    if (N.accountState == null)
+      throw new o.ValidationError("accountState is missing from the ledger");
+    const C = y(N.accountState);
+    if (f !== C)
+      throw new o.ValidationError("stateHash in header does not match computed hash of state");
+    return C;
+  }
+  function D(N, T = {}) {
+    const f = {
+      transaction_hash: c(N, T),
+      account_hash: R(N, T)
+    };
+    return h(Object.assign(Object.assign({}, N), f));
+  }
+  return hashLedger.default = D, hashLedger;
+}
+var ledgerSpaces = {}, hasRequiredLedgerSpaces;
+function requireLedgerSpaces() {
+  if (hasRequiredLedgerSpaces) return ledgerSpaces;
+  hasRequiredLedgerSpaces = 1, Object.defineProperty(ledgerSpaces, "__esModule", { value: !0 });
+  const e = {
+    account: "a",
+    dirNode: "d",
+    generatorMap: "g",
+    rippleState: "r",
+    offer: "o",
+    ownerDir: "O",
+    bookDir: "B",
+    contract: "c",
+    skipList: "s",
+    escrow: "u",
+    amendment: "f",
+    feeSettings: "e",
+    ticket: "T",
+    signerList: "S",
+    paychan: "x",
+    check: "C",
+    depositPreauth: "p"
+  };
+  return ledgerSpaces.default = e, ledgerSpaces;
+}
+var hasRequiredHashes;
+function requireHashes() {
+  return hasRequiredHashes || (hasRequiredHashes = 1, (function(e) {
+    var r = hashes && hashes.__createBinding || (Object.create ? (function(T, f, C, A) {
+      A === void 0 && (A = C);
+      var E = Object.getOwnPropertyDescriptor(f, C);
+      (!E || ("get" in E ? !f.__esModule : E.writable || E.configurable)) && (E = { enumerable: !0, get: function() {
+        return f[C];
+      } }), Object.defineProperty(T, A, E);
+    }) : (function(T, f, C, A) {
+      A === void 0 && (A = C), T[A] = f[C];
+    })), t = hashes && hashes.__setModuleDefault || (Object.create ? (function(T, f) {
+      Object.defineProperty(T, "default", { enumerable: !0, value: f });
+    }) : function(T, f) {
+      T.default = f;
+    }), i = hashes && hashes.__importStar || function(T) {
+      if (T && T.__esModule) return T;
+      var f = {};
+      if (T != null) for (var C in T) C !== "default" && Object.prototype.hasOwnProperty.call(T, C) && r(f, T, C);
+      return t(f, T), f;
+    }, n = hashes && hashes.__importDefault || function(T) {
+      return T && T.__esModule ? T : { default: T };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.hashTxTree = e.hashStateTree = e.hashLedger = e.hashSignedTx = e.hashLedgerHeader = e.hashPaymentChannel = e.hashEscrow = e.hashTrustline = e.hashOfferId = e.hashSignerListId = e.hashAccountRoot = e.hashTx = void 0;
+    const s = requireBrowser$4(), a = n(requireBignumber()), o = requireDist$3(), d = i(requireHashLedger());
+    e.hashLedger = d.default, Object.defineProperty(e, "hashLedgerHeader", { enumerable: !0, get: function() {
+      return d.hashLedgerHeader;
+    } }), Object.defineProperty(e, "hashSignedTx", { enumerable: !0, get: function() {
+      return d.hashSignedTx;
+    } }), Object.defineProperty(e, "hashTxTree", { enumerable: !0, get: function() {
+      return d.hashTxTree;
+    } }), Object.defineProperty(e, "hashStateTree", { enumerable: !0, get: function() {
+      return d.hashStateTree;
+    } });
+    const u = n(requireHashPrefix()), b = n(requireLedgerSpaces()), l = n(requireSha512Half()), g = 16, p = 4;
+    function w(T) {
+      return (0, s.bytesToHex)((0, o.decodeAccountID)(T));
+    }
+    function I(T) {
+      return b.default[T].charCodeAt(0).toString(g).padStart(4, "0");
+    }
+    const m = 255;
+    function v(T) {
+      if (T.length !== 3)
+        return T;
+      const f = Array(20).fill(0);
+      return f[12] = T.charCodeAt(0) & m, f[13] = T.charCodeAt(1) & m, f[14] = T.charCodeAt(2) & m, (0, s.bytesToHex)(Uint8Array.from(f));
+    }
+    function h(T) {
+      const f = u.default.TRANSACTION_SIGN.toString(g).toUpperCase();
+      return (0, l.default)(f + T);
+    }
+    e.hashTx = h;
+    function _(T) {
+      return (0, l.default)(I("account") + w(T));
+    }
+    e.hashAccountRoot = _;
+    function y(T) {
+      return (0, l.default)(`${I("signerList") + w(T)}00000000`);
+    }
+    e.hashSignerListId = y;
+    function c(T, f) {
+      const C = b.default.offer.charCodeAt(0).toString(g).padStart(2, "0"), A = f.toString(g).padStart(8, "0"), E = `00${C}`;
+      return (0, l.default)(E + w(T) + A);
+    }
+    e.hashOfferId = c;
+    function R(T, f, C) {
+      const A = w(T), E = w(f), S = new a.default(A, 16).isGreaterThan(new a.default(E, 16)), L = S ? E : A, U = S ? A : E, H = I("rippleState");
+      return (0, l.default)(H + L + U + v(C));
+    }
+    e.hashTrustline = R;
+    function D(T, f) {
+      return (0, l.default)(I("escrow") + w(T) + f.toString(g).padStart(p * 2, "0"));
+    }
+    e.hashEscrow = D;
+    function N(T, f, C) {
+      return (0, l.default)(I("paychan") + w(T) + w(f) + C.toString(g).padStart(p * 2, "0"));
+    }
+    e.hashPaymentChannel = N;
+  })(hashes)), hashes;
+}
+var parseNFTokenID = {}, hasRequiredParseNFTokenID;
+function requireParseNFTokenID() {
+  if (hasRequiredParseNFTokenID) return parseNFTokenID;
+  hasRequiredParseNFTokenID = 1;
+  var e = parseNFTokenID && parseNFTokenID.__importDefault || function(o) {
+    return o && o.__esModule ? o : { default: o };
+  };
+  Object.defineProperty(parseNFTokenID, "__esModule", { value: !0 });
+  const r = requireBrowser$4(), t = e(requireBignumber()), i = requireDist$3(), n = requireErrors();
+  function s(o, d) {
+    const g = new t.default(384160001).multipliedBy(d).modulo(4294967296).plus(2459).modulo(4294967296).toNumber();
+    return (o ^ g) >>> 0;
+  }
+  function a(o) {
+    if (o.length !== 64)
+      throw new n.XrplError(`Attempting to parse a nftokenID with length ${o.length}
+    , but expected a token with length 64`);
+    const u = new t.default(o.substring(48, 56), 16).toNumber(), b = new t.default(o.substring(56, 64), 16).toNumber();
+    return {
+      NFTokenID: o,
+      Flags: new t.default(o.substring(0, 4), 16).toNumber(),
+      TransferFee: new t.default(o.substring(4, 8), 16).toNumber(),
+      Issuer: (0, i.encodeAccountID)((0, r.hexToBytes)(o.substring(8, 48))),
+      Taxon: s(u, b),
+      Sequence: b
+    };
+  }
+  return parseNFTokenID.default = a, parseNFTokenID;
+}
+var quality = {}, hasRequiredQuality;
+function requireQuality() {
+  if (hasRequiredQuality) return quality;
+  hasRequiredQuality = 1;
+  var e = quality && quality.__importDefault || function(p) {
+    return p && p.__esModule ? p : { default: p };
+  };
+  Object.defineProperty(quality, "__esModule", { value: !0 }), quality.percentToQuality = quality.transferRateToDecimal = quality.qualityToDecimal = quality.decimalToQuality = quality.percentToTransferRate = quality.decimalToTransferRate = void 0;
+  const r = e(requireBignumber()), t = requireErrors(), i = 10, n = "1000000000", s = "2000000000";
+  function a(p) {
+    if (!p.endsWith("%"))
+      throw new t.ValidationError(`Value ${p} must end with %`);
+    const w = p.split("%").filter((I) => I !== "");
+    if (w.length !== 1)
+      throw new t.ValidationError(`Value ${p} contains too many % signs`);
+    return new r.default(w[0]).dividedBy("100").toString(i);
+  }
+  function o(p) {
+    const w = new r.default(p).times(n).plus(n);
+    if (w.isLessThan(n) || w.isGreaterThan(s))
+      throw new t.ValidationError("Decimal value must be between 0 and 1.00.");
+    const I = w.toString(i);
+    if (I === n)
+      return 0;
+    if (I === "NaN")
+      throw new t.ValidationError("Value is not a number");
+    if (I.includes("."))
+      throw new t.ValidationError("Decimal exceeds maximum precision.");
+    return Number(I);
+  }
+  quality.decimalToTransferRate = o;
+  function d(p) {
+    return o(a(p));
+  }
+  quality.percentToTransferRate = d;
+  function u(p) {
+    const I = new r.default(p).times(n).toString(i);
+    if (I === "NaN")
+      throw new t.ValidationError("Value is not a number");
+    if (I.includes("-"))
+      throw new t.ValidationError("Cannot have negative Quality");
+    if (I === n)
+      return 0;
+    if (I.includes("."))
+      throw new t.ValidationError("Decimal exceeds maximum precision.");
+    return Number(I);
+  }
+  quality.decimalToQuality = u;
+  function b(p) {
+    if (!Number.isInteger(p))
+      throw new t.ValidationError("Quality must be an integer");
+    if (p < 0)
+      throw new t.ValidationError("Negative quality not allowed");
+    return p === 0 ? "1" : new r.default(p).dividedBy(n).toString(i);
+  }
+  quality.qualityToDecimal = b;
+  function l(p) {
+    if (!Number.isInteger(p))
+      throw new t.ValidationError("Error decoding, transfer Rate must be an integer");
+    if (p === 0)
+      return "0";
+    const w = new r.default(p).minus(n).dividedBy(n);
+    if (w.isLessThan(0))
+      throw new t.ValidationError("Error decoding, negative transfer rate");
+    return w.toString(i);
+  }
+  quality.transferRateToDecimal = l;
+  function g(p) {
+    return u(a(p));
+  }
+  return quality.percentToQuality = g, quality;
+}
+var signPaymentChannelClaim = {}, hasRequiredSignPaymentChannelClaim;
+function requireSignPaymentChannelClaim() {
+  if (hasRequiredSignPaymentChannelClaim) return signPaymentChannelClaim;
+  hasRequiredSignPaymentChannelClaim = 1, Object.defineProperty(signPaymentChannelClaim, "__esModule", { value: !0 });
+  const e = requireDist$2(), r = requireDist$1(), t = requireXrpConversion();
+  function i(n, s, a) {
+    const o = (0, e.encodeForSigningClaim)({
+      channel: n,
+      amount: (0, t.xrpToDrops)(s)
+    });
+    return (0, r.sign)(o, a);
+  }
+  return signPaymentChannelClaim.default = i, signPaymentChannelClaim;
+}
+var stringConversion = {}, hasRequiredStringConversion;
+function requireStringConversion() {
+  if (hasRequiredStringConversion) return stringConversion;
+  hasRequiredStringConversion = 1, Object.defineProperty(stringConversion, "__esModule", { value: !0 }), stringConversion.convertStringToHex = stringConversion.convertHexToString = void 0;
+  const e = requireBrowser$4();
+  function r(i) {
+    return (0, e.stringToHex)(i);
+  }
+  stringConversion.convertStringToHex = r;
+  function t(i, n = "utf8") {
+    return (0, e.hexToString)(i, n);
+  }
+  return stringConversion.convertHexToString = t, stringConversion;
+}
+var timeConversion = {}, hasRequiredTimeConversion;
+function requireTimeConversion() {
+  if (hasRequiredTimeConversion) return timeConversion;
+  hasRequiredTimeConversion = 1, Object.defineProperty(timeConversion, "__esModule", { value: !0 }), timeConversion.isoTimeToRippleTime = timeConversion.rippleTimeToISOTime = timeConversion.unixTimeToRippleTime = timeConversion.rippleTimeToUnixTime = void 0;
+  const e = 946684800;
+  function r(s) {
+    return (s + e) * 1e3;
+  }
+  timeConversion.rippleTimeToUnixTime = r;
+  function t(s) {
+    return Math.round(s / 1e3) - e;
+  }
+  timeConversion.unixTimeToRippleTime = t;
+  function i(s) {
+    return new Date(r(s)).toISOString();
+  }
+  timeConversion.rippleTimeToISOTime = i;
+  function n(s) {
+    const a = typeof s == "string" ? new Date(s) : s;
+    return t(a.getTime());
+  }
+  return timeConversion.isoTimeToRippleTime = n, timeConversion;
+}
+var verifyPaymentChannelClaim = {}, hasRequiredVerifyPaymentChannelClaim;
+function requireVerifyPaymentChannelClaim() {
+  if (hasRequiredVerifyPaymentChannelClaim) return verifyPaymentChannelClaim;
+  hasRequiredVerifyPaymentChannelClaim = 1, Object.defineProperty(verifyPaymentChannelClaim, "__esModule", { value: !0 });
+  const e = requireDist$2(), r = requireDist$1(), t = requireXrpConversion();
+  function i(n, s, a, o) {
+    const d = (0, e.encodeForSigningClaim)({
+      channel: n,
+      amount: (0, t.xrpToDrops)(s)
+    });
+    return (0, r.verify)(d, a, o);
+  }
+  return verifyPaymentChannelClaim.default = i, verifyPaymentChannelClaim;
+}
+var hasRequiredUtils$5;
+function requireUtils$5() {
+  return hasRequiredUtils$5 || (hasRequiredUtils$5 = 1, (function(e) {
+    var r = utils$7 && utils$7.__importDefault || function(f) {
+      return f && f.__esModule ? f : { default: f };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.getXChainClaimID = e.parseNFTokenID = e.getNFTokenID = e.encodeForSigningClaim = e.encodeForSigning = e.encodeForMultiSigning = e.decode = e.encode = e.decodeXAddress = e.encodeXAddress = e.decodeAccountPublic = e.encodeAccountPublic = e.decodeNodePublic = e.encodeNodePublic = e.decodeAccountID = e.encodeAccountID = e.decodeSeed = e.encodeSeed = e.isValidClassicAddress = e.isValidXAddress = e.xAddressToClassicAddress = e.classicAddressToXAddress = e.convertHexToString = e.convertStringToHex = e.verifyPaymentChannelClaim = e.verifyKeypairSignature = e.signPaymentChannelClaim = e.deriveXAddress = e.deriveAddress = e.deriveKeypair = e.hashes = e.isValidAddress = e.isValidSecret = e.qualityToDecimal = e.transferRateToDecimal = e.decimalToTransferRate = e.percentToTransferRate = e.decimalToQuality = e.percentToQuality = e.unixTimeToRippleTime = e.rippleTimeToUnixTime = e.isoTimeToRippleTime = e.rippleTimeToISOTime = e.hasNextPage = e.xrpToDrops = e.dropsToXrp = e.getBalanceChanges = void 0;
+    const t = requireDist$3();
+    Object.defineProperty(e, "classicAddressToXAddress", { enumerable: !0, get: function() {
+      return t.classicAddressToXAddress;
+    } }), Object.defineProperty(e, "decodeAccountID", { enumerable: !0, get: function() {
+      return t.decodeAccountID;
+    } }), Object.defineProperty(e, "decodeAccountPublic", { enumerable: !0, get: function() {
+      return t.decodeAccountPublic;
+    } }), Object.defineProperty(e, "decodeNodePublic", { enumerable: !0, get: function() {
+      return t.decodeNodePublic;
+    } }), Object.defineProperty(e, "decodeSeed", { enumerable: !0, get: function() {
+      return t.decodeSeed;
+    } }), Object.defineProperty(e, "decodeXAddress", { enumerable: !0, get: function() {
+      return t.decodeXAddress;
+    } }), Object.defineProperty(e, "encodeAccountID", { enumerable: !0, get: function() {
+      return t.encodeAccountID;
+    } }), Object.defineProperty(e, "encodeAccountPublic", { enumerable: !0, get: function() {
+      return t.encodeAccountPublic;
+    } }), Object.defineProperty(e, "encodeNodePublic", { enumerable: !0, get: function() {
+      return t.encodeNodePublic;
+    } }), Object.defineProperty(e, "encodeSeed", { enumerable: !0, get: function() {
+      return t.encodeSeed;
+    } }), Object.defineProperty(e, "encodeXAddress", { enumerable: !0, get: function() {
+      return t.encodeXAddress;
+    } }), Object.defineProperty(e, "isValidClassicAddress", { enumerable: !0, get: function() {
+      return t.isValidClassicAddress;
+    } }), Object.defineProperty(e, "isValidXAddress", { enumerable: !0, get: function() {
+      return t.isValidXAddress;
+    } }), Object.defineProperty(e, "xAddressToClassicAddress", { enumerable: !0, get: function() {
+      return t.xAddressToClassicAddress;
+    } });
+    const i = requireDist$2(), n = requireDist$1();
+    Object.defineProperty(e, "verifyKeypairSignature", { enumerable: !0, get: function() {
+      return n.verify;
+    } });
+    const s = requireDerive();
+    Object.defineProperty(e, "deriveKeypair", { enumerable: !0, get: function() {
+      return s.deriveKeypair;
+    } }), Object.defineProperty(e, "deriveAddress", { enumerable: !0, get: function() {
+      return s.deriveAddress;
+    } }), Object.defineProperty(e, "deriveXAddress", { enumerable: !0, get: function() {
+      return s.deriveXAddress;
+    } });
+    const a = r(requireGetBalanceChanges());
+    e.getBalanceChanges = a.default;
+    const o = r(requireGetNFTokenID());
+    e.getNFTokenID = o.default;
+    const d = r(requireGetXChainClaimID());
+    e.getXChainClaimID = d.default;
+    const u = requireHashes(), b = r(requireParseNFTokenID());
+    e.parseNFTokenID = b.default;
+    const l = requireQuality();
+    Object.defineProperty(e, "percentToTransferRate", { enumerable: !0, get: function() {
+      return l.percentToTransferRate;
+    } }), Object.defineProperty(e, "decimalToTransferRate", { enumerable: !0, get: function() {
+      return l.decimalToTransferRate;
+    } }), Object.defineProperty(e, "transferRateToDecimal", { enumerable: !0, get: function() {
+      return l.transferRateToDecimal;
+    } }), Object.defineProperty(e, "percentToQuality", { enumerable: !0, get: function() {
+      return l.percentToQuality;
+    } }), Object.defineProperty(e, "decimalToQuality", { enumerable: !0, get: function() {
+      return l.decimalToQuality;
+    } }), Object.defineProperty(e, "qualityToDecimal", { enumerable: !0, get: function() {
+      return l.qualityToDecimal;
+    } });
+    const g = r(requireSignPaymentChannelClaim());
+    e.signPaymentChannelClaim = g.default;
+    const p = requireStringConversion();
+    Object.defineProperty(e, "convertHexToString", { enumerable: !0, get: function() {
+      return p.convertHexToString;
+    } }), Object.defineProperty(e, "convertStringToHex", { enumerable: !0, get: function() {
+      return p.convertStringToHex;
+    } });
+    const w = requireTimeConversion();
+    Object.defineProperty(e, "rippleTimeToISOTime", { enumerable: !0, get: function() {
+      return w.rippleTimeToISOTime;
+    } }), Object.defineProperty(e, "isoTimeToRippleTime", { enumerable: !0, get: function() {
+      return w.isoTimeToRippleTime;
+    } }), Object.defineProperty(e, "rippleTimeToUnixTime", { enumerable: !0, get: function() {
+      return w.rippleTimeToUnixTime;
+    } }), Object.defineProperty(e, "unixTimeToRippleTime", { enumerable: !0, get: function() {
+      return w.unixTimeToRippleTime;
+    } });
+    const I = r(requireVerifyPaymentChannelClaim());
+    e.verifyPaymentChannelClaim = I.default;
+    const m = requireXrpConversion();
+    Object.defineProperty(e, "xrpToDrops", { enumerable: !0, get: function() {
+      return m.xrpToDrops;
+    } }), Object.defineProperty(e, "dropsToXrp", { enumerable: !0, get: function() {
+      return m.dropsToXrp;
+    } });
+    function v(f) {
+      try {
+        return (0, s.deriveKeypair)(f), !0;
+      } catch {
+        return !1;
+      }
+    }
+    e.isValidSecret = v;
+    function h(f) {
+      return (0, i.encode)(f);
+    }
+    e.encode = h;
+    function _(f) {
+      return (0, i.encodeForSigning)(f);
+    }
+    e.encodeForSigning = _;
+    function y(f) {
+      return (0, i.encodeForSigningClaim)(f);
+    }
+    e.encodeForSigningClaim = y;
+    function c(f, C) {
+      return (0, i.encodeForMultisigning)(f, C);
+    }
+    e.encodeForMultiSigning = c;
+    function R(f) {
+      return (0, i.decode)(f);
+    }
+    e.decode = R;
+    function D(f) {
+      return (0, t.isValidXAddress)(f) || (0, t.isValidClassicAddress)(f);
+    }
+    e.isValidAddress = D;
+    function N(f) {
+      return !!f.result.marker;
+    }
+    e.hasNextPage = N;
+    const T = {
+      hashSignedTx: u.hashSignedTx,
+      hashTx: u.hashTx,
+      hashAccountRoot: u.hashAccountRoot,
+      hashSignerListId: u.hashSignerListId,
+      hashOfferId: u.hashOfferId,
+      hashTrustline: u.hashTrustline,
+      hashTxTree: u.hashTxTree,
+      hashStateTree: u.hashStateTree,
+      hashLedger: u.hashLedger,
+      hashLedgerHeader: u.hashLedgerHeader,
+      hashEscrow: u.hashEscrow,
+      hashPaymentChannel: u.hashPaymentChannel
+    };
+    e.hashes = T;
+  })(utils$7)), utils$7;
+}
+var hasRequiredSubmit;
+function requireSubmit() {
+  if (hasRequiredSubmit) return submit;
+  hasRequiredSubmit = 1;
+  var e = submit && submit.__awaiter || function(l, g, p, w) {
+    function I(m) {
+      return m instanceof p ? m : new p(function(v) {
+        v(m);
+      });
+    }
+    return new (p || (p = Promise))(function(m, v) {
+      function h(c) {
+        try {
+          y(w.next(c));
+        } catch (R) {
+          v(R);
+        }
+      }
+      function _(c) {
+        try {
+          y(w.throw(c));
+        } catch (R) {
+          v(R);
+        }
+      }
+      function y(c) {
+        c.done ? m(c.value) : I(c.value).then(h, _);
+      }
+      y((w = w.apply(l, g || [])).next());
+    });
+  };
+  Object.defineProperty(submit, "__esModule", { value: !0 }), submit.getLastLedgerSequence = submit.getSignedTx = submit.waitForFinalTransactionOutcome = submit.submitRequest = void 0;
+  const r = requireErrors(), t = requireUtils$5(), i = 1e3;
+  function n(l) {
+    return e(this, void 0, void 0, function* () {
+      return new Promise((g) => {
+        setTimeout(g, l);
+      });
+    });
+  }
+  function s(l, g, p = !1) {
+    return e(this, void 0, void 0, function* () {
+      if (!o(g))
+        throw new r.ValidationError("Transaction must be signed.");
+      const I = {
+        command: "submit",
+        tx_blob: typeof g == "string" ? g : (0, t.encode)(g),
+        fail_hard: b(g) || p
+      };
+      return l.request(I);
+    });
+  }
+  submit.submitRequest = s;
+  function a(l, g, p, w) {
+    return e(this, void 0, void 0, function* () {
+      yield n(i);
+      const I = yield l.getLedgerIndex();
+      if (p < I)
+        throw new r.XrplError(`The latest ledger sequence ${I} is greater than the transaction's LastLedgerSequence (${p}).
+Preliminary result: ${w}`);
+      const m = yield l.request({
+        command: "tx",
+        transaction: g
+      }).catch((v) => e(this, void 0, void 0, function* () {
+        var h;
+        const _ = (h = v?.data) === null || h === void 0 ? void 0 : h.error;
+        if (_ === "txnNotFound")
+          return a(l, g, p, w);
+        throw new Error(`${_} 
+ Preliminary result: ${w}.
+Full error details: ${String(v)}`);
+      }));
+      return m.result.validated ? m : a(l, g, p, w);
+    });
+  }
+  submit.waitForFinalTransactionOutcome = a;
+  function o(l) {
+    const g = typeof l == "string" ? (0, t.decode)(l) : l;
+    if (typeof g == "string")
+      return !1;
+    if (g.Signers != null) {
+      const p = g.Signers;
+      for (const w of p)
+        if (w.Signer.SigningPubKey == null || w.Signer.TxnSignature == null)
+          return !1;
+      return !0;
+    }
+    return g.SigningPubKey != null && g.TxnSignature != null;
+  }
+  function d(l, g, { autofill: p = !0, wallet: w } = {}) {
+    return e(this, void 0, void 0, function* () {
+      if (o(g))
+        return g;
+      if (!w)
+        throw new r.ValidationError("Wallet must be provided when submitting an unsigned transaction");
+      let I = typeof g == "string" ? (0, t.decode)(g) : g;
+      return p && (I = yield l.autofill(I)), w.sign(I).tx_blob;
+    });
+  }
+  submit.getSignedTx = d;
+  function u(l) {
+    return (typeof l == "string" ? (0, t.decode)(l) : l).LastLedgerSequence;
+  }
+  submit.getLastLedgerSequence = u;
+  function b(l) {
+    return (typeof l == "string" ? (0, t.decode)(l) : l).TransactionType === "AccountDelete";
+  }
+  return submit;
+}
+var utils$4 = {}, hasRequiredUtils$4;
+function requireUtils$4() {
+  if (hasRequiredUtils$4) return utils$4;
+  hasRequiredUtils$4 = 1, Object.defineProperty(utils$4, "__esModule", { value: !0 }), utils$4.ensureClassicAddress = void 0;
+  const e = requireDist$3();
+  function r(t) {
+    if ((0, e.isValidXAddress)(t)) {
+      const { classicAddress: i, tag: n } = (0, e.xAddressToClassicAddress)(t);
+      if (n !== !1)
+        throw new Error("This command does not support the use of a tag. Use an address without a tag.");
+      return i;
+    }
+    return t;
+  }
+  return utils$4.ensureClassicAddress = r, utils$4;
+}
+var hasRequiredSugar;
+function requireSugar() {
+  return hasRequiredSugar || (hasRequiredSugar = 1, (function(e) {
+    var r = sugar && sugar.__createBinding || (Object.create ? (function(i, n, s, a) {
+      a === void 0 && (a = s);
+      var o = Object.getOwnPropertyDescriptor(n, s);
+      (!o || ("get" in o ? !n.__esModule : o.writable || o.configurable)) && (o = { enumerable: !0, get: function() {
+        return n[s];
+      } }), Object.defineProperty(i, a, o);
+    }) : (function(i, n, s, a) {
+      a === void 0 && (a = s), i[a] = n[s];
+    })), t = sugar && sugar.__exportStar || function(i, n) {
+      for (var s in i) s !== "default" && !Object.prototype.hasOwnProperty.call(n, s) && r(n, i, s);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), t(requireSubmit(), e), t(requireUtils$4(), e);
+  })(sugar)), sugar;
+}
+var autofill = {}, getFeeXrp = {}, hasRequiredGetFeeXrp;
+function requireGetFeeXrp() {
+  if (hasRequiredGetFeeXrp) return getFeeXrp;
+  hasRequiredGetFeeXrp = 1;
+  var e = getFeeXrp && getFeeXrp.__awaiter || function(o, d, u, b) {
+    function l(g) {
+      return g instanceof u ? g : new u(function(p) {
+        p(g);
+      });
+    }
+    return new (u || (u = Promise))(function(g, p) {
+      function w(v) {
+        try {
+          m(b.next(v));
+        } catch (h) {
+          p(h);
+        }
+      }
+      function I(v) {
+        try {
+          m(b.throw(v));
+        } catch (h) {
+          p(h);
+        }
+      }
+      function m(v) {
+        v.done ? g(v.value) : l(v.value).then(w, I);
+      }
+      m((b = b.apply(o, d || [])).next());
+    });
+  }, r = getFeeXrp && getFeeXrp.__importDefault || function(o) {
+    return o && o.__esModule ? o : { default: o };
+  };
+  Object.defineProperty(getFeeXrp, "__esModule", { value: !0 });
+  const t = r(requireBignumber()), i = requireErrors(), n = 6, s = 10;
+  function a(o, d) {
+    var u, b;
+    return e(this, void 0, void 0, function* () {
+      const l = d ?? o.feeCushion, g = (yield o.request({
+        command: "server_info"
+      })).result.info, p = (u = g.validated_ledger) === null || u === void 0 ? void 0 : u.base_fee_xrp;
+      if (p == null)
+        throw new i.XrplError("getFeeXrp: Could not get base_fee_xrp from server_info");
+      const w = new t.default(p);
+      (b = g.load_factor) !== null && b !== void 0 || (g.load_factor = 1);
+      let I = w.times(g.load_factor).times(l);
+      return I = t.default.min(I, o.maxFeeXRP), new t.default(I.toFixed(n)).toString(s);
+    });
+  }
+  return getFeeXrp.default = a, getFeeXrp;
+}
+var hasRequiredAutofill;
+function requireAutofill() {
+  if (hasRequiredAutofill) return autofill;
+  hasRequiredAutofill = 1;
+  var e = autofill && autofill.__awaiter || function(f, C, A, E) {
+    function S(L) {
+      return L instanceof A ? L : new A(function(U) {
+        U(L);
+      });
+    }
+    return new (A || (A = Promise))(function(L, U) {
+      function H(W) {
+        try {
+          $(E.next(W));
+        } catch (G) {
+          U(G);
+        }
+      }
+      function K(W) {
+        try {
+          $(E.throw(W));
+        } catch (G) {
+          U(G);
+        }
+      }
+      function $(W) {
+        W.done ? L(W.value) : S(W.value).then(H, K);
+      }
+      $((E = E.apply(f, C || [])).next());
+    });
+  }, r = autofill && autofill.__importDefault || function(f) {
+    return f && f.__esModule ? f : { default: f };
+  };
+  Object.defineProperty(autofill, "__esModule", { value: !0 }), autofill.autofillBatchTxn = autofill.handleDeliverMax = autofill.checkAccountDeleteBlockers = autofill.setLatestValidatedLedgerSequence = autofill.getTransactionFee = autofill.setNextValidSequenceNumber = autofill.setValidAddresses = autofill.txNeedsNetworkID = void 0;
+  const t = r(requireBignumber()), i = requireDist$3(), n = requireErrors(), s = requireUtils$5(), a = r(requireGetFeeXrp()), o = 20, d = 1024, u = "1.11.0";
+  function b(f, C) {
+    if (f === C)
+      return !0;
+    const A = f.split("."), E = C.split("."), S = parseInt(A[0], 10), L = parseInt(A[1], 10), U = parseInt(E[0], 10), H = parseInt(E[1], 10);
+    if (S !== U)
+      return S < U;
+    if (L !== H)
+      return L < H;
+    const K = A[2].split("-"), $ = E[2].split("-"), W = parseInt(K[0], 10), G = parseInt($[0], 10);
+    return W !== G ? W < G : K.length !== $.length ? K.length > $.length : K.length === 2 ? K[1][0].startsWith($[1][0]) ? K[1].startsWith("b") ? parseInt(K[1].slice(1), 10) < parseInt($[1].slice(1), 10) : parseInt(K[1].slice(2), 10) < parseInt($[1].slice(2), 10) : K[1] < $[1] : !1;
+  }
+  function l(f) {
+    return !!(f.networkID !== void 0 && f.networkID > d && f.buildVersion && b(u, f.buildVersion));
+  }
+  autofill.txNeedsNetworkID = l;
+  function g(f) {
+    p(f, "Account", "SourceTag"), f.Destination != null && p(f, "Destination", "DestinationTag"), I(f, "Authorize"), I(f, "Unauthorize"), I(f, "Owner"), I(f, "RegularKey");
+  }
+  autofill.setValidAddresses = g;
+  function p(f, C, A) {
+    const { classicAccount: E, tag: S } = w(f[C]);
+    if (f[C] = E, S != null && S !== !1) {
+      if (f[A] && f[A] !== S)
+        throw new n.ValidationError(`The ${A}, if present, must match the tag of the ${C} X-address`);
+      f[A] = S;
+    }
+  }
+  function w(f, C) {
+    if ((0, i.isValidXAddress)(f)) {
+      const A = (0, i.xAddressToClassicAddress)(f);
+      return {
+        classicAccount: A.classicAddress,
+        tag: A.tag
+      };
+    }
+    return {
+      classicAccount: f,
+      tag: C
+    };
+  }
+  function I(f, C) {
+    const A = f[C];
+    if (typeof A == "string") {
+      const { classicAccount: E } = w(A);
+      f[C] = E;
+    }
+  }
+  function m(f, C) {
+    return e(this, void 0, void 0, function* () {
+      const A = {
+        command: "account_info",
+        account: C,
+        ledger_index: "current"
+      };
+      return (yield f.request(A)).result.account_data.Sequence;
+    });
+  }
+  function v(f, C) {
+    return e(this, void 0, void 0, function* () {
+      C.Sequence = yield m(f, C.Account);
+    });
+  }
+  autofill.setNextValidSequenceNumber = v;
+  function h(f) {
+    var C;
+    return e(this, void 0, void 0, function* () {
+      const E = (C = (yield f.request({ command: "server_state" })).result.state.validated_ledger) === null || C === void 0 ? void 0 : C.reserve_inc;
+      return E == null ? Promise.reject(new Error("Could not fetch Owner Reserve.")) : new t.default(E);
+    });
+  }
+  function _(f, C, A = 0) {
+    return e(this, void 0, void 0, function* () {
+      const E = yield (0, a.default)(f), S = (0, s.xrpToDrops)(E);
+      let L = new t.default(S);
+      const U = ["AccountDelete", "AMMCreate"].includes(C.TransactionType);
+      if (C.TransactionType === "EscrowFinish" && C.Fulfillment != null) {
+        const $ = Math.ceil(C.Fulfillment.length / 2);
+        L = new t.default(c(S, 33 + $ / 16));
+      } else if (U)
+        L = yield h(f);
+      else if (C.TransactionType === "Batch") {
+        const $ = yield C.RawTransactions.reduce((W, G) => e(this, void 0, void 0, function* () {
+          const J = yield W, re = yield _(f, G.RawTransaction);
+          return t.default.sum(J, re);
+        }), Promise.resolve(new t.default(0)));
+        L = t.default.sum(L.times(2), $);
+      }
+      A > 0 && (L = t.default.sum(L, c(S, A)));
+      const H = (0, s.xrpToDrops)(f.maxFeeXRP);
+      return (U ? L : t.default.min(L, H)).dp(0, t.default.ROUND_CEIL);
+    });
+  }
+  function y(f, C, A = 0) {
+    return e(this, void 0, void 0, function* () {
+      const E = yield _(f, C, A);
+      C.Fee = E.toString(10);
+    });
+  }
+  autofill.getTransactionFee = y;
+  function c(f, C) {
+    return new t.default(f).times(C).toString();
+  }
+  function R(f, C) {
+    return e(this, void 0, void 0, function* () {
+      const A = yield f.getLedgerIndex();
+      C.LastLedgerSequence = A + o;
+    });
+  }
+  autofill.setLatestValidatedLedgerSequence = R;
+  function D(f, C) {
+    return e(this, void 0, void 0, function* () {
+      const A = {
+        command: "account_objects",
+        account: C.Account,
+        ledger_index: "validated",
+        deletion_blockers_only: !0
+      }, E = yield f.request(A);
+      return new Promise((S, L) => {
+        E.result.account_objects.length > 0 && L(new n.XrplError(`Account ${C.Account} cannot be deleted; there are Escrows, PayChannels, RippleStates, or Checks associated with the account.`, E.result.account_objects)), S();
+      });
+    });
+  }
+  autofill.checkAccountDeleteBlockers = D;
+  function N(f) {
+    var C;
+    if (f.DeliverMax != null) {
+      if ((C = f.Amount) !== null && C !== void 0 || (f.Amount = f.DeliverMax), f.Amount != null && f.Amount !== f.DeliverMax)
+        throw new n.ValidationError("PaymentTransaction: Amount and DeliverMax fields must be identical when both are provided");
+      delete f.DeliverMax;
+    }
+  }
+  autofill.handleDeliverMax = N;
+  function T(f, C) {
+    return e(this, void 0, void 0, function* () {
+      const A = {};
+      for (const E of C.RawTransactions) {
+        const S = E.RawTransaction;
+        if (S.Sequence == null && S.TicketSequence == null)
+          if (S.Account in A)
+            S.Sequence = A[S.Account], A[S.Account] += 1;
+          else {
+            const L = yield m(f, S.Account), U = S.Account === C.Account ? L + 1 : L;
+            A[S.Account] = U + 1, S.Sequence = U;
+          }
+        if (S.Fee == null)
+          S.Fee = "0";
+        else if (S.Fee !== "0")
+          throw new n.XrplError('Must have `Fee of "0" in inner Batch transaction.');
+        if (S.SigningPubKey == null)
+          S.SigningPubKey = "";
+        else if (S.SigningPubKey !== "")
+          throw new n.XrplError('Must have `SigningPubKey` of "" in inner Batch transaction.');
+        if (S.TxnSignature != null)
+          throw new n.XrplError("Must not have `TxnSignature` in inner Batch transaction.");
+        if (S.Signers != null)
+          throw new n.XrplError("Must not have `Signers` in inner Batch transaction.");
+        S.NetworkID == null && l(f) && (S.NetworkID = f.networkID);
+      }
+    });
+  }
+  return autofill.autofillBatchTxn = T, autofill;
+}
+var balances = {}, hasRequiredBalances;
+function requireBalances() {
+  if (hasRequiredBalances) return balances;
+  hasRequiredBalances = 1, Object.defineProperty(balances, "__esModule", { value: !0 }), balances.formatBalances = void 0;
+  function e(r) {
+    return r.map((t) => ({
+      value: t.balance,
+      currency: t.currency,
+      issuer: t.account
+    }));
+  }
+  return balances.formatBalances = e, balances;
+}
+var getOrderbook = {}, Offer = {}, hasRequiredOffer;
+function requireOffer() {
+  if (hasRequiredOffer) return Offer;
+  hasRequiredOffer = 1, Object.defineProperty(Offer, "__esModule", { value: !0 }), Offer.OfferFlags = void 0;
+  var e;
+  return (function(r) {
+    r[r.lsfPassive = 65536] = "lsfPassive", r[r.lsfSell = 131072] = "lsfSell", r[r.lsfHybrid = 262144] = "lsfHybrid";
+  })(e || (Offer.OfferFlags = e = {})), Offer;
+}
+var hasRequiredGetOrderbook;
+function requireGetOrderbook() {
+  if (hasRequiredGetOrderbook) return getOrderbook;
+  hasRequiredGetOrderbook = 1;
+  var e = getOrderbook && getOrderbook.__awaiter || function(m, v, h, _) {
+    function y(c) {
+      return c instanceof h ? c : new h(function(R) {
+        R(c);
+      });
+    }
+    return new (h || (h = Promise))(function(c, R) {
+      function D(f) {
+        try {
+          T(_.next(f));
+        } catch (C) {
+          R(C);
+        }
+      }
+      function N(f) {
+        try {
+          T(_.throw(f));
+        } catch (C) {
+          R(C);
+        }
+      }
+      function T(f) {
+        f.done ? c(f.value) : y(f.value).then(D, N);
+      }
+      T((_ = _.apply(m, v || [])).next());
+    });
+  }, r = getOrderbook && getOrderbook.__importDefault || function(m) {
+    return m && m.__esModule ? m : { default: m };
+  };
+  Object.defineProperty(getOrderbook, "__esModule", { value: !0 }), getOrderbook.sortAndLimitOffers = getOrderbook.separateBuySellOrders = getOrderbook.combineOrders = getOrderbook.extractOffers = getOrderbook.reverseRequest = getOrderbook.requestAllOffers = getOrderbook.createBookOffersRequest = getOrderbook.validateOrderbookOptions = void 0;
+  const t = r(requireBignumber()), i = requireErrors(), n = requireOffer(), s = 20;
+  function a(m) {
+    return m.sort((v, h) => {
+      var _, y;
+      const c = (_ = v.quality) !== null && _ !== void 0 ? _ : 0, R = (y = h.quality) !== null && y !== void 0 ? y : 0;
+      return new t.default(c).comparedTo(R);
+    });
+  }
+  const o = /* @__PURE__ */ new Set([
+    "limit",
+    "ledger_index",
+    "ledger_hash",
+    "taker"
+  ]);
+  function d(m) {
+    for (const v of Object.keys(m))
+      if (!o.has(v))
+        throw new i.ValidationError(`Unexpected option: ${v}`, m);
+    if (m.limit && typeof m.limit != "number")
+      throw new i.ValidationError("limit must be a number", m.limit);
+    if (m.ledger_index && !(typeof m.ledger_index == "number" || typeof m.ledger_index == "string" && ["validated", "closed", "current"].includes(m.ledger_index)))
+      throw new i.ValidationError('ledger_index must be a number or a string of "validated", "closed", or "current"', m.ledger_index);
+    if (m.ledger_hash !== void 0 && m.ledger_hash !== null && typeof m.ledger_hash != "string")
+      throw new i.ValidationError("ledger_hash must be a string", m.ledger_hash);
+    if (m.taker !== void 0 && typeof m.taker != "string")
+      throw new i.ValidationError("taker must be a string", m.taker);
+  }
+  getOrderbook.validateOrderbookOptions = d;
+  function u(m, v, h) {
+    var _, y, c;
+    return {
+      command: "book_offers",
+      taker_pays: m,
+      taker_gets: v,
+      ledger_index: (_ = h.ledger_index) !== null && _ !== void 0 ? _ : "validated",
+      ledger_hash: h.ledger_hash === null ? void 0 : h.ledger_hash,
+      limit: (y = h.limit) !== null && y !== void 0 ? y : s,
+      taker: (c = h.taker) !== null && c !== void 0 ? c : void 0
+    };
+  }
+  getOrderbook.createBookOffersRequest = u;
+  function b(m, v) {
+    return e(this, void 0, void 0, function* () {
+      return (yield m.requestAll(v)).map((_) => _.result.offers);
+    });
+  }
+  getOrderbook.requestAllOffers = b;
+  function l(m) {
+    return Object.assign(Object.assign({}, m), { taker_pays: m.taker_gets, taker_gets: m.taker_pays });
+  }
+  getOrderbook.reverseRequest = l;
+  function g(m) {
+    return m.flatMap((v) => v);
+  }
+  getOrderbook.extractOffers = g;
+  function p(m, v) {
+    return [...m, ...v];
+  }
+  getOrderbook.combineOrders = p;
+  function w(m) {
+    const v = [], h = [];
+    return m.forEach((_) => {
+      (_.Flags & n.OfferFlags.lsfSell) === 0 ? v.push(_) : h.push(_);
+    }), { buy: v, sell: h };
+  }
+  getOrderbook.separateBuySellOrders = w;
+  function I(m, v) {
+    return a(m).slice(0, v);
+  }
+  return getOrderbook.sortAndLimitOffers = I, getOrderbook;
+}
+var Wallet$1 = {}, lib$1 = {}, hasRequiredLib$1;
+function requireLib$1() {
+  return hasRequiredLib$1 || (hasRequiredLib$1 = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.HDKey = e.HARDENED_OFFSET = void 0;
+    /*! scure-bip32 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
+    const r = /* @__PURE__ */ requireHmac(), t = /* @__PURE__ */ requireRipemd160(), i = /* @__PURE__ */ requireSha256(), n = /* @__PURE__ */ requireSha512$1(), s = /* @__PURE__ */ require_assert(), a = /* @__PURE__ */ requireUtils$b(), o = /* @__PURE__ */ requireSecp256k1$1(), d = /* @__PURE__ */ requireModular(), u = /* @__PURE__ */ requireLib$2(), b = o.secp256k1.ProjectivePoint, l = (0, u.createBase58check)(i.sha256);
+    function g(y) {
+      return BigInt(`0x${(0, a.bytesToHex)(y)}`);
+    }
+    function p(y) {
+      return (0, a.hexToBytes)(y.toString(16).padStart(64, "0"));
+    }
+    const w = (0, a.utf8ToBytes)("Bitcoin seed"), I = { private: 76066276, public: 76067358 };
+    e.HARDENED_OFFSET = 2147483648;
+    const m = (y) => (0, t.ripemd160)((0, i.sha256)(y)), v = (y) => (0, a.createView)(y).getUint32(0, !1), h = (y) => {
+      if (!Number.isSafeInteger(y) || y < 0 || y > 2 ** 32 - 1)
+        throw new Error(`Invalid number=${y}. Should be from 0 to 2 ** 32 - 1`);
+      const c = new Uint8Array(4);
+      return (0, a.createView)(c).setUint32(0, y, !1), c;
+    };
+    class _ {
+      get fingerprint() {
+        if (!this.pubHash)
+          throw new Error("No publicKey set!");
+        return v(this.pubHash);
+      }
+      get identifier() {
+        return this.pubHash;
+      }
+      get pubKeyHash() {
+        return this.pubHash;
+      }
+      get privateKey() {
+        return this.privKeyBytes || null;
+      }
+      get publicKey() {
+        return this.pubKey || null;
+      }
+      get privateExtendedKey() {
+        const c = this.privateKey;
+        if (!c)
+          throw new Error("No private key");
+        return l.encode(this.serialize(this.versions.private, (0, a.concatBytes)(new Uint8Array([0]), c)));
+      }
+      get publicExtendedKey() {
+        if (!this.pubKey)
+          throw new Error("No public key");
+        return l.encode(this.serialize(this.versions.public, this.pubKey));
+      }
+      static fromMasterSeed(c, R = I) {
+        if ((0, s.bytes)(c), 8 * c.length < 128 || 8 * c.length > 512)
+          throw new Error(`HDKey: wrong seed length=${c.length}. Should be between 128 and 512 bits; 256 bits is advised)`);
+        const D = (0, r.hmac)(n.sha512, w, c);
+        return new _({
+          versions: R,
+          chainCode: D.slice(32),
+          privateKey: D.slice(0, 32)
+        });
+      }
+      static fromExtendedKey(c, R = I) {
+        const D = l.decode(c), N = (0, a.createView)(D), T = N.getUint32(0, !1), f = {
+          versions: R,
+          depth: D[4],
+          parentFingerprint: N.getUint32(5, !1),
+          index: N.getUint32(9, !1),
+          chainCode: D.slice(13, 45)
+        }, C = D.slice(45), A = C[0] === 0;
+        if (T !== R[A ? "private" : "public"])
+          throw new Error("Version mismatch");
+        return A ? new _({ ...f, privateKey: C.slice(1) }) : new _({ ...f, publicKey: C });
+      }
+      static fromJSON(c) {
+        return _.fromExtendedKey(c.xpriv);
+      }
+      constructor(c) {
+        if (this.depth = 0, this.index = 0, this.chainCode = null, this.parentFingerprint = 0, !c || typeof c != "object")
+          throw new Error("HDKey.constructor must not be called directly");
+        if (this.versions = c.versions || I, this.depth = c.depth || 0, this.chainCode = c.chainCode || null, this.index = c.index || 0, this.parentFingerprint = c.parentFingerprint || 0, !this.depth && (this.parentFingerprint || this.index))
+          throw new Error("HDKey: zero depth with non-zero index/parent fingerprint");
+        if (c.publicKey && c.privateKey)
+          throw new Error("HDKey: publicKey and privateKey at same time.");
+        if (c.privateKey) {
+          if (!o.secp256k1.utils.isValidPrivateKey(c.privateKey))
+            throw new Error("Invalid private key");
+          this.privKey = typeof c.privateKey == "bigint" ? c.privateKey : g(c.privateKey), this.privKeyBytes = p(this.privKey), this.pubKey = o.secp256k1.getPublicKey(c.privateKey, !0);
+        } else if (c.publicKey)
+          this.pubKey = b.fromHex(c.publicKey).toRawBytes(!0);
+        else
+          throw new Error("HDKey: no public or private key provided");
+        this.pubHash = m(this.pubKey);
+      }
+      derive(c) {
+        if (!/^[mM]'?/.test(c))
+          throw new Error('Path must start with "m" or "M"');
+        if (/^[mM]'?$/.test(c))
+          return this;
+        const R = c.replace(/^[mM]'?\//, "").split("/");
+        let D = this;
+        for (const N of R) {
+          const T = /^(\d+)('?)$/.exec(N), f = T && T[1];
+          if (!T || T.length !== 3 || typeof f != "string")
+            throw new Error(`Invalid child index: ${N}`);
+          let C = +f;
+          if (!Number.isSafeInteger(C) || C >= e.HARDENED_OFFSET)
+            throw new Error("Invalid index");
+          T[2] === "'" && (C += e.HARDENED_OFFSET), D = D.deriveChild(C);
+        }
+        return D;
+      }
+      deriveChild(c) {
+        if (!this.pubKey || !this.chainCode)
+          throw new Error("No publicKey or chainCode set");
+        let R = h(c);
+        if (c >= e.HARDENED_OFFSET) {
+          const C = this.privateKey;
+          if (!C)
+            throw new Error("Could not derive hardened child key");
+          R = (0, a.concatBytes)(new Uint8Array([0]), C, R);
+        } else
+          R = (0, a.concatBytes)(this.pubKey, R);
+        const D = (0, r.hmac)(n.sha512, this.chainCode, R), N = g(D.slice(0, 32)), T = D.slice(32);
+        if (!o.secp256k1.utils.isValidPrivateKey(N))
+          throw new Error("Tweak bigger than curve order");
+        const f = {
+          versions: this.versions,
+          chainCode: T,
+          depth: this.depth + 1,
+          parentFingerprint: this.fingerprint,
+          index: c
+        };
+        try {
+          if (this.privateKey) {
+            const C = (0, d.mod)(this.privKey + N, o.secp256k1.CURVE.n);
+            if (!o.secp256k1.utils.isValidPrivateKey(C))
+              throw new Error("The tweak was out of range or the resulted private key is invalid");
+            f.privateKey = C;
+          } else {
+            const C = b.fromHex(this.pubKey).add(b.fromPrivateKey(N));
+            if (C.equals(b.ZERO))
+              throw new Error("The tweak was equal to negative P, which made the result key invalid");
+            f.publicKey = C.toRawBytes(!0);
+          }
+          return new _(f);
+        } catch {
+          return this.deriveChild(c + 1);
+        }
+      }
+      sign(c) {
+        if (!this.privateKey)
+          throw new Error("No privateKey set!");
+        return (0, s.bytes)(c, 32), o.secp256k1.sign(c, this.privKey).toCompactRawBytes();
+      }
+      verify(c, R) {
+        if ((0, s.bytes)(c, 32), (0, s.bytes)(R, 64), !this.publicKey)
+          throw new Error("No publicKey set!");
+        let D;
+        try {
+          D = o.secp256k1.Signature.fromCompact(R);
+        } catch {
+          return !1;
+        }
+        return o.secp256k1.verify(D, c, this.publicKey);
+      }
+      wipePrivateData() {
+        return this.privKey = void 0, this.privKeyBytes && (this.privKeyBytes.fill(0), this.privKeyBytes = void 0), this;
+      }
+      toJSON() {
+        return {
+          xpriv: this.privateExtendedKey,
+          xpub: this.publicExtendedKey
+        };
+      }
+      serialize(c, R) {
+        if (!this.chainCode)
+          throw new Error("No chainCode set");
+        return (0, s.bytes)(R, 33), (0, a.concatBytes)(h(c), new Uint8Array([this.depth]), h(this.parentFingerprint), h(this.index), this.chainCode, R);
+      }
+    }
+    e.HDKey = _;
+  })(lib$1)), lib$1;
+}
+var bip39 = {}, pbkdf2 = {}, hasRequiredPbkdf2;
+function requirePbkdf2() {
+  if (hasRequiredPbkdf2) return pbkdf2;
+  hasRequiredPbkdf2 = 1, Object.defineProperty(pbkdf2, "__esModule", { value: !0 }), pbkdf2.pbkdf2Async = pbkdf2.pbkdf2 = void 0;
+  const e = /* @__PURE__ */ require_assert(), r = /* @__PURE__ */ requireHmac(), t = /* @__PURE__ */ requireUtils$b();
+  function i(o, d, u, b) {
+    (0, e.hash)(o);
+    const l = (0, t.checkOpts)({ dkLen: 32, asyncTick: 10 }, b), { c: g, dkLen: p, asyncTick: w } = l;
+    if ((0, e.number)(g), (0, e.number)(p), (0, e.number)(w), g < 1)
+      throw new Error("PBKDF2: iterations (c) should be >= 1");
+    const I = (0, t.toBytes)(d), m = (0, t.toBytes)(u), v = new Uint8Array(p), h = r.hmac.create(o, I), _ = h._cloneInto().update(m);
+    return { c: g, dkLen: p, asyncTick: w, DK: v, PRF: h, PRFSalt: _ };
+  }
+  function n(o, d, u, b, l) {
+    return o.destroy(), d.destroy(), b && b.destroy(), l.fill(0), u;
+  }
+  function s(o, d, u, b) {
+    const { c: l, dkLen: g, DK: p, PRF: w, PRFSalt: I } = i(o, d, u, b);
+    let m;
+    const v = new Uint8Array(4), h = (0, t.createView)(v), _ = new Uint8Array(w.outputLen);
+    for (let y = 1, c = 0; c < g; y++, c += w.outputLen) {
+      const R = p.subarray(c, c + w.outputLen);
+      h.setInt32(0, y, !1), (m = I._cloneInto(m)).update(v).digestInto(_), R.set(_.subarray(0, R.length));
+      for (let D = 1; D < l; D++) {
+        w._cloneInto(m).update(_).digestInto(_);
+        for (let N = 0; N < R.length; N++)
+          R[N] ^= _[N];
+      }
+    }
+    return n(w, I, p, m, _);
+  }
+  pbkdf2.pbkdf2 = s;
+  async function a(o, d, u, b) {
+    const { c: l, dkLen: g, asyncTick: p, DK: w, PRF: I, PRFSalt: m } = i(o, d, u, b);
+    let v;
+    const h = new Uint8Array(4), _ = (0, t.createView)(h), y = new Uint8Array(I.outputLen);
+    for (let c = 1, R = 0; R < g; c++, R += I.outputLen) {
+      const D = w.subarray(R, R + I.outputLen);
+      _.setInt32(0, c, !1), (v = m._cloneInto(v)).update(h).digestInto(y), D.set(y.subarray(0, D.length)), await (0, t.asyncLoop)(l - 1, p, () => {
+        I._cloneInto(v).update(y).digestInto(y);
+        for (let N = 0; N < D.length; N++)
+          D[N] ^= y[N];
+      });
+    }
+    return n(I, m, w, v, y);
+  }
+  return pbkdf2.pbkdf2Async = a, pbkdf2;
+}
+var hasRequiredBip39;
+function requireBip39() {
+  if (hasRequiredBip39) return bip39;
+  hasRequiredBip39 = 1, Object.defineProperty(bip39, "__esModule", { value: !0 }), bip39.mnemonicToSeedSync = bip39.mnemonicToSeed = bip39.validateMnemonic = bip39.entropyToMnemonic = bip39.mnemonicToEntropy = bip39.generateMnemonic = void 0;
+  /*! scure-bip39 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
+  const e = /* @__PURE__ */ require_assert(), r = /* @__PURE__ */ requirePbkdf2(), t = /* @__PURE__ */ requireSha256(), i = /* @__PURE__ */ requireSha512$1(), n = /* @__PURE__ */ requireUtils$b(), s = /* @__PURE__ */ requireLib$2(), a = (_) => _[0] === "あいこくしん";
+  function o(_) {
+    if (typeof _ != "string")
+      throw new TypeError(`Invalid mnemonic type: ${typeof _}`);
+    return _.normalize("NFKD");
+  }
+  function d(_) {
+    const y = o(_), c = y.split(" ");
+    if (![12, 15, 18, 21, 24].includes(c.length))
+      throw new Error("Invalid mnemonic");
+    return { nfkd: y, words: c };
+  }
+  function u(_) {
+    (0, e.bytes)(_, 16, 20, 24, 28, 32);
+  }
+  function b(_, y = 128) {
+    if ((0, e.number)(y), y % 32 !== 0 || y > 256)
+      throw new TypeError("Invalid entropy");
+    return w((0, n.randomBytes)(y / 8), _);
+  }
+  bip39.generateMnemonic = b;
+  const l = (_) => {
+    const y = 8 - _.length / 4;
+    return new Uint8Array([(0, t.sha256)(_)[0] >> y << y]);
+  };
+  function g(_) {
+    if (!Array.isArray(_) || _.length !== 2048 || typeof _[0] != "string")
+      throw new Error("Wordlist: expected array of 2048 strings");
+    return _.forEach((y) => {
+      if (typeof y != "string")
+        throw new Error(`Wordlist: non-string element: ${y}`);
+    }), s.utils.chain(s.utils.checksum(1, l), s.utils.radix2(11, !0), s.utils.alphabet(_));
+  }
+  function p(_, y) {
+    const { words: c } = d(_), R = g(y).decode(c);
+    return u(R), R;
+  }
+  bip39.mnemonicToEntropy = p;
+  function w(_, y) {
+    return u(_), g(y).encode(_).join(a(y) ? "　" : " ");
+  }
+  bip39.entropyToMnemonic = w;
+  function I(_, y) {
+    try {
+      p(_, y);
+    } catch {
+      return !1;
+    }
+    return !0;
+  }
+  bip39.validateMnemonic = I;
+  const m = (_) => o(`mnemonic${_}`);
+  function v(_, y = "") {
+    return (0, r.pbkdf2Async)(i.sha512, d(_).nfkd, m(y), { c: 2048, dkLen: 64 });
+  }
+  bip39.mnemonicToSeed = v;
+  function h(_, y = "") {
+    return (0, r.pbkdf2)(i.sha512, d(_).nfkd, m(y), { c: 2048, dkLen: 64 });
+  }
+  return bip39.mnemonicToSeedSync = h, bip39;
+}
+var english = {}, hasRequiredEnglish;
+function requireEnglish() {
+  return hasRequiredEnglish || (hasRequiredEnglish = 1, Object.defineProperty(english, "__esModule", { value: !0 }), english.wordlist = void 0, english.wordlist = `abandon
+ability
+able
+about
+above
+absent
+absorb
+abstract
+absurd
+abuse
+access
+accident
+account
+accuse
+achieve
+acid
+acoustic
+acquire
+across
+act
+action
+actor
+actress
+actual
+adapt
+add
+addict
+address
+adjust
+admit
+adult
+advance
+advice
+aerobic
+affair
+afford
+afraid
+again
+age
+agent
+agree
+ahead
+aim
+air
+airport
+aisle
+alarm
+album
+alcohol
+alert
+alien
+all
+alley
+allow
+almost
+alone
+alpha
+already
+also
+alter
+always
+amateur
+amazing
+among
+amount
+amused
+analyst
+anchor
+ancient
+anger
+angle
+angry
+animal
+ankle
+announce
+annual
+another
+answer
+antenna
+antique
+anxiety
+any
+apart
+apology
+appear
+apple
+approve
+april
+arch
+arctic
+area
+arena
+argue
+arm
+armed
+armor
+army
+around
+arrange
+arrest
+arrive
+arrow
+art
+artefact
+artist
+artwork
+ask
+aspect
+assault
+asset
+assist
+assume
+asthma
+athlete
+atom
+attack
+attend
+attitude
+attract
+auction
+audit
+august
+aunt
+author
+auto
+autumn
+average
+avocado
+avoid
+awake
+aware
+away
+awesome
+awful
+awkward
+axis
+baby
+bachelor
+bacon
+badge
+bag
+balance
+balcony
+ball
+bamboo
+banana
+banner
+bar
+barely
+bargain
+barrel
+base
+basic
+basket
+battle
+beach
+bean
+beauty
+because
+become
+beef
+before
+begin
+behave
+behind
+believe
+below
+belt
+bench
+benefit
+best
+betray
+better
+between
+beyond
+bicycle
+bid
+bike
+bind
+biology
+bird
+birth
+bitter
+black
+blade
+blame
+blanket
+blast
+bleak
+bless
+blind
+blood
+blossom
+blouse
+blue
+blur
+blush
+board
+boat
+body
+boil
+bomb
+bone
+bonus
+book
+boost
+border
+boring
+borrow
+boss
+bottom
+bounce
+box
+boy
+bracket
+brain
+brand
+brass
+brave
+bread
+breeze
+brick
+bridge
+brief
+bright
+bring
+brisk
+broccoli
+broken
+bronze
+broom
+brother
+brown
+brush
+bubble
+buddy
+budget
+buffalo
+build
+bulb
+bulk
+bullet
+bundle
+bunker
+burden
+burger
+burst
+bus
+business
+busy
+butter
+buyer
+buzz
+cabbage
+cabin
+cable
+cactus
+cage
+cake
+call
+calm
+camera
+camp
+can
+canal
+cancel
+candy
+cannon
+canoe
+canvas
+canyon
+capable
+capital
+captain
+car
+carbon
+card
+cargo
+carpet
+carry
+cart
+case
+cash
+casino
+castle
+casual
+cat
+catalog
+catch
+category
+cattle
+caught
+cause
+caution
+cave
+ceiling
+celery
+cement
+census
+century
+cereal
+certain
+chair
+chalk
+champion
+change
+chaos
+chapter
+charge
+chase
+chat
+cheap
+check
+cheese
+chef
+cherry
+chest
+chicken
+chief
+child
+chimney
+choice
+choose
+chronic
+chuckle
+chunk
+churn
+cigar
+cinnamon
+circle
+citizen
+city
+civil
+claim
+clap
+clarify
+claw
+clay
+clean
+clerk
+clever
+click
+client
+cliff
+climb
+clinic
+clip
+clock
+clog
+close
+cloth
+cloud
+clown
+club
+clump
+cluster
+clutch
+coach
+coast
+coconut
+code
+coffee
+coil
+coin
+collect
+color
+column
+combine
+come
+comfort
+comic
+common
+company
+concert
+conduct
+confirm
+congress
+connect
+consider
+control
+convince
+cook
+cool
+copper
+copy
+coral
+core
+corn
+correct
+cost
+cotton
+couch
+country
+couple
+course
+cousin
+cover
+coyote
+crack
+cradle
+craft
+cram
+crane
+crash
+crater
+crawl
+crazy
+cream
+credit
+creek
+crew
+cricket
+crime
+crisp
+critic
+crop
+cross
+crouch
+crowd
+crucial
+cruel
+cruise
+crumble
+crunch
+crush
+cry
+crystal
+cube
+culture
+cup
+cupboard
+curious
+current
+curtain
+curve
+cushion
+custom
+cute
+cycle
+dad
+damage
+damp
+dance
+danger
+daring
+dash
+daughter
+dawn
+day
+deal
+debate
+debris
+decade
+december
+decide
+decline
+decorate
+decrease
+deer
+defense
+define
+defy
+degree
+delay
+deliver
+demand
+demise
+denial
+dentist
+deny
+depart
+depend
+deposit
+depth
+deputy
+derive
+describe
+desert
+design
+desk
+despair
+destroy
+detail
+detect
+develop
+device
+devote
+diagram
+dial
+diamond
+diary
+dice
+diesel
+diet
+differ
+digital
+dignity
+dilemma
+dinner
+dinosaur
+direct
+dirt
+disagree
+discover
+disease
+dish
+dismiss
+disorder
+display
+distance
+divert
+divide
+divorce
+dizzy
+doctor
+document
+dog
+doll
+dolphin
+domain
+donate
+donkey
+donor
+door
+dose
+double
+dove
+draft
+dragon
+drama
+drastic
+draw
+dream
+dress
+drift
+drill
+drink
+drip
+drive
+drop
+drum
+dry
+duck
+dumb
+dune
+during
+dust
+dutch
+duty
+dwarf
+dynamic
+eager
+eagle
+early
+earn
+earth
+easily
+east
+easy
+echo
+ecology
+economy
+edge
+edit
+educate
+effort
+egg
+eight
+either
+elbow
+elder
+electric
+elegant
+element
+elephant
+elevator
+elite
+else
+embark
+embody
+embrace
+emerge
+emotion
+employ
+empower
+empty
+enable
+enact
+end
+endless
+endorse
+enemy
+energy
+enforce
+engage
+engine
+enhance
+enjoy
+enlist
+enough
+enrich
+enroll
+ensure
+enter
+entire
+entry
+envelope
+episode
+equal
+equip
+era
+erase
+erode
+erosion
+error
+erupt
+escape
+essay
+essence
+estate
+eternal
+ethics
+evidence
+evil
+evoke
+evolve
+exact
+example
+excess
+exchange
+excite
+exclude
+excuse
+execute
+exercise
+exhaust
+exhibit
+exile
+exist
+exit
+exotic
+expand
+expect
+expire
+explain
+expose
+express
+extend
+extra
+eye
+eyebrow
+fabric
+face
+faculty
+fade
+faint
+faith
+fall
+false
+fame
+family
+famous
+fan
+fancy
+fantasy
+farm
+fashion
+fat
+fatal
+father
+fatigue
+fault
+favorite
+feature
+february
+federal
+fee
+feed
+feel
+female
+fence
+festival
+fetch
+fever
+few
+fiber
+fiction
+field
+figure
+file
+film
+filter
+final
+find
+fine
+finger
+finish
+fire
+firm
+first
+fiscal
+fish
+fit
+fitness
+fix
+flag
+flame
+flash
+flat
+flavor
+flee
+flight
+flip
+float
+flock
+floor
+flower
+fluid
+flush
+fly
+foam
+focus
+fog
+foil
+fold
+follow
+food
+foot
+force
+forest
+forget
+fork
+fortune
+forum
+forward
+fossil
+foster
+found
+fox
+fragile
+frame
+frequent
+fresh
+friend
+fringe
+frog
+front
+frost
+frown
+frozen
+fruit
+fuel
+fun
+funny
+furnace
+fury
+future
+gadget
+gain
+galaxy
+gallery
+game
+gap
+garage
+garbage
+garden
+garlic
+garment
+gas
+gasp
+gate
+gather
+gauge
+gaze
+general
+genius
+genre
+gentle
+genuine
+gesture
+ghost
+giant
+gift
+giggle
+ginger
+giraffe
+girl
+give
+glad
+glance
+glare
+glass
+glide
+glimpse
+globe
+gloom
+glory
+glove
+glow
+glue
+goat
+goddess
+gold
+good
+goose
+gorilla
+gospel
+gossip
+govern
+gown
+grab
+grace
+grain
+grant
+grape
+grass
+gravity
+great
+green
+grid
+grief
+grit
+grocery
+group
+grow
+grunt
+guard
+guess
+guide
+guilt
+guitar
+gun
+gym
+habit
+hair
+half
+hammer
+hamster
+hand
+happy
+harbor
+hard
+harsh
+harvest
+hat
+have
+hawk
+hazard
+head
+health
+heart
+heavy
+hedgehog
+height
+hello
+helmet
+help
+hen
+hero
+hidden
+high
+hill
+hint
+hip
+hire
+history
+hobby
+hockey
+hold
+hole
+holiday
+hollow
+home
+honey
+hood
+hope
+horn
+horror
+horse
+hospital
+host
+hotel
+hour
+hover
+hub
+huge
+human
+humble
+humor
+hundred
+hungry
+hunt
+hurdle
+hurry
+hurt
+husband
+hybrid
+ice
+icon
+idea
+identify
+idle
+ignore
+ill
+illegal
+illness
+image
+imitate
+immense
+immune
+impact
+impose
+improve
+impulse
+inch
+include
+income
+increase
+index
+indicate
+indoor
+industry
+infant
+inflict
+inform
+inhale
+inherit
+initial
+inject
+injury
+inmate
+inner
+innocent
+input
+inquiry
+insane
+insect
+inside
+inspire
+install
+intact
+interest
+into
+invest
+invite
+involve
+iron
+island
+isolate
+issue
+item
+ivory
+jacket
+jaguar
+jar
+jazz
+jealous
+jeans
+jelly
+jewel
+job
+join
+joke
+journey
+joy
+judge
+juice
+jump
+jungle
+junior
+junk
+just
+kangaroo
+keen
+keep
+ketchup
+key
+kick
+kid
+kidney
+kind
+kingdom
+kiss
+kit
+kitchen
+kite
+kitten
+kiwi
+knee
+knife
+knock
+know
+lab
+label
+labor
+ladder
+lady
+lake
+lamp
+language
+laptop
+large
+later
+latin
+laugh
+laundry
+lava
+law
+lawn
+lawsuit
+layer
+lazy
+leader
+leaf
+learn
+leave
+lecture
+left
+leg
+legal
+legend
+leisure
+lemon
+lend
+length
+lens
+leopard
+lesson
+letter
+level
+liar
+liberty
+library
+license
+life
+lift
+light
+like
+limb
+limit
+link
+lion
+liquid
+list
+little
+live
+lizard
+load
+loan
+lobster
+local
+lock
+logic
+lonely
+long
+loop
+lottery
+loud
+lounge
+love
+loyal
+lucky
+luggage
+lumber
+lunar
+lunch
+luxury
+lyrics
+machine
+mad
+magic
+magnet
+maid
+mail
+main
+major
+make
+mammal
+man
+manage
+mandate
+mango
+mansion
+manual
+maple
+marble
+march
+margin
+marine
+market
+marriage
+mask
+mass
+master
+match
+material
+math
+matrix
+matter
+maximum
+maze
+meadow
+mean
+measure
+meat
+mechanic
+medal
+media
+melody
+melt
+member
+memory
+mention
+menu
+mercy
+merge
+merit
+merry
+mesh
+message
+metal
+method
+middle
+midnight
+milk
+million
+mimic
+mind
+minimum
+minor
+minute
+miracle
+mirror
+misery
+miss
+mistake
+mix
+mixed
+mixture
+mobile
+model
+modify
+mom
+moment
+monitor
+monkey
+monster
+month
+moon
+moral
+more
+morning
+mosquito
+mother
+motion
+motor
+mountain
+mouse
+move
+movie
+much
+muffin
+mule
+multiply
+muscle
+museum
+mushroom
+music
+must
+mutual
+myself
+mystery
+myth
+naive
+name
+napkin
+narrow
+nasty
+nation
+nature
+near
+neck
+need
+negative
+neglect
+neither
+nephew
+nerve
+nest
+net
+network
+neutral
+never
+news
+next
+nice
+night
+noble
+noise
+nominee
+noodle
+normal
+north
+nose
+notable
+note
+nothing
+notice
+novel
+now
+nuclear
+number
+nurse
+nut
+oak
+obey
+object
+oblige
+obscure
+observe
+obtain
+obvious
+occur
+ocean
+october
+odor
+off
+offer
+office
+often
+oil
+okay
+old
+olive
+olympic
+omit
+once
+one
+onion
+online
+only
+open
+opera
+opinion
+oppose
+option
+orange
+orbit
+orchard
+order
+ordinary
+organ
+orient
+original
+orphan
+ostrich
+other
+outdoor
+outer
+output
+outside
+oval
+oven
+over
+own
+owner
+oxygen
+oyster
+ozone
+pact
+paddle
+page
+pair
+palace
+palm
+panda
+panel
+panic
+panther
+paper
+parade
+parent
+park
+parrot
+party
+pass
+patch
+path
+patient
+patrol
+pattern
+pause
+pave
+payment
+peace
+peanut
+pear
+peasant
+pelican
+pen
+penalty
+pencil
+people
+pepper
+perfect
+permit
+person
+pet
+phone
+photo
+phrase
+physical
+piano
+picnic
+picture
+piece
+pig
+pigeon
+pill
+pilot
+pink
+pioneer
+pipe
+pistol
+pitch
+pizza
+place
+planet
+plastic
+plate
+play
+please
+pledge
+pluck
+plug
+plunge
+poem
+poet
+point
+polar
+pole
+police
+pond
+pony
+pool
+popular
+portion
+position
+possible
+post
+potato
+pottery
+poverty
+powder
+power
+practice
+praise
+predict
+prefer
+prepare
+present
+pretty
+prevent
+price
+pride
+primary
+print
+priority
+prison
+private
+prize
+problem
+process
+produce
+profit
+program
+project
+promote
+proof
+property
+prosper
+protect
+proud
+provide
+public
+pudding
+pull
+pulp
+pulse
+pumpkin
+punch
+pupil
+puppy
+purchase
+purity
+purpose
+purse
+push
+put
+puzzle
+pyramid
+quality
+quantum
+quarter
+question
+quick
+quit
+quiz
+quote
+rabbit
+raccoon
+race
+rack
+radar
+radio
+rail
+rain
+raise
+rally
+ramp
+ranch
+random
+range
+rapid
+rare
+rate
+rather
+raven
+raw
+razor
+ready
+real
+reason
+rebel
+rebuild
+recall
+receive
+recipe
+record
+recycle
+reduce
+reflect
+reform
+refuse
+region
+regret
+regular
+reject
+relax
+release
+relief
+rely
+remain
+remember
+remind
+remove
+render
+renew
+rent
+reopen
+repair
+repeat
+replace
+report
+require
+rescue
+resemble
+resist
+resource
+response
+result
+retire
+retreat
+return
+reunion
+reveal
+review
+reward
+rhythm
+rib
+ribbon
+rice
+rich
+ride
+ridge
+rifle
+right
+rigid
+ring
+riot
+ripple
+risk
+ritual
+rival
+river
+road
+roast
+robot
+robust
+rocket
+romance
+roof
+rookie
+room
+rose
+rotate
+rough
+round
+route
+royal
+rubber
+rude
+rug
+rule
+run
+runway
+rural
+sad
+saddle
+sadness
+safe
+sail
+salad
+salmon
+salon
+salt
+salute
+same
+sample
+sand
+satisfy
+satoshi
+sauce
+sausage
+save
+say
+scale
+scan
+scare
+scatter
+scene
+scheme
+school
+science
+scissors
+scorpion
+scout
+scrap
+screen
+script
+scrub
+sea
+search
+season
+seat
+second
+secret
+section
+security
+seed
+seek
+segment
+select
+sell
+seminar
+senior
+sense
+sentence
+series
+service
+session
+settle
+setup
+seven
+shadow
+shaft
+shallow
+share
+shed
+shell
+sheriff
+shield
+shift
+shine
+ship
+shiver
+shock
+shoe
+shoot
+shop
+short
+shoulder
+shove
+shrimp
+shrug
+shuffle
+shy
+sibling
+sick
+side
+siege
+sight
+sign
+silent
+silk
+silly
+silver
+similar
+simple
+since
+sing
+siren
+sister
+situate
+six
+size
+skate
+sketch
+ski
+skill
+skin
+skirt
+skull
+slab
+slam
+sleep
+slender
+slice
+slide
+slight
+slim
+slogan
+slot
+slow
+slush
+small
+smart
+smile
+smoke
+smooth
+snack
+snake
+snap
+sniff
+snow
+soap
+soccer
+social
+sock
+soda
+soft
+solar
+soldier
+solid
+solution
+solve
+someone
+song
+soon
+sorry
+sort
+soul
+sound
+soup
+source
+south
+space
+spare
+spatial
+spawn
+speak
+special
+speed
+spell
+spend
+sphere
+spice
+spider
+spike
+spin
+spirit
+split
+spoil
+sponsor
+spoon
+sport
+spot
+spray
+spread
+spring
+spy
+square
+squeeze
+squirrel
+stable
+stadium
+staff
+stage
+stairs
+stamp
+stand
+start
+state
+stay
+steak
+steel
+stem
+step
+stereo
+stick
+still
+sting
+stock
+stomach
+stone
+stool
+story
+stove
+strategy
+street
+strike
+strong
+struggle
+student
+stuff
+stumble
+style
+subject
+submit
+subway
+success
+such
+sudden
+suffer
+sugar
+suggest
+suit
+summer
+sun
+sunny
+sunset
+super
+supply
+supreme
+sure
+surface
+surge
+surprise
+surround
+survey
+suspect
+sustain
+swallow
+swamp
+swap
+swarm
+swear
+sweet
+swift
+swim
+swing
+switch
+sword
+symbol
+symptom
+syrup
+system
+table
+tackle
+tag
+tail
+talent
+talk
+tank
+tape
+target
+task
+taste
+tattoo
+taxi
+teach
+team
+tell
+ten
+tenant
+tennis
+tent
+term
+test
+text
+thank
+that
+theme
+then
+theory
+there
+they
+thing
+this
+thought
+three
+thrive
+throw
+thumb
+thunder
+ticket
+tide
+tiger
+tilt
+timber
+time
+tiny
+tip
+tired
+tissue
+title
+toast
+tobacco
+today
+toddler
+toe
+together
+toilet
+token
+tomato
+tomorrow
+tone
+tongue
+tonight
+tool
+tooth
+top
+topic
+topple
+torch
+tornado
+tortoise
+toss
+total
+tourist
+toward
+tower
+town
+toy
+track
+trade
+traffic
+tragic
+train
+transfer
+trap
+trash
+travel
+tray
+treat
+tree
+trend
+trial
+tribe
+trick
+trigger
+trim
+trip
+trophy
+trouble
+truck
+true
+truly
+trumpet
+trust
+truth
+try
+tube
+tuition
+tumble
+tuna
+tunnel
+turkey
+turn
+turtle
+twelve
+twenty
+twice
+twin
+twist
+two
+type
+typical
+ugly
+umbrella
+unable
+unaware
+uncle
+uncover
+under
+undo
+unfair
+unfold
+unhappy
+uniform
+unique
+unit
+universe
+unknown
+unlock
+until
+unusual
+unveil
+update
+upgrade
+uphold
+upon
+upper
+upset
+urban
+urge
+usage
+use
+used
+useful
+useless
+usual
+utility
+vacant
+vacuum
+vague
+valid
+valley
+valve
+van
+vanish
+vapor
+various
+vast
+vault
+vehicle
+velvet
+vendor
+venture
+venue
+verb
+verify
+version
+very
+vessel
+veteran
+viable
+vibrant
+vicious
+victory
+video
+view
+village
+vintage
+violin
+virtual
+virus
+visa
+visit
+visual
+vital
+vivid
+vocal
+voice
+void
+volcano
+volume
+vote
+voyage
+wage
+wagon
+wait
+walk
+wall
+walnut
+want
+warfare
+warm
+warrior
+wash
+wasp
+waste
+water
+wave
+way
+wealth
+weapon
+wear
+weasel
+weather
+web
+wedding
+weekend
+weird
+welcome
+west
+wet
+whale
+what
+wheat
+wheel
+when
+where
+whip
+whisper
+wide
+width
+wife
+wild
+will
+win
+window
+wine
+wing
+wink
+winner
+winter
+wire
+wisdom
+wise
+wish
+witness
+wolf
+woman
+wonder
+wood
+wool
+word
+work
+world
+worry
+worth
+wrap
+wreck
+wrestle
+wrist
+write
+wrong
+yard
+year
+yellow
+you
+young
+youth
+zebra
+zero
+zone
+zoo`.split(`
+`)), english;
+}
+var ECDSA = {}, hasRequiredECDSA;
+function requireECDSA() {
+  if (hasRequiredECDSA) return ECDSA;
+  hasRequiredECDSA = 1, Object.defineProperty(ECDSA, "__esModule", { value: !0 });
+  var e;
+  return (function(r) {
+    r.ed25519 = "ed25519", r.secp256k1 = "ecdsa-secp256k1";
+  })(e || (e = {})), ECDSA.default = e, ECDSA;
+}
+var transactions = {}, transaction = {}, accountDelete = {}, hasRequiredAccountDelete;
+function requireAccountDelete() {
+  if (hasRequiredAccountDelete) return accountDelete;
+  hasRequiredAccountDelete = 1, Object.defineProperty(accountDelete, "__esModule", { value: !0 }), accountDelete.validateAccountDelete = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "Destination", e.isAccount), (0, e.validateOptionalField)(t, "DestinationTag", e.isNumber), (0, e.validateCredentialsList)(t.CredentialIDs, t.TransactionType, !0, e.MAX_AUTHORIZED_CREDENTIALS);
+  }
+  return accountDelete.validateAccountDelete = r, accountDelete;
+}
+var AMMBid = {}, hasRequiredAMMBid;
+function requireAMMBid() {
+  if (hasRequiredAMMBid) return AMMBid;
+  hasRequiredAMMBid = 1, Object.defineProperty(AMMBid, "__esModule", { value: !0 }), AMMBid.validateAMMBid = void 0;
+  const e = requireErrors(), r = requireCommon(), t = 4;
+  function i(s) {
+    if ((0, r.validateBaseTransaction)(s), s.Asset == null)
+      throw new e.ValidationError("AMMBid: missing field Asset");
+    if (!(0, r.isIssuedCurrency)(s.Asset))
+      throw new e.ValidationError("AMMBid: Asset must be a Currency");
+    if (s.Asset2 == null)
+      throw new e.ValidationError("AMMBid: missing field Asset2");
+    if (!(0, r.isIssuedCurrency)(s.Asset2))
+      throw new e.ValidationError("AMMBid: Asset2 must be a Currency");
+    if (s.BidMin != null && !(0, r.isAmount)(s.BidMin))
+      throw new e.ValidationError("AMMBid: BidMin must be an Amount");
+    if (s.BidMax != null && !(0, r.isAmount)(s.BidMax))
+      throw new e.ValidationError("AMMBid: BidMax must be an Amount");
+    if (s.AuthAccounts != null) {
+      if (!(0, r.isArray)(s.AuthAccounts))
+        throw new e.ValidationError("AMMBid: AuthAccounts must be an AuthAccount array");
+      if (s.AuthAccounts.length > t)
+        throw new e.ValidationError(`AMMBid: AuthAccounts length must not be greater than ${t}`);
+      n(s.Account, s.AuthAccounts);
+    }
+  }
+  AMMBid.validateAMMBid = i;
+  function n(s, a) {
+    for (const o of a) {
+      if (!(0, r.isRecord)(o))
+        throw new e.ValidationError("AMMBid: invalid AuthAccounts");
+      if (!(0, r.isRecord)(o.AuthAccount))
+        throw new e.ValidationError("AMMBid: invalid AuthAccounts");
+      if (o.AuthAccount.Account == null)
+        throw new e.ValidationError("AMMBid: invalid AuthAccounts");
+      if (typeof o.AuthAccount.Account != "string")
+        throw new e.ValidationError("AMMBid: invalid AuthAccounts");
+      if (o.AuthAccount.Account === s)
+        throw new e.ValidationError("AMMBid: AuthAccounts must not include sender's address");
+    }
+    return !0;
+  }
+  return AMMBid;
+}
+var AMMCreate = {}, hasRequiredAMMCreate;
+function requireAMMCreate() {
+  return hasRequiredAMMCreate || (hasRequiredAMMCreate = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.validateAMMCreate = e.AMM_MAX_TRADING_FEE = void 0;
+    const r = requireErrors(), t = requireCommon();
+    e.AMM_MAX_TRADING_FEE = 1e3;
+    function i(n) {
+      if ((0, t.validateBaseTransaction)(n), n.Amount == null)
+        throw new r.ValidationError("AMMCreate: missing field Amount");
+      if (!(0, t.isAmount)(n.Amount))
+        throw new r.ValidationError("AMMCreate: Amount must be an Amount");
+      if (n.Amount2 == null)
+        throw new r.ValidationError("AMMCreate: missing field Amount2");
+      if (!(0, t.isAmount)(n.Amount2))
+        throw new r.ValidationError("AMMCreate: Amount2 must be an Amount");
+      if (n.TradingFee == null)
+        throw new r.ValidationError("AMMCreate: missing field TradingFee");
+      if (typeof n.TradingFee != "number")
+        throw new r.ValidationError("AMMCreate: TradingFee must be a number");
+      if (n.TradingFee < 0 || n.TradingFee > e.AMM_MAX_TRADING_FEE)
+        throw new r.ValidationError(`AMMCreate: TradingFee must be between 0 and ${e.AMM_MAX_TRADING_FEE}`);
+    }
+    e.validateAMMCreate = i;
+  })(AMMCreate)), AMMCreate;
+}
+var AMMDelete = {}, hasRequiredAMMDelete;
+function requireAMMDelete() {
+  if (hasRequiredAMMDelete) return AMMDelete;
+  hasRequiredAMMDelete = 1, Object.defineProperty(AMMDelete, "__esModule", { value: !0 }), AMMDelete.validateAMMDelete = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.Asset == null)
+      throw new e.ValidationError("AMMDelete: missing field Asset");
+    if (!(0, r.isIssuedCurrency)(i.Asset))
+      throw new e.ValidationError("AMMDelete: Asset must be a Currency");
+    if (i.Asset2 == null)
+      throw new e.ValidationError("AMMDelete: missing field Asset2");
+    if (!(0, r.isIssuedCurrency)(i.Asset2))
+      throw new e.ValidationError("AMMDelete: Asset2 must be a Currency");
+  }
+  return AMMDelete.validateAMMDelete = t, AMMDelete;
+}
+var AMMVote = {}, hasRequiredAMMVote;
+function requireAMMVote() {
+  if (hasRequiredAMMVote) return AMMVote;
+  hasRequiredAMMVote = 1, Object.defineProperty(AMMVote, "__esModule", { value: !0 }), AMMVote.validateAMMVote = void 0;
+  const e = requireErrors(), r = requireAMMCreate(), t = requireCommon();
+  function i(n) {
+    if ((0, t.validateBaseTransaction)(n), n.Asset == null)
+      throw new e.ValidationError("AMMVote: missing field Asset");
+    if (!(0, t.isIssuedCurrency)(n.Asset))
+      throw new e.ValidationError("AMMVote: Asset must be a Currency");
+    if (n.Asset2 == null)
+      throw new e.ValidationError("AMMVote: missing field Asset2");
+    if (!(0, t.isIssuedCurrency)(n.Asset2))
+      throw new e.ValidationError("AMMVote: Asset2 must be a Currency");
+    if (n.TradingFee == null)
+      throw new e.ValidationError("AMMVote: missing field TradingFee");
+    if (typeof n.TradingFee != "number")
+      throw new e.ValidationError("AMMVote: TradingFee must be a number");
+    if (n.TradingFee < 0 || n.TradingFee > r.AMM_MAX_TRADING_FEE)
+      throw new e.ValidationError(`AMMVote: TradingFee must be between 0 and ${r.AMM_MAX_TRADING_FEE}`);
+  }
+  return AMMVote.validateAMMVote = i, AMMVote;
+}
+var checkCancel = {}, hasRequiredCheckCancel;
+function requireCheckCancel() {
+  if (hasRequiredCheckCancel) return checkCancel;
+  hasRequiredCheckCancel = 1, Object.defineProperty(checkCancel, "__esModule", { value: !0 }), checkCancel.validateCheckCancel = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.CheckID !== void 0 && typeof i.CheckID != "string")
+      throw new e.ValidationError("CheckCancel: invalid CheckID");
+  }
+  return checkCancel.validateCheckCancel = t, checkCancel;
+}
+var checkCash = {}, hasRequiredCheckCash;
+function requireCheckCash() {
+  if (hasRequiredCheckCash) return checkCash;
+  hasRequiredCheckCash = 1, Object.defineProperty(checkCash, "__esModule", { value: !0 }), checkCash.validateCheckCash = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.Amount == null && i.DeliverMin == null)
+      throw new e.ValidationError("CheckCash: must have either Amount or DeliverMin");
+    if (i.Amount != null && i.DeliverMin != null)
+      throw new e.ValidationError("CheckCash: cannot have both Amount and DeliverMin");
+    if (i.Amount != null && i.Amount !== void 0 && !(0, r.isAmount)(i.Amount))
+      throw new e.ValidationError("CheckCash: invalid Amount");
+    if (i.DeliverMin != null && i.DeliverMin !== void 0 && !(0, r.isAmount)(i.DeliverMin))
+      throw new e.ValidationError("CheckCash: invalid DeliverMin");
+    if (i.CheckID !== void 0 && typeof i.CheckID != "string")
+      throw new e.ValidationError("CheckCash: invalid CheckID");
+  }
+  return checkCash.validateCheckCash = t, checkCash;
+}
+var checkCreate = {}, hasRequiredCheckCreate;
+function requireCheckCreate() {
+  if (hasRequiredCheckCreate) return checkCreate;
+  hasRequiredCheckCreate = 1, Object.defineProperty(checkCreate, "__esModule", { value: !0 }), checkCreate.validateCheckCreate = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.SendMax === void 0)
+      throw new e.ValidationError("CheckCreate: missing field SendMax");
+    if ((0, r.validateRequiredField)(i, "Destination", r.isAccount), (0, r.validateOptionalField)(i, "DestinationTag", r.isNumber), typeof i.SendMax != "string" && !(0, r.isIssuedCurrencyAmount)(i.SendMax))
+      throw new e.ValidationError("CheckCreate: invalid SendMax");
+    if (i.Expiration !== void 0 && typeof i.Expiration != "number")
+      throw new e.ValidationError("CheckCreate: invalid Expiration");
+    if (i.InvoiceID !== void 0 && typeof i.InvoiceID != "string")
+      throw new e.ValidationError("CheckCreate: invalid InvoiceID");
+  }
+  return checkCreate.validateCheckCreate = t, checkCreate;
+}
+var clawback = {}, hasRequiredClawback;
+function requireClawback() {
+  if (hasRequiredClawback) return clawback;
+  hasRequiredClawback = 1, Object.defineProperty(clawback, "__esModule", { value: !0 }), clawback.validateClawback = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), (0, r.validateRequiredField)(i, "Amount", r.isClawbackAmount), (0, r.validateOptionalField)(i, "Holder", r.isAccount), !(0, r.isIssuedCurrencyAmount)(i.Amount) && !(0, r.isMPTAmount)(i.Amount))
+      throw new e.ValidationError("Clawback: invalid Amount");
+    if ((0, r.isIssuedCurrencyAmount)(i.Amount) && i.Account === i.Amount.issuer)
+      throw new e.ValidationError("Clawback: invalid holder Account");
+    if ((0, r.isMPTAmount)(i.Amount) && i.Account === i.Holder)
+      throw new e.ValidationError("Clawback: invalid holder Account");
+    if ((0, r.isIssuedCurrencyAmount)(i.Amount) && i.Holder)
+      throw new e.ValidationError("Clawback: cannot have Holder for currency");
+    if ((0, r.isMPTAmount)(i.Amount) && !i.Holder)
+      throw new e.ValidationError("Clawback: missing Holder");
+  }
+  return clawback.validateClawback = t, clawback;
+}
+var CredentialAccept = {}, hasRequiredCredentialAccept;
+function requireCredentialAccept() {
+  if (hasRequiredCredentialAccept) return CredentialAccept;
+  hasRequiredCredentialAccept = 1, Object.defineProperty(CredentialAccept, "__esModule", { value: !0 }), CredentialAccept.validateCredentialAccept = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "Account", e.isString), (0, e.validateRequiredField)(t, "Issuer", e.isString), (0, e.validateCredentialType)(t);
+  }
+  return CredentialAccept.validateCredentialAccept = r, CredentialAccept;
+}
+var CredentialCreate = {}, hasRequiredCredentialCreate;
+function requireCredentialCreate() {
+  if (hasRequiredCredentialCreate) return CredentialCreate;
+  hasRequiredCredentialCreate = 1, Object.defineProperty(CredentialCreate, "__esModule", { value: !0 }), CredentialCreate.validateCredentialCreate = void 0;
+  const e = requireBrowser$4(), r = requireErrors(), t = requireCommon(), i = 256;
+  function n(a) {
+    (0, t.validateBaseTransaction)(a), (0, t.validateRequiredField)(a, "Account", t.isString), (0, t.validateRequiredField)(a, "Subject", t.isString), (0, t.validateCredentialType)(a), (0, t.validateOptionalField)(a, "Expiration", t.isNumber), s(a.URI);
+  }
+  CredentialCreate.validateCredentialCreate = n;
+  function s(a) {
+    if (a !== void 0) {
+      if (typeof a != "string")
+        throw new r.ValidationError("CredentialCreate: invalid field URI");
+      if (a.length === 0)
+        throw new r.ValidationError("CredentialCreate: URI cannot be an empty string");
+      if (a.length > i)
+        throw new r.ValidationError(`CredentialCreate: URI length must be <= ${i}`);
+      if (!e.HEX_REGEX.test(a))
+        throw new r.ValidationError("CredentialCreate: URI must be encoded in hex");
+    }
+  }
+  return CredentialCreate;
+}
+var CredentialDelete = {}, hasRequiredCredentialDelete;
+function requireCredentialDelete() {
+  if (hasRequiredCredentialDelete) return CredentialDelete;
+  hasRequiredCredentialDelete = 1, Object.defineProperty(CredentialDelete, "__esModule", { value: !0 }), CredentialDelete.validateCredentialDelete = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), !i.Subject && !i.Issuer)
+      throw new e.ValidationError("CredentialDelete: either `Issuer` or `Subject` must be provided");
+    (0, r.validateRequiredField)(i, "Account", r.isString), (0, r.validateCredentialType)(i), (0, r.validateOptionalField)(i, "Subject", r.isString), (0, r.validateOptionalField)(i, "Issuer", r.isString);
+  }
+  return CredentialDelete.validateCredentialDelete = t, CredentialDelete;
+}
+var delegateSet = {}, hasRequiredDelegateSet;
+function requireDelegateSet() {
+  if (hasRequiredDelegateSet) return delegateSet;
+  hasRequiredDelegateSet = 1, Object.defineProperty(delegateSet, "__esModule", { value: !0 }), delegateSet.validateDelegateSet = void 0;
+  const e = requireErrors(), r = requireCommon(), t = 10, i = /* @__PURE__ */ new Set([
+    "AccountSet",
+    "SetRegularKey",
+    "SignerListSet",
+    "DelegateSet",
+    "AccountDelete",
+    "Batch",
+    "EnableAmendment",
+    "SetFee",
+    "UNLModify"
+  ]);
+  function n(s) {
+    if ((0, r.validateBaseTransaction)(s), (0, r.validateRequiredField)(s, "Authorize", r.isAccount), s.Authorize === s.Account)
+      throw new e.ValidationError("DelegateSet: Authorize and Account must be different.");
+    (0, r.validateRequiredField)(s, "Permissions", Array.isArray);
+    const a = s.Permissions;
+    if (a.length > t)
+      throw new e.ValidationError(`DelegateSet: Permissions array length cannot be greater than ${t}.`);
+    const o = /* @__PURE__ */ new Set();
+    if (a.forEach((d) => {
+      if (d == null || Object.keys(d).length !== 1 || d.Permission == null || Object.keys(d.Permission).length !== 1)
+        throw new e.ValidationError("DelegateSet: Permissions array element is malformed");
+      const u = d.Permission.PermissionValue;
+      if (u == null)
+        throw new e.ValidationError("DelegateSet: PermissionValue must be defined");
+      if (typeof u != "string")
+        throw new e.ValidationError("DelegateSet: PermissionValue must be a string");
+      if (i.has(u))
+        throw new e.ValidationError(`DelegateSet: PermissionValue contains a non-delegatable transaction ${u}`);
+      o.add(u);
+    }), a.length !== o.size)
+      throw new e.ValidationError("DelegateSet: Permissions array cannot contain duplicate values");
+  }
+  return delegateSet.validateDelegateSet = n, delegateSet;
+}
+var depositPreauth = {}, hasRequiredDepositPreauth;
+function requireDepositPreauth() {
+  if (hasRequiredDepositPreauth) return depositPreauth;
+  hasRequiredDepositPreauth = 1, Object.defineProperty(depositPreauth, "__esModule", { value: !0 }), depositPreauth.validateDepositPreauth = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(n) {
+    if ((0, r.validateBaseTransaction)(n), i(n), n.Authorize !== void 0) {
+      if (typeof n.Authorize != "string")
+        throw new e.ValidationError("DepositPreauth: Authorize must be a string");
+      if (n.Account === n.Authorize)
+        throw new e.ValidationError("DepositPreauth: Account can't preauthorize its own address");
+    } else if (n.Unauthorize !== void 0) {
+      if (typeof n.Unauthorize != "string")
+        throw new e.ValidationError("DepositPreauth: Unauthorize must be a string");
+      if (n.Account === n.Unauthorize)
+        throw new e.ValidationError("DepositPreauth: Account can't unauthorize its own address");
+    } else n.AuthorizeCredentials !== void 0 ? (0, r.validateCredentialsList)(n.AuthorizeCredentials, n.TransactionType, !1, r.MAX_AUTHORIZED_CREDENTIALS) : n.UnauthorizeCredentials !== void 0 && (0, r.validateCredentialsList)(n.UnauthorizeCredentials, n.TransactionType, !1, r.MAX_AUTHORIZED_CREDENTIALS);
+  }
+  depositPreauth.validateDepositPreauth = t;
+  function i(n) {
+    if ([
+      "Authorize",
+      "Unauthorize",
+      "AuthorizeCredentials",
+      "UnauthorizeCredentials"
+    ].filter((o) => n[o] !== void 0).length !== 1)
+      throw new e.ValidationError("DepositPreauth: Requires exactly one field of the following: Authorize, Unauthorize, AuthorizeCredentials, UnauthorizeCredentials.");
+  }
+  return depositPreauth;
+}
+var DIDDelete = {}, hasRequiredDIDDelete;
+function requireDIDDelete() {
+  if (hasRequiredDIDDelete) return DIDDelete;
+  hasRequiredDIDDelete = 1, Object.defineProperty(DIDDelete, "__esModule", { value: !0 }), DIDDelete.validateDIDDelete = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t);
+  }
+  return DIDDelete.validateDIDDelete = r, DIDDelete;
+}
+var DIDSet = {}, hasRequiredDIDSet;
+function requireDIDSet() {
+  if (hasRequiredDIDSet) return DIDSet;
+  hasRequiredDIDSet = 1, Object.defineProperty(DIDSet, "__esModule", { value: !0 }), DIDSet.validateDIDSet = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), (0, r.validateOptionalField)(i, "Data", r.isString), (0, r.validateOptionalField)(i, "DIDDocument", r.isString), (0, r.validateOptionalField)(i, "URI", r.isString), i.Data === void 0 && i.DIDDocument === void 0 && i.URI === void 0)
+      throw new e.ValidationError("DIDSet: Must have at least one of `Data`, `DIDDocument`, and `URI`");
+  }
+  return DIDSet.validateDIDSet = t, DIDSet;
+}
+var escrowCancel = {}, hasRequiredEscrowCancel;
+function requireEscrowCancel() {
+  if (hasRequiredEscrowCancel) return escrowCancel;
+  hasRequiredEscrowCancel = 1, Object.defineProperty(escrowCancel, "__esModule", { value: !0 }), escrowCancel.validateEscrowCancel = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), (0, r.validateRequiredField)(i, "Owner", r.isAccount), i.OfferSequence == null)
+      throw new e.ValidationError("EscrowCancel: missing OfferSequence");
+    if (typeof i.OfferSequence != "number" && typeof i.OfferSequence != "string" || Number.isNaN(Number(i.OfferSequence)))
+      throw new e.ValidationError("EscrowCancel: OfferSequence must be a number");
+  }
+  return escrowCancel.validateEscrowCancel = t, escrowCancel;
+}
+var escrowCreate = {}, hasRequiredEscrowCreate;
+function requireEscrowCreate() {
+  if (hasRequiredEscrowCreate) return escrowCreate;
+  hasRequiredEscrowCreate = 1, Object.defineProperty(escrowCreate, "__esModule", { value: !0 }), escrowCreate.validateEscrowCreate = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), (0, r.validateRequiredField)(i, "Amount", r.isAmount), (0, r.validateRequiredField)(i, "Destination", r.isAccount), (0, r.validateOptionalField)(i, "DestinationTag", r.isNumber), i.CancelAfter === void 0 && i.FinishAfter === void 0)
+      throw new e.ValidationError("EscrowCreate: Either CancelAfter or FinishAfter must be specified");
+    if (i.FinishAfter === void 0 && i.Condition === void 0)
+      throw new e.ValidationError("EscrowCreate: Either Condition or FinishAfter must be specified");
+    if (i.CancelAfter !== void 0 && typeof i.CancelAfter != "number")
+      throw new e.ValidationError("EscrowCreate: CancelAfter must be a number");
+    if (i.FinishAfter !== void 0 && typeof i.FinishAfter != "number")
+      throw new e.ValidationError("EscrowCreate: FinishAfter must be a number");
+    if (i.Condition !== void 0 && typeof i.Condition != "string")
+      throw new e.ValidationError("EscrowCreate: Condition must be a string");
+  }
+  return escrowCreate.validateEscrowCreate = t, escrowCreate;
+}
+var escrowFinish = {}, hasRequiredEscrowFinish;
+function requireEscrowFinish() {
+  if (hasRequiredEscrowFinish) return escrowFinish;
+  hasRequiredEscrowFinish = 1, Object.defineProperty(escrowFinish, "__esModule", { value: !0 }), escrowFinish.validateEscrowFinish = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), (0, r.validateRequiredField)(i, "Owner", r.isAccount), (0, r.validateCredentialsList)(i.CredentialIDs, i.TransactionType, !0, r.MAX_AUTHORIZED_CREDENTIALS), i.OfferSequence == null)
+      throw new e.ValidationError("EscrowFinish: missing field OfferSequence");
+    if (typeof i.OfferSequence != "number" && typeof i.OfferSequence != "string" || Number.isNaN(Number(i.OfferSequence)))
+      throw new e.ValidationError("EscrowFinish: OfferSequence must be a number");
+    if (i.Condition !== void 0 && typeof i.Condition != "string")
+      throw new e.ValidationError("EscrowFinish: Condition must be a string");
+    if (i.Fulfillment !== void 0 && typeof i.Fulfillment != "string")
+      throw new e.ValidationError("EscrowFinish: Fulfillment must be a string");
+  }
+  return escrowFinish.validateEscrowFinish = t, escrowFinish;
+}
+var MPTokenIssuanceDestroy = {}, hasRequiredMPTokenIssuanceDestroy;
+function requireMPTokenIssuanceDestroy() {
+  if (hasRequiredMPTokenIssuanceDestroy) return MPTokenIssuanceDestroy;
+  hasRequiredMPTokenIssuanceDestroy = 1, Object.defineProperty(MPTokenIssuanceDestroy, "__esModule", { value: !0 }), MPTokenIssuanceDestroy.validateMPTokenIssuanceDestroy = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "MPTokenIssuanceID", e.isString);
+  }
+  return MPTokenIssuanceDestroy.validateMPTokenIssuanceDestroy = r, MPTokenIssuanceDestroy;
+}
+var NFTokenAcceptOffer = {}, hasRequiredNFTokenAcceptOffer;
+function requireNFTokenAcceptOffer() {
+  if (hasRequiredNFTokenAcceptOffer) return NFTokenAcceptOffer;
+  hasRequiredNFTokenAcceptOffer = 1, Object.defineProperty(NFTokenAcceptOffer, "__esModule", { value: !0 }), NFTokenAcceptOffer.validateNFTokenAcceptOffer = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(n) {
+    const s = (0, r.parseAmountValue)(n.NFTokenBrokerFee);
+    if (Number.isNaN(s))
+      throw new e.ValidationError("NFTokenAcceptOffer: invalid NFTokenBrokerFee");
+    if (s <= 0)
+      throw new e.ValidationError("NFTokenAcceptOffer: NFTokenBrokerFee must be greater than 0; omit if there is no fee");
+    if (n.NFTokenSellOffer == null || n.NFTokenBuyOffer == null)
+      throw new e.ValidationError("NFTokenAcceptOffer: both NFTokenSellOffer and NFTokenBuyOffer must be set if using brokered mode");
+  }
+  function i(n) {
+    if ((0, r.validateBaseTransaction)(n), n.NFTokenBrokerFee != null && t(n), n.NFTokenSellOffer == null && n.NFTokenBuyOffer == null)
+      throw new e.ValidationError("NFTokenAcceptOffer: must set either NFTokenSellOffer or NFTokenBuyOffer");
+  }
+  return NFTokenAcceptOffer.validateNFTokenAcceptOffer = i, NFTokenAcceptOffer;
+}
+var NFTokenBurn = {}, hasRequiredNFTokenBurn;
+function requireNFTokenBurn() {
+  if (hasRequiredNFTokenBurn) return NFTokenBurn;
+  hasRequiredNFTokenBurn = 1, Object.defineProperty(NFTokenBurn, "__esModule", { value: !0 }), NFTokenBurn.validateNFTokenBurn = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "NFTokenID", e.isString), (0, e.validateOptionalField)(t, "Owner", e.isAccount);
+  }
+  return NFTokenBurn.validateNFTokenBurn = r, NFTokenBurn;
+}
+var NFTokenCancelOffer = {}, hasRequiredNFTokenCancelOffer;
+function requireNFTokenCancelOffer() {
+  if (hasRequiredNFTokenCancelOffer) return NFTokenCancelOffer;
+  hasRequiredNFTokenCancelOffer = 1, Object.defineProperty(NFTokenCancelOffer, "__esModule", { value: !0 }), NFTokenCancelOffer.validateNFTokenCancelOffer = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), !(0, r.isArray)(i.NFTokenOffers))
+      throw new e.ValidationError("NFTokenCancelOffer: missing field NFTokenOffers");
+    if (i.NFTokenOffers.length < 1)
+      throw new e.ValidationError("NFTokenCancelOffer: empty field NFTokenOffers");
+  }
+  return NFTokenCancelOffer.validateNFTokenCancelOffer = t, NFTokenCancelOffer;
+}
+var NFTokenModify = {}, hasRequiredNFTokenModify;
+function requireNFTokenModify() {
+  if (hasRequiredNFTokenModify) return NFTokenModify;
+  hasRequiredNFTokenModify = 1, Object.defineProperty(NFTokenModify, "__esModule", { value: !0 }), NFTokenModify.validateNFTokenModify = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  function i(n) {
+    if ((0, t.validateBaseTransaction)(n), (0, t.validateRequiredField)(n, "NFTokenID", t.isString), (0, t.validateOptionalField)(n, "Owner", t.isAccount), (0, t.validateOptionalField)(n, "URI", t.isString), n.URI !== void 0 && typeof n.URI == "string") {
+      if (n.URI === "")
+        throw new e.ValidationError("NFTokenModify: URI must not be empty string");
+      if (!(0, r.isHex)(n.URI))
+        throw new e.ValidationError("NFTokenModify: URI must be in hex format");
+    }
+  }
+  return NFTokenModify.validateNFTokenModify = i, NFTokenModify;
+}
+var offerCancel = {}, hasRequiredOfferCancel;
+function requireOfferCancel() {
+  if (hasRequiredOfferCancel) return offerCancel;
+  hasRequiredOfferCancel = 1, Object.defineProperty(offerCancel, "__esModule", { value: !0 }), offerCancel.validateOfferCancel = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.OfferSequence === void 0)
+      throw new e.ValidationError("OfferCancel: missing field OfferSequence");
+    if (typeof i.OfferSequence != "number")
+      throw new e.ValidationError("OfferCancel: OfferSequence must be a number");
+  }
+  return offerCancel.validateOfferCancel = t, offerCancel;
+}
+var oracleDelete = {}, hasRequiredOracleDelete;
+function requireOracleDelete() {
+  if (hasRequiredOracleDelete) return oracleDelete;
+  hasRequiredOracleDelete = 1, Object.defineProperty(oracleDelete, "__esModule", { value: !0 }), oracleDelete.validateOracleDelete = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "OracleDocumentID", e.isNumber);
+  }
+  return oracleDelete.validateOracleDelete = r, oracleDelete;
+}
+var oracleSet = {}, hasRequiredOracleSet;
+function requireOracleSet() {
+  if (hasRequiredOracleSet) return oracleSet;
+  hasRequiredOracleSet = 1, Object.defineProperty(oracleSet, "__esModule", { value: !0 }), oracleSet.validateOracleSet = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon(), i = 10, n = 10, s = 1, a = 16;
+  function o(d) {
+    (0, t.validateBaseTransaction)(d), (0, t.validateRequiredField)(d, "OracleDocumentID", t.isNumber), (0, t.validateRequiredField)(d, "LastUpdateTime", t.isNumber), (0, t.validateOptionalField)(d, "Provider", t.isString), (0, t.validateOptionalField)(d, "URI", t.isString), (0, t.validateOptionalField)(d, "AssetClass", t.isString), (0, t.validateRequiredField)(d, "PriceDataSeries", (u) => {
+      if (!(0, t.isArray)(u))
+        throw new e.ValidationError("OracleSet: PriceDataSeries must be an array");
+      if (u.length > i)
+        throw new e.ValidationError(`OracleSet: PriceDataSeries must have at most ${i} PriceData objects`);
+      for (const b of u) {
+        if (!(0, t.isRecord)(b))
+          throw new e.ValidationError("OracleSet: PriceDataSeries must be an array of objects");
+        const l = b.PriceData;
+        if (!(0, t.isRecord)(l))
+          throw new e.ValidationError("OracleSet: PriceDataSeries must have a `PriceData` object");
+        if (Object.keys(b).length !== 1)
+          throw new e.ValidationError("OracleSet: PriceDataSeries must only have a single PriceData object");
+        if (l.BaseAsset == null || typeof l.BaseAsset != "string")
+          throw new e.ValidationError("OracleSet: PriceDataSeries must have a `BaseAsset` string");
+        if (typeof l.QuoteAsset != "string")
+          throw new e.ValidationError("OracleSet: PriceDataSeries must have a `QuoteAsset` string");
+        if (l.AssetPrice == null != (l.Scale == null))
+          throw new e.ValidationError("OracleSet: PriceDataSeries must have both `AssetPrice` and `Scale` if any are present");
+        if ("AssetPrice" in l && !(0, t.isNumber)(l.AssetPrice)) {
+          if (typeof l.AssetPrice != "string")
+            throw new e.ValidationError("OracleSet: Field AssetPrice must be a string or a number");
+          if (!(0, r.isHex)(l.AssetPrice))
+            throw new e.ValidationError("OracleSet: Field AssetPrice must be a valid hex string");
+          if (l.AssetPrice.length < s || l.AssetPrice.length > a)
+            throw new e.ValidationError(`OracleSet: Length of AssetPrice field must be between ${s} and ${a} characters long`);
+        }
+        if ("Scale" in l) {
+          if (!(0, t.isNumber)(l.Scale))
+            throw new e.ValidationError("OracleSet: invalid field Scale");
+          if (l.Scale < 0 || l.Scale > n)
+            throw new e.ValidationError(`OracleSet: Scale must be in range 0-${n}`);
+        }
+      }
+      return !0;
+    });
+  }
+  return oracleSet.validateOracleSet = o, oracleSet;
+}
+var paymentChannelCreate = {}, hasRequiredPaymentChannelCreate;
+function requirePaymentChannelCreate() {
+  if (hasRequiredPaymentChannelCreate) return paymentChannelCreate;
+  hasRequiredPaymentChannelCreate = 1, Object.defineProperty(paymentChannelCreate, "__esModule", { value: !0 }), paymentChannelCreate.validatePaymentChannelCreate = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.Amount === void 0)
+      throw new e.ValidationError("PaymentChannelCreate: missing Amount");
+    if (typeof i.Amount != "string")
+      throw new e.ValidationError("PaymentChannelCreate: Amount must be a string");
+    if ((0, r.validateRequiredField)(i, "Destination", r.isAccount), (0, r.validateOptionalField)(i, "DestinationTag", r.isNumber), i.SettleDelay === void 0)
+      throw new e.ValidationError("PaymentChannelCreate: missing SettleDelay");
+    if (typeof i.SettleDelay != "number")
+      throw new e.ValidationError("PaymentChannelCreate: SettleDelay must be a number");
+    if (i.PublicKey === void 0)
+      throw new e.ValidationError("PaymentChannelCreate: missing PublicKey");
+    if (typeof i.PublicKey != "string")
+      throw new e.ValidationError("PaymentChannelCreate: PublicKey must be a string");
+    if (i.CancelAfter !== void 0 && typeof i.CancelAfter != "number")
+      throw new e.ValidationError("PaymentChannelCreate: CancelAfter must be a number");
+  }
+  return paymentChannelCreate.validatePaymentChannelCreate = t, paymentChannelCreate;
+}
+var paymentChannelFund = {}, hasRequiredPaymentChannelFund;
+function requirePaymentChannelFund() {
+  if (hasRequiredPaymentChannelFund) return paymentChannelFund;
+  hasRequiredPaymentChannelFund = 1, Object.defineProperty(paymentChannelFund, "__esModule", { value: !0 }), paymentChannelFund.validatePaymentChannelFund = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.Channel === void 0)
+      throw new e.ValidationError("PaymentChannelFund: missing Channel");
+    if (typeof i.Channel != "string")
+      throw new e.ValidationError("PaymentChannelFund: Channel must be a string");
+    if (i.Amount === void 0)
+      throw new e.ValidationError("PaymentChannelFund: missing Amount");
+    if (typeof i.Amount != "string")
+      throw new e.ValidationError("PaymentChannelFund: Amount must be a string");
+    if (i.Expiration !== void 0 && typeof i.Expiration != "number")
+      throw new e.ValidationError("PaymentChannelFund: Expiration must be a number");
+  }
+  return paymentChannelFund.validatePaymentChannelFund = t, paymentChannelFund;
+}
+var permissionedDomainDelete = {}, hasRequiredPermissionedDomainDelete;
+function requirePermissionedDomainDelete() {
+  if (hasRequiredPermissionedDomainDelete) return permissionedDomainDelete;
+  hasRequiredPermissionedDomainDelete = 1, Object.defineProperty(permissionedDomainDelete, "__esModule", { value: !0 }), permissionedDomainDelete.validatePermissionedDomainDelete = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "DomainID", e.isString);
+  }
+  return permissionedDomainDelete.validatePermissionedDomainDelete = r, permissionedDomainDelete;
+}
+var permissionedDomainSet = {}, hasRequiredPermissionedDomainSet;
+function requirePermissionedDomainSet() {
+  if (hasRequiredPermissionedDomainSet) return permissionedDomainSet;
+  hasRequiredPermissionedDomainSet = 1, Object.defineProperty(permissionedDomainSet, "__esModule", { value: !0 }), permissionedDomainSet.validatePermissionedDomainSet = void 0;
+  const e = requireCommon(), r = 10;
+  function t(i) {
+    (0, e.validateBaseTransaction)(i), (0, e.validateOptionalField)(i, "DomainID", e.isString), (0, e.validateRequiredField)(i, "AcceptedCredentials", e.isArray), (0, e.validateCredentialsList)(i.AcceptedCredentials, i.TransactionType, !1, r);
+  }
+  return permissionedDomainSet.validatePermissionedDomainSet = t, permissionedDomainSet;
+}
+var setRegularKey = {}, hasRequiredSetRegularKey;
+function requireSetRegularKey() {
+  if (hasRequiredSetRegularKey) return setRegularKey;
+  hasRequiredSetRegularKey = 1, Object.defineProperty(setRegularKey, "__esModule", { value: !0 }), setRegularKey.validateSetRegularKey = void 0;
+  const e = requireErrors(), r = requireCommon();
+  function t(i) {
+    if ((0, r.validateBaseTransaction)(i), i.RegularKey !== void 0 && typeof i.RegularKey != "string")
+      throw new e.ValidationError("SetRegularKey: RegularKey must be a string");
+  }
+  return setRegularKey.validateSetRegularKey = t, setRegularKey;
+}
+var signerListSet = {}, hasRequiredSignerListSet;
+function requireSignerListSet() {
+  if (hasRequiredSignerListSet) return signerListSet;
+  hasRequiredSignerListSet = 1, Object.defineProperty(signerListSet, "__esModule", { value: !0 }), signerListSet.validateSignerListSet = void 0;
+  const e = requireErrors(), r = requireCommon(), t = 32, i = /^[0-9A-Fa-f]{64}$/u;
+  function n(s) {
+    if ((0, r.validateBaseTransaction)(s), (0, r.validateRequiredField)(s, "SignerQuorum", r.isNumber), s.SignerQuorum !== 0) {
+      if ((0, r.validateRequiredField)(s, "SignerEntries", r.isArray), s.SignerEntries.length === 0)
+        throw new e.ValidationError("SignerListSet: need at least 1 member in SignerEntries");
+      if (s.SignerEntries.length > t)
+        throw new e.ValidationError(`SignerListSet: maximum of ${t} members allowed in SignerEntries`);
+      for (const a of s.SignerEntries) {
+        if (!(0, r.isRecord)(a) || !(0, r.isRecord)(a.SignerEntry))
+          throw new e.ValidationError("SignerListSet: SignerEntries must be an array of SignerEntry objects");
+        const o = a.SignerEntry, { WalletLocator: d } = o;
+        if (d != null && (!(0, r.isString)(d) || !i.test(d)))
+          throw new e.ValidationError("SignerListSet: WalletLocator in SignerEntry must be a 256-bit (32-byte) hexadecimal value");
+      }
+    }
+  }
+  return signerListSet.validateSignerListSet = n, signerListSet;
+}
+var ticketCreate = {}, hasRequiredTicketCreate;
+function requireTicketCreate() {
+  if (hasRequiredTicketCreate) return ticketCreate;
+  hasRequiredTicketCreate = 1, Object.defineProperty(ticketCreate, "__esModule", { value: !0 }), ticketCreate.validateTicketCreate = void 0;
+  const e = requireErrors(), r = requireCommon(), t = 250;
+  function i(n) {
+    (0, r.validateBaseTransaction)(n);
+    const { TicketCount: s } = n;
+    if (s === void 0)
+      throw new e.ValidationError("TicketCreate: missing field TicketCount");
+    if (typeof s != "number")
+      throw new e.ValidationError("TicketCreate: TicketCount must be a number");
+    if (!Number.isInteger(s) || s < 1 || s > t)
+      throw new e.ValidationError("TicketCreate: TicketCount must be an integer from 1 to 250");
+  }
+  return ticketCreate.validateTicketCreate = i, ticketCreate;
+}
+var vaultClawback = {}, hasRequiredVaultClawback;
+function requireVaultClawback() {
+  if (hasRequiredVaultClawback) return vaultClawback;
+  hasRequiredVaultClawback = 1, Object.defineProperty(vaultClawback, "__esModule", { value: !0 }), vaultClawback.validateVaultClawback = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "VaultID", e.isString), (0, e.validateRequiredField)(t, "Holder", e.isAccount), (0, e.validateOptionalField)(t, "Amount", e.isClawbackAmount);
+  }
+  return vaultClawback.validateVaultClawback = r, vaultClawback;
+}
+var vaultDelete = {}, hasRequiredVaultDelete;
+function requireVaultDelete() {
+  if (hasRequiredVaultDelete) return vaultDelete;
+  hasRequiredVaultDelete = 1, Object.defineProperty(vaultDelete, "__esModule", { value: !0 }), vaultDelete.validateVaultDelete = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "VaultID", e.isString);
+  }
+  return vaultDelete.validateVaultDelete = r, vaultDelete;
+}
+var vaultDeposit = {}, hasRequiredVaultDeposit;
+function requireVaultDeposit() {
+  if (hasRequiredVaultDeposit) return vaultDeposit;
+  hasRequiredVaultDeposit = 1, Object.defineProperty(vaultDeposit, "__esModule", { value: !0 }), vaultDeposit.validateVaultDeposit = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "VaultID", e.isString), (0, e.validateRequiredField)(t, "Amount", e.isAmount);
+  }
+  return vaultDeposit.validateVaultDeposit = r, vaultDeposit;
+}
+var vaultSet = {}, hasRequiredVaultSet;
+function requireVaultSet() {
+  if (hasRequiredVaultSet) return vaultSet;
+  hasRequiredVaultSet = 1, Object.defineProperty(vaultSet, "__esModule", { value: !0 }), vaultSet.validateVaultSet = void 0;
+  const e = requireErrors(), r = requireUtils$8(), t = requireCommon();
+  function i(n) {
+    if ((0, t.validateBaseTransaction)(n), (0, t.validateRequiredField)(n, "VaultID", t.isString), (0, t.validateOptionalField)(n, "Data", t.isString), (0, t.validateOptionalField)(n, "AssetsMaximum", t.isXRPLNumber), (0, t.validateOptionalField)(n, "DomainID", t.isString), n.Data !== void 0) {
+      const s = n.Data;
+      if (!(0, r.isHex)(s))
+        throw new e.ValidationError("VaultSet: Data must be a valid hex string");
+      const a = s.length / 2;
+      if (a > t.VAULT_DATA_MAX_BYTE_LENGTH)
+        throw new e.ValidationError(`VaultSet: Data exceeds ${t.VAULT_DATA_MAX_BYTE_LENGTH} bytes (actual: ${a})`);
+    }
+  }
+  return vaultSet.validateVaultSet = i, vaultSet;
+}
+var vaultWithdraw = {}, hasRequiredVaultWithdraw;
+function requireVaultWithdraw() {
+  if (hasRequiredVaultWithdraw) return vaultWithdraw;
+  hasRequiredVaultWithdraw = 1, Object.defineProperty(vaultWithdraw, "__esModule", { value: !0 }), vaultWithdraw.validateVaultWithdraw = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "VaultID", e.isString), (0, e.validateRequiredField)(t, "Amount", e.isAmount), (0, e.validateOptionalField)(t, "Destination", e.isAccount);
+  }
+  return vaultWithdraw.validateVaultWithdraw = r, vaultWithdraw;
+}
+var XChainAccountCreateCommit = {}, hasRequiredXChainAccountCreateCommit;
+function requireXChainAccountCreateCommit() {
+  if (hasRequiredXChainAccountCreateCommit) return XChainAccountCreateCommit;
+  hasRequiredXChainAccountCreateCommit = 1, Object.defineProperty(XChainAccountCreateCommit, "__esModule", { value: !0 }), XChainAccountCreateCommit.validateXChainAccountCreateCommit = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "SignatureReward", e.isAmount), (0, e.validateRequiredField)(t, "Destination", e.isAccount), (0, e.validateRequiredField)(t, "Amount", e.isAmount);
+  }
+  return XChainAccountCreateCommit.validateXChainAccountCreateCommit = r, XChainAccountCreateCommit;
+}
+var XChainAddAccountCreateAttestation = {}, hasRequiredXChainAddAccountCreateAttestation;
+function requireXChainAddAccountCreateAttestation() {
+  if (hasRequiredXChainAddAccountCreateAttestation) return XChainAddAccountCreateAttestation;
+  hasRequiredXChainAddAccountCreateAttestation = 1, Object.defineProperty(XChainAddAccountCreateAttestation, "__esModule", { value: !0 }), XChainAddAccountCreateAttestation.validateXChainAddAccountCreateAttestation = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "Amount", e.isAmount), (0, e.validateRequiredField)(t, "AttestationRewardAccount", e.isAccount), (0, e.validateRequiredField)(t, "AttestationSignerAccount", e.isAccount), (0, e.validateRequiredField)(t, "Destination", e.isAccount), (0, e.validateRequiredField)(t, "OtherChainSource", e.isAccount), (0, e.validateRequiredField)(t, "PublicKey", e.isString), (0, e.validateRequiredField)(t, "Signature", e.isString), (0, e.validateRequiredField)(t, "SignatureReward", e.isAmount), (0, e.validateRequiredField)(t, "WasLockingChainSend", (i) => i === 0 || i === 1), (0, e.validateRequiredField)(t, "XChainAccountCreateCount", (i) => (0, e.isNumber)(i) || (0, e.isString)(i)), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge);
+  }
+  return XChainAddAccountCreateAttestation.validateXChainAddAccountCreateAttestation = r, XChainAddAccountCreateAttestation;
+}
+var XChainAddClaimAttestation = {}, hasRequiredXChainAddClaimAttestation;
+function requireXChainAddClaimAttestation() {
+  if (hasRequiredXChainAddClaimAttestation) return XChainAddClaimAttestation;
+  hasRequiredXChainAddClaimAttestation = 1, Object.defineProperty(XChainAddClaimAttestation, "__esModule", { value: !0 }), XChainAddClaimAttestation.validateXChainAddClaimAttestation = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "Amount", e.isAmount), (0, e.validateRequiredField)(t, "AttestationRewardAccount", e.isAccount), (0, e.validateRequiredField)(t, "AttestationSignerAccount", e.isAccount), (0, e.validateOptionalField)(t, "Destination", e.isAccount), (0, e.validateRequiredField)(t, "OtherChainSource", e.isAccount), (0, e.validateRequiredField)(t, "PublicKey", e.isString), (0, e.validateRequiredField)(t, "Signature", e.isString), (0, e.validateRequiredField)(t, "WasLockingChainSend", (i) => i === 0 || i === 1), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "XChainClaimID", (i) => (0, e.isNumber)(i) || (0, e.isString)(i));
+  }
+  return XChainAddClaimAttestation.validateXChainAddClaimAttestation = r, XChainAddClaimAttestation;
+}
+var XChainClaim = {}, hasRequiredXChainClaim;
+function requireXChainClaim() {
+  if (hasRequiredXChainClaim) return XChainClaim;
+  hasRequiredXChainClaim = 1, Object.defineProperty(XChainClaim, "__esModule", { value: !0 }), XChainClaim.validateXChainClaim = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "XChainClaimID", (i) => (0, e.isNumber)(i) || (0, e.isString)(i)), (0, e.validateRequiredField)(t, "Destination", e.isAccount), (0, e.validateOptionalField)(t, "DestinationTag", e.isNumber), (0, e.validateRequiredField)(t, "Amount", e.isAmount);
+  }
+  return XChainClaim.validateXChainClaim = r, XChainClaim;
+}
+var XChainCommit = {}, hasRequiredXChainCommit;
+function requireXChainCommit() {
+  if (hasRequiredXChainCommit) return XChainCommit;
+  hasRequiredXChainCommit = 1, Object.defineProperty(XChainCommit, "__esModule", { value: !0 }), XChainCommit.validateXChainCommit = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "XChainClaimID", (i) => (0, e.isNumber)(i) || (0, e.isString)(i)), (0, e.validateOptionalField)(t, "OtherChainDestination", e.isAccount), (0, e.validateRequiredField)(t, "Amount", e.isAmount);
+  }
+  return XChainCommit.validateXChainCommit = r, XChainCommit;
+}
+var XChainCreateBridge = {}, hasRequiredXChainCreateBridge;
+function requireXChainCreateBridge() {
+  if (hasRequiredXChainCreateBridge) return XChainCreateBridge;
+  hasRequiredXChainCreateBridge = 1, Object.defineProperty(XChainCreateBridge, "__esModule", { value: !0 }), XChainCreateBridge.validateXChainCreateBridge = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "SignatureReward", e.isAmount), (0, e.validateOptionalField)(t, "MinAccountCreateAmount", e.isAmount);
+  }
+  return XChainCreateBridge.validateXChainCreateBridge = r, XChainCreateBridge;
+}
+var XChainCreateClaimID = {}, hasRequiredXChainCreateClaimID;
+function requireXChainCreateClaimID() {
+  if (hasRequiredXChainCreateClaimID) return XChainCreateClaimID;
+  hasRequiredXChainCreateClaimID = 1, Object.defineProperty(XChainCreateClaimID, "__esModule", { value: !0 }), XChainCreateClaimID.validateXChainCreateClaimID = void 0;
+  const e = requireCommon();
+  function r(t) {
+    (0, e.validateBaseTransaction)(t), (0, e.validateRequiredField)(t, "XChainBridge", e.isXChainBridge), (0, e.validateRequiredField)(t, "SignatureReward", e.isAmount), (0, e.validateRequiredField)(t, "OtherChainSource", e.isAccount);
+  }
+  return XChainCreateClaimID.validateXChainCreateClaimID = r, XChainCreateClaimID;
+}
+var hasRequiredTransaction;
+function requireTransaction() {
+  if (hasRequiredTransaction) return transaction;
+  hasRequiredTransaction = 1, Object.defineProperty(transaction, "__esModule", { value: !0 }), transaction.validate = void 0;
+  const e = requireErrors(), r = requireFlags(), t = requireAccountDelete(), i = requireAccountSet(), n = requireAMMBid(), s = requireAMMClawback(), a = requireAMMCreate(), o = requireAMMDelete(), d = requireAMMDeposit(), u = requireAMMVote(), b = requireAMMWithdraw(), l = requireBatch(), g = requireCheckCancel(), p = requireCheckCash(), w = requireCheckCreate(), I = requireClawback(), m = requireCommon(), v = requireCredentialAccept(), h = requireCredentialCreate(), _ = requireCredentialDelete(), y = requireDelegateSet(), c = requireDepositPreauth(), R = requireDIDDelete(), D = requireDIDSet(), N = requireEscrowCancel(), T = requireEscrowCreate(), f = requireEscrowFinish(), C = requireMPTokenAuthorize(), A = requireMPTokenIssuanceCreate(), E = requireMPTokenIssuanceDestroy(), S = requireMPTokenIssuanceSet(), L = requireNFTokenAcceptOffer(), U = requireNFTokenBurn(), H = requireNFTokenCancelOffer(), K = requireNFTokenCreateOffer(), $ = requireNFTokenMint(), W = requireNFTokenModify(), G = requireOfferCancel(), J = requireOfferCreate(), re = requireOracleDelete(), x = requireOracleSet(), Q = requirePayment(), se = requirePaymentChannelClaim(), ue = requirePaymentChannelCreate(), oe = requirePaymentChannelFund(), Z = requirePermissionedDomainDelete(), B = requirePermissionedDomainSet(), q = requireSetRegularKey(), M = requireSignerListSet(), k = requireTicketCreate(), F = requireTrustSet(), V = requireVaultClawback(), X = requireVaultCreate(), O = requireVaultDelete(), P = requireVaultDeposit(), z = requireVaultSet(), j = requireVaultWithdraw(), Y = requireXChainAccountCreateCommit(), te = requireXChainAddAccountCreateAttestation(), ne = requireXChainAddClaimAttestation(), ae = requireXChainClaim(), le = requireXChainCommit(), fe = requireXChainCreateBridge(), ce = requireXChainCreateClaimID(), de = requireXChainModifyBridge();
+  function he(me) {
+    const ie = Object.assign({}, me);
+    switch ((0, m.validateBaseTransaction)(ie), Object.keys(ie).forEach((Ae) => {
+      const be = ie[Ae];
+      if (be && (0, m.isIssuedCurrencyAmount)(be)) {
+        const ye = be.currency;
+        if (ye.length === 3 && ye.toUpperCase() === "XRP")
+          throw new e.ValidationError(`Cannot have an issued currency with a similar standard code to XRP (received '${ye}'). XRP is not an issued currency.`);
+      }
+    }), ie.Flags = (0, r.convertTxFlagsToNumber)(ie), ie.TransactionType) {
+      case "AMMBid":
+        (0, n.validateAMMBid)(ie);
+        break;
+      case "AMMClawback":
+        (0, s.validateAMMClawback)(ie);
+        break;
+      case "AMMCreate":
+        (0, a.validateAMMCreate)(ie);
+        break;
+      case "AMMDelete":
+        (0, o.validateAMMDelete)(ie);
+        break;
+      case "AMMDeposit":
+        (0, d.validateAMMDeposit)(ie);
+        break;
+      case "AMMVote":
+        (0, u.validateAMMVote)(ie);
+        break;
+      case "AMMWithdraw":
+        (0, b.validateAMMWithdraw)(ie);
+        break;
+      case "AccountDelete":
+        (0, t.validateAccountDelete)(ie);
+        break;
+      case "AccountSet":
+        (0, i.validateAccountSet)(ie);
+        break;
+      case "Batch":
+        (0, l.validateBatch)(ie), ie.RawTransactions.forEach((Ae) => {
+          he(Ae.RawTransaction);
+        });
+        break;
+      case "CheckCancel":
+        (0, g.validateCheckCancel)(ie);
+        break;
+      case "CheckCash":
+        (0, p.validateCheckCash)(ie);
+        break;
+      case "CheckCreate":
+        (0, w.validateCheckCreate)(ie);
+        break;
+      case "Clawback":
+        (0, I.validateClawback)(ie);
+        break;
+      case "CredentialAccept":
+        (0, v.validateCredentialAccept)(ie);
+        break;
+      case "CredentialCreate":
+        (0, h.validateCredentialCreate)(ie);
+        break;
+      case "CredentialDelete":
+        (0, _.validateCredentialDelete)(ie);
+        break;
+      case "DIDDelete":
+        (0, R.validateDIDDelete)(ie);
+        break;
+      case "DIDSet":
+        (0, D.validateDIDSet)(ie);
+        break;
+      case "DelegateSet":
+        (0, y.validateDelegateSet)(ie);
+        break;
+      case "DepositPreauth":
+        (0, c.validateDepositPreauth)(ie);
+        break;
+      case "EscrowCancel":
+        (0, N.validateEscrowCancel)(ie);
+        break;
+      case "EscrowCreate":
+        (0, T.validateEscrowCreate)(ie);
+        break;
+      case "EscrowFinish":
+        (0, f.validateEscrowFinish)(ie);
+        break;
+      case "MPTokenAuthorize":
+        (0, C.validateMPTokenAuthorize)(ie);
+        break;
+      case "MPTokenIssuanceCreate":
+        (0, A.validateMPTokenIssuanceCreate)(ie);
+        break;
+      case "MPTokenIssuanceDestroy":
+        (0, E.validateMPTokenIssuanceDestroy)(ie);
+        break;
+      case "MPTokenIssuanceSet":
+        (0, S.validateMPTokenIssuanceSet)(ie);
+        break;
+      case "NFTokenAcceptOffer":
+        (0, L.validateNFTokenAcceptOffer)(ie);
+        break;
+      case "NFTokenBurn":
+        (0, U.validateNFTokenBurn)(ie);
+        break;
+      case "NFTokenCancelOffer":
+        (0, H.validateNFTokenCancelOffer)(ie);
+        break;
+      case "NFTokenCreateOffer":
+        (0, K.validateNFTokenCreateOffer)(ie);
+        break;
+      case "NFTokenMint":
+        (0, $.validateNFTokenMint)(ie);
+        break;
+      case "NFTokenModify":
+        (0, W.validateNFTokenModify)(ie);
+        break;
+      case "OfferCancel":
+        (0, G.validateOfferCancel)(ie);
+        break;
+      case "OfferCreate":
+        (0, J.validateOfferCreate)(ie);
+        break;
+      case "OracleDelete":
+        (0, re.validateOracleDelete)(ie);
+        break;
+      case "OracleSet":
+        (0, x.validateOracleSet)(ie);
+        break;
+      case "Payment":
+        (0, Q.validatePayment)(ie);
+        break;
+      case "PaymentChannelClaim":
+        (0, se.validatePaymentChannelClaim)(ie);
+        break;
+      case "PaymentChannelCreate":
+        (0, ue.validatePaymentChannelCreate)(ie);
+        break;
+      case "PaymentChannelFund":
+        (0, oe.validatePaymentChannelFund)(ie);
+        break;
+      case "PermissionedDomainSet":
+        (0, B.validatePermissionedDomainSet)(ie);
+        break;
+      case "PermissionedDomainDelete":
+        (0, Z.validatePermissionedDomainDelete)(ie);
+        break;
+      case "SetRegularKey":
+        (0, q.validateSetRegularKey)(ie);
+        break;
+      case "SignerListSet":
+        (0, M.validateSignerListSet)(ie);
+        break;
+      case "TicketCreate":
+        (0, k.validateTicketCreate)(ie);
+        break;
+      case "TrustSet":
+        (0, F.validateTrustSet)(ie);
+        break;
+      case "VaultClawback":
+        (0, V.validateVaultClawback)(ie);
+        break;
+      case "VaultCreate":
+        (0, X.validateVaultCreate)(ie);
+        break;
+      case "VaultDelete":
+        (0, O.validateVaultDelete)(ie);
+        break;
+      case "VaultDeposit":
+        (0, P.validateVaultDeposit)(ie);
+        break;
+      case "VaultSet":
+        (0, z.validateVaultSet)(ie);
+        break;
+      case "VaultWithdraw":
+        (0, j.validateVaultWithdraw)(ie);
+        break;
+      case "XChainAccountCreateCommit":
+        (0, Y.validateXChainAccountCreateCommit)(ie);
+        break;
+      case "XChainAddAccountCreateAttestation":
+        (0, te.validateXChainAddAccountCreateAttestation)(ie);
+        break;
+      case "XChainAddClaimAttestation":
+        (0, ne.validateXChainAddClaimAttestation)(ie);
+        break;
+      case "XChainClaim":
+        (0, ae.validateXChainClaim)(ie);
+        break;
+      case "XChainCommit":
+        (0, le.validateXChainCommit)(ie);
+        break;
+      case "XChainCreateBridge":
+        (0, fe.validateXChainCreateBridge)(ie);
+        break;
+      case "XChainCreateClaimID":
+        (0, ce.validateXChainCreateClaimID)(ie);
+        break;
+      case "XChainModifyBridge":
+        (0, de.validateXChainModifyBridge)(ie);
+        break;
+      default:
+        throw new e.ValidationError(`Invalid field TransactionType: ${ie.TransactionType}`);
+    }
+  }
+  return transaction.validate = he, transaction;
+}
+var enableAmendment = {}, hasRequiredEnableAmendment;
+function requireEnableAmendment() {
+  if (hasRequiredEnableAmendment) return enableAmendment;
+  hasRequiredEnableAmendment = 1, Object.defineProperty(enableAmendment, "__esModule", { value: !0 }), enableAmendment.EnableAmendmentFlags = void 0;
+  var e;
+  return (function(r) {
+    r[r.tfGotMajority = 65536] = "tfGotMajority", r[r.tfLostMajority = 131072] = "tfLostMajority";
+  })(e || (enableAmendment.EnableAmendmentFlags = e = {})), enableAmendment;
+}
+var hasRequiredTransactions;
+function requireTransactions() {
+  return hasRequiredTransactions || (hasRequiredTransactions = 1, (function(e) {
+    var r = transactions && transactions.__createBinding || (Object.create ? (function(R, D, N, T) {
+      T === void 0 && (T = N);
+      var f = Object.getOwnPropertyDescriptor(D, N);
+      (!f || ("get" in f ? !D.__esModule : f.writable || f.configurable)) && (f = { enumerable: !0, get: function() {
+        return D[N];
+      } }), Object.defineProperty(R, T, f);
+    }) : (function(R, D, N, T) {
+      T === void 0 && (T = N), R[T] = D[N];
+    })), t = transactions && transactions.__exportStar || function(R, D) {
+      for (var N in R) N !== "default" && !Object.prototype.hasOwnProperty.call(D, N) && r(D, R, N);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.XChainModifyBridgeFlags = e.VaultWithdrawalPolicy = e.VaultCreateFlags = e.TrustSetFlags = e.PaymentChannelClaimFlags = e.PaymentFlags = e.OfferCreateFlags = e.validateNFTokenModify = e.NFTokenMintFlags = e.NFTokenCreateOfferFlags = e.MPTokenIssuanceSetFlags = e.MPTokenIssuanceCreateFlags = e.MPTokenAuthorizeFlags = e.EnableAmendmentFlags = e.AMMWithdrawFlags = e.AMMDepositFlags = e.AMMClawbackFlags = e.AccountSetTfFlags = e.AccountSetAsfFlags = e.validate = e.validateMPTokenMetadata = e.isMPTAmount = void 0;
+    var i = requireCommon();
+    Object.defineProperty(e, "isMPTAmount", { enumerable: !0, get: function() {
+      return i.isMPTAmount;
+    } }), Object.defineProperty(e, "validateMPTokenMetadata", { enumerable: !0, get: function() {
+      return i.validateMPTokenMetadata;
+    } });
+    var n = requireTransaction();
+    Object.defineProperty(e, "validate", { enumerable: !0, get: function() {
+      return n.validate;
+    } }), t(requireMetadata(), e);
+    var s = requireAccountSet();
+    Object.defineProperty(e, "AccountSetAsfFlags", { enumerable: !0, get: function() {
+      return s.AccountSetAsfFlags;
+    } }), Object.defineProperty(e, "AccountSetTfFlags", { enumerable: !0, get: function() {
+      return s.AccountSetTfFlags;
+    } });
+    var a = requireAMMClawback();
+    Object.defineProperty(e, "AMMClawbackFlags", { enumerable: !0, get: function() {
+      return a.AMMClawbackFlags;
+    } });
+    var o = requireAMMDeposit();
+    Object.defineProperty(e, "AMMDepositFlags", { enumerable: !0, get: function() {
+      return o.AMMDepositFlags;
+    } });
+    var d = requireAMMWithdraw();
+    Object.defineProperty(e, "AMMWithdrawFlags", { enumerable: !0, get: function() {
+      return d.AMMWithdrawFlags;
+    } });
+    var u = requireEnableAmendment();
+    Object.defineProperty(e, "EnableAmendmentFlags", { enumerable: !0, get: function() {
+      return u.EnableAmendmentFlags;
+    } });
+    var b = requireMPTokenAuthorize();
+    Object.defineProperty(e, "MPTokenAuthorizeFlags", { enumerable: !0, get: function() {
+      return b.MPTokenAuthorizeFlags;
+    } });
+    var l = requireMPTokenIssuanceCreate();
+    Object.defineProperty(e, "MPTokenIssuanceCreateFlags", { enumerable: !0, get: function() {
+      return l.MPTokenIssuanceCreateFlags;
+    } });
+    var g = requireMPTokenIssuanceSet();
+    Object.defineProperty(e, "MPTokenIssuanceSetFlags", { enumerable: !0, get: function() {
+      return g.MPTokenIssuanceSetFlags;
+    } });
+    var p = requireNFTokenCreateOffer();
+    Object.defineProperty(e, "NFTokenCreateOfferFlags", { enumerable: !0, get: function() {
+      return p.NFTokenCreateOfferFlags;
+    } });
+    var w = requireNFTokenMint();
+    Object.defineProperty(e, "NFTokenMintFlags", { enumerable: !0, get: function() {
+      return w.NFTokenMintFlags;
+    } });
+    var I = requireNFTokenModify();
+    Object.defineProperty(e, "validateNFTokenModify", { enumerable: !0, get: function() {
+      return I.validateNFTokenModify;
+    } });
+    var m = requireOfferCreate();
+    Object.defineProperty(e, "OfferCreateFlags", { enumerable: !0, get: function() {
+      return m.OfferCreateFlags;
+    } });
+    var v = requirePayment();
+    Object.defineProperty(e, "PaymentFlags", { enumerable: !0, get: function() {
+      return v.PaymentFlags;
+    } });
+    var h = requirePaymentChannelClaim();
+    Object.defineProperty(e, "PaymentChannelClaimFlags", { enumerable: !0, get: function() {
+      return h.PaymentChannelClaimFlags;
+    } });
+    var _ = requireTrustSet();
+    Object.defineProperty(e, "TrustSetFlags", { enumerable: !0, get: function() {
+      return _.TrustSetFlags;
+    } });
+    var y = requireVaultCreate();
+    Object.defineProperty(e, "VaultCreateFlags", { enumerable: !0, get: function() {
+      return y.VaultCreateFlags;
+    } }), Object.defineProperty(e, "VaultWithdrawalPolicy", { enumerable: !0, get: function() {
+      return y.VaultWithdrawalPolicy;
+    } });
+    var c = requireXChainModifyBridge();
+    Object.defineProperty(e, "XChainModifyBridgeFlags", { enumerable: !0, get: function() {
+      return c.XChainModifyBridgeFlags;
+    } });
+  })(transactions)), transactions;
+}
+var rfc1751 = {};
+const require$$1 = /* @__PURE__ */ JSON.parse('["A","ABE","ACE","ACT","AD","ADA","ADD","AGO","AID","AIM","AIR","ALL","ALP","AM","AMY","AN","ANA","AND","ANN","ANT","ANY","APE","APS","APT","ARC","ARE","ARK","ARM","ART","AS","ASH","ASK","AT","ATE","AUG","AUK","AVE","AWE","AWK","AWL","AWN","AX","AYE","BAD","BAG","BAH","BAM","BAN","BAR","BAT","BAY","BE","BED","BEE","BEG","BEN","BET","BEY","BIB","BID","BIG","BIN","BIT","BOB","BOG","BON","BOO","BOP","BOW","BOY","BUB","BUD","BUG","BUM","BUN","BUS","BUT","BUY","BY","BYE","CAB","CAL","CAM","CAN","CAP","CAR","CAT","CAW","COD","COG","COL","CON","COO","COP","COT","COW","COY","CRY","CUB","CUE","CUP","CUR","CUT","DAB","DAD","DAM","DAN","DAR","DAY","DEE","DEL","DEN","DES","DEW","DID","DIE","DIG","DIN","DIP","DO","DOE","DOG","DON","DOT","DOW","DRY","DUB","DUD","DUE","DUG","DUN","EAR","EAT","ED","EEL","EGG","EGO","ELI","ELK","ELM","ELY","EM","END","EST","ETC","EVA","EVE","EWE","EYE","FAD","FAN","FAR","FAT","FAY","FED","FEE","FEW","FIB","FIG","FIN","FIR","FIT","FLO","FLY","FOE","FOG","FOR","FRY","FUM","FUN","FUR","GAB","GAD","GAG","GAL","GAM","GAP","GAS","GAY","GEE","GEL","GEM","GET","GIG","GIL","GIN","GO","GOT","GUM","GUN","GUS","GUT","GUY","GYM","GYP","HA","HAD","HAL","HAM","HAN","HAP","HAS","HAT","HAW","HAY","HE","HEM","HEN","HER","HEW","HEY","HI","HID","HIM","HIP","HIS","HIT","HO","HOB","HOC","HOE","HOG","HOP","HOT","HOW","HUB","HUE","HUG","HUH","HUM","HUT","I","ICY","IDA","IF","IKE","ILL","INK","INN","IO","ION","IQ","IRA","IRE","IRK","IS","IT","ITS","IVY","JAB","JAG","JAM","JAN","JAR","JAW","JAY","JET","JIG","JIM","JO","JOB","JOE","JOG","JOT","JOY","JUG","JUT","KAY","KEG","KEN","KEY","KID","KIM","KIN","KIT","LA","LAB","LAC","LAD","LAG","LAM","LAP","LAW","LAY","LEA","LED","LEE","LEG","LEN","LEO","LET","LEW","LID","LIE","LIN","LIP","LIT","LO","LOB","LOG","LOP","LOS","LOT","LOU","LOW","LOY","LUG","LYE","MA","MAC","MAD","MAE","MAN","MAO","MAP","MAT","MAW","MAY","ME","MEG","MEL","MEN","MET","MEW","MID","MIN","MIT","MOB","MOD","MOE","MOO","MOP","MOS","MOT","MOW","MUD","MUG","MUM","MY","NAB","NAG","NAN","NAP","NAT","NAY","NE","NED","NEE","NET","NEW","NIB","NIL","NIP","NIT","NO","NOB","NOD","NON","NOR","NOT","NOV","NOW","NU","NUN","NUT","O","OAF","OAK","OAR","OAT","ODD","ODE","OF","OFF","OFT","OH","OIL","OK","OLD","ON","ONE","OR","ORB","ORE","ORR","OS","OTT","OUR","OUT","OVA","OW","OWE","OWL","OWN","OX","PA","PAD","PAL","PAM","PAN","PAP","PAR","PAT","PAW","PAY","PEA","PEG","PEN","PEP","PER","PET","PEW","PHI","PI","PIE","PIN","PIT","PLY","PO","POD","POE","POP","POT","POW","PRO","PRY","PUB","PUG","PUN","PUP","PUT","QUO","RAG","RAM","RAN","RAP","RAT","RAW","RAY","REB","RED","REP","RET","RIB","RID","RIG","RIM","RIO","RIP","ROB","ROD","ROE","RON","ROT","ROW","ROY","RUB","RUE","RUG","RUM","RUN","RYE","SAC","SAD","SAG","SAL","SAM","SAN","SAP","SAT","SAW","SAY","SEA","SEC","SEE","SEN","SET","SEW","SHE","SHY","SIN","SIP","SIR","SIS","SIT","SKI","SKY","SLY","SO","SOB","SOD","SON","SOP","SOW","SOY","SPA","SPY","SUB","SUD","SUE","SUM","SUN","SUP","TAB","TAD","TAG","TAN","TAP","TAR","TEA","TED","TEE","TEN","THE","THY","TIC","TIE","TIM","TIN","TIP","TO","TOE","TOG","TOM","TON","TOO","TOP","TOW","TOY","TRY","TUB","TUG","TUM","TUN","TWO","UN","UP","US","USE","VAN","VAT","VET","VIE","WAD","WAG","WAR","WAS","WAY","WE","WEB","WED","WEE","WET","WHO","WHY","WIN","WIT","WOK","WON","WOO","WOW","WRY","WU","YAM","YAP","YAW","YE","YEA","YES","YET","YOU","ABED","ABEL","ABET","ABLE","ABUT","ACHE","ACID","ACME","ACRE","ACTA","ACTS","ADAM","ADDS","ADEN","AFAR","AFRO","AGEE","AHEM","AHOY","AIDA","AIDE","AIDS","AIRY","AJAR","AKIN","ALAN","ALEC","ALGA","ALIA","ALLY","ALMA","ALOE","ALSO","ALTO","ALUM","ALVA","AMEN","AMES","AMID","AMMO","AMOK","AMOS","AMRA","ANDY","ANEW","ANNA","ANNE","ANTE","ANTI","AQUA","ARAB","ARCH","AREA","ARGO","ARID","ARMY","ARTS","ARTY","ASIA","ASKS","ATOM","AUNT","AURA","AUTO","AVER","AVID","AVIS","AVON","AVOW","AWAY","AWRY","BABE","BABY","BACH","BACK","BADE","BAIL","BAIT","BAKE","BALD","BALE","BALI","BALK","BALL","BALM","BAND","BANE","BANG","BANK","BARB","BARD","BARE","BARK","BARN","BARR","BASE","BASH","BASK","BASS","BATE","BATH","BAWD","BAWL","BEAD","BEAK","BEAM","BEAN","BEAR","BEAT","BEAU","BECK","BEEF","BEEN","BEER","BEET","BELA","BELL","BELT","BEND","BENT","BERG","BERN","BERT","BESS","BEST","BETA","BETH","BHOY","BIAS","BIDE","BIEN","BILE","BILK","BILL","BIND","BING","BIRD","BITE","BITS","BLAB","BLAT","BLED","BLEW","BLOB","BLOC","BLOT","BLOW","BLUE","BLUM","BLUR","BOAR","BOAT","BOCA","BOCK","BODE","BODY","BOGY","BOHR","BOIL","BOLD","BOLO","BOLT","BOMB","BONA","BOND","BONE","BONG","BONN","BONY","BOOK","BOOM","BOON","BOOT","BORE","BORG","BORN","BOSE","BOSS","BOTH","BOUT","BOWL","BOYD","BRAD","BRAE","BRAG","BRAN","BRAY","BRED","BREW","BRIG","BRIM","BROW","BUCK","BUDD","BUFF","BULB","BULK","BULL","BUNK","BUNT","BUOY","BURG","BURL","BURN","BURR","BURT","BURY","BUSH","BUSS","BUST","BUSY","BYTE","CADY","CAFE","CAGE","CAIN","CAKE","CALF","CALL","CALM","CAME","CANE","CANT","CARD","CARE","CARL","CARR","CART","CASE","CASH","CASK","CAST","CAVE","CEIL","CELL","CENT","CERN","CHAD","CHAR","CHAT","CHAW","CHEF","CHEN","CHEW","CHIC","CHIN","CHOU","CHOW","CHUB","CHUG","CHUM","CITE","CITY","CLAD","CLAM","CLAN","CLAW","CLAY","CLOD","CLOG","CLOT","CLUB","CLUE","COAL","COAT","COCA","COCK","COCO","CODA","CODE","CODY","COED","COIL","COIN","COKE","COLA","COLD","COLT","COMA","COMB","COME","COOK","COOL","COON","COOT","CORD","CORE","CORK","CORN","COST","COVE","COWL","CRAB","CRAG","CRAM","CRAY","CREW","CRIB","CROW","CRUD","CUBA","CUBE","CUFF","CULL","CULT","CUNY","CURB","CURD","CURE","CURL","CURT","CUTS","DADE","DALE","DAME","DANA","DANE","DANG","DANK","DARE","DARK","DARN","DART","DASH","DATA","DATE","DAVE","DAVY","DAWN","DAYS","DEAD","DEAF","DEAL","DEAN","DEAR","DEBT","DECK","DEED","DEEM","DEER","DEFT","DEFY","DELL","DENT","DENY","DESK","DIAL","DICE","DIED","DIET","DIME","DINE","DING","DINT","DIRE","DIRT","DISC","DISH","DISK","DIVE","DOCK","DOES","DOLE","DOLL","DOLT","DOME","DONE","DOOM","DOOR","DORA","DOSE","DOTE","DOUG","DOUR","DOVE","DOWN","DRAB","DRAG","DRAM","DRAW","DREW","DRUB","DRUG","DRUM","DUAL","DUCK","DUCT","DUEL","DUET","DUKE","DULL","DUMB","DUNE","DUNK","DUSK","DUST","DUTY","EACH","EARL","EARN","EASE","EAST","EASY","EBEN","ECHO","EDDY","EDEN","EDGE","EDGY","EDIT","EDNA","EGAN","ELAN","ELBA","ELLA","ELSE","EMIL","EMIT","EMMA","ENDS","ERIC","EROS","EVEN","EVER","EVIL","EYED","FACE","FACT","FADE","FAIL","FAIN","FAIR","FAKE","FALL","FAME","FANG","FARM","FAST","FATE","FAWN","FEAR","FEAT","FEED","FEEL","FEET","FELL","FELT","FEND","FERN","FEST","FEUD","FIEF","FIGS","FILE","FILL","FILM","FIND","FINE","FINK","FIRE","FIRM","FISH","FISK","FIST","FITS","FIVE","FLAG","FLAK","FLAM","FLAT","FLAW","FLEA","FLED","FLEW","FLIT","FLOC","FLOG","FLOW","FLUB","FLUE","FOAL","FOAM","FOGY","FOIL","FOLD","FOLK","FOND","FONT","FOOD","FOOL","FOOT","FORD","FORE","FORK","FORM","FORT","FOSS","FOUL","FOUR","FOWL","FRAU","FRAY","FRED","FREE","FRET","FREY","FROG","FROM","FUEL","FULL","FUME","FUND","FUNK","FURY","FUSE","FUSS","GAFF","GAGE","GAIL","GAIN","GAIT","GALA","GALE","GALL","GALT","GAME","GANG","GARB","GARY","GASH","GATE","GAUL","GAUR","GAVE","GAWK","GEAR","GELD","GENE","GENT","GERM","GETS","GIBE","GIFT","GILD","GILL","GILT","GINA","GIRD","GIRL","GIST","GIVE","GLAD","GLEE","GLEN","GLIB","GLOB","GLOM","GLOW","GLUE","GLUM","GLUT","GOAD","GOAL","GOAT","GOER","GOES","GOLD","GOLF","GONE","GONG","GOOD","GOOF","GORE","GORY","GOSH","GOUT","GOWN","GRAB","GRAD","GRAY","GREG","GREW","GREY","GRID","GRIM","GRIN","GRIT","GROW","GRUB","GULF","GULL","GUNK","GURU","GUSH","GUST","GWEN","GWYN","HAAG","HAAS","HACK","HAIL","HAIR","HALE","HALF","HALL","HALO","HALT","HAND","HANG","HANK","HANS","HARD","HARK","HARM","HART","HASH","HAST","HATE","HATH","HAUL","HAVE","HAWK","HAYS","HEAD","HEAL","HEAR","HEAT","HEBE","HECK","HEED","HEEL","HEFT","HELD","HELL","HELM","HERB","HERD","HERE","HERO","HERS","HESS","HEWN","HICK","HIDE","HIGH","HIKE","HILL","HILT","HIND","HINT","HIRE","HISS","HIVE","HOBO","HOCK","HOFF","HOLD","HOLE","HOLM","HOLT","HOME","HONE","HONK","HOOD","HOOF","HOOK","HOOT","HORN","HOSE","HOST","HOUR","HOVE","HOWE","HOWL","HOYT","HUCK","HUED","HUFF","HUGE","HUGH","HUGO","HULK","HULL","HUNK","HUNT","HURD","HURL","HURT","HUSH","HYDE","HYMN","IBIS","ICON","IDEA","IDLE","IFFY","INCA","INCH","INTO","IONS","IOTA","IOWA","IRIS","IRMA","IRON","ISLE","ITCH","ITEM","IVAN","JACK","JADE","JAIL","JAKE","JANE","JAVA","JEAN","JEFF","JERK","JESS","JEST","JIBE","JILL","JILT","JIVE","JOAN","JOBS","JOCK","JOEL","JOEY","JOHN","JOIN","JOKE","JOLT","JOVE","JUDD","JUDE","JUDO","JUDY","JUJU","JUKE","JULY","JUNE","JUNK","JUNO","JURY","JUST","JUTE","KAHN","KALE","KANE","KANT","KARL","KATE","KEEL","KEEN","KENO","KENT","KERN","KERR","KEYS","KICK","KILL","KIND","KING","KIRK","KISS","KITE","KLAN","KNEE","KNEW","KNIT","KNOB","KNOT","KNOW","KOCH","KONG","KUDO","KURD","KURT","KYLE","LACE","LACK","LACY","LADY","LAID","LAIN","LAIR","LAKE","LAMB","LAME","LAND","LANE","LANG","LARD","LARK","LASS","LAST","LATE","LAUD","LAVA","LAWN","LAWS","LAYS","LEAD","LEAF","LEAK","LEAN","LEAR","LEEK","LEER","LEFT","LEND","LENS","LENT","LEON","LESK","LESS","LEST","LETS","LIAR","LICE","LICK","LIED","LIEN","LIES","LIEU","LIFE","LIFT","LIKE","LILA","LILT","LILY","LIMA","LIMB","LIME","LIND","LINE","LINK","LINT","LION","LISA","LIST","LIVE","LOAD","LOAF","LOAM","LOAN","LOCK","LOFT","LOGE","LOIS","LOLA","LONE","LONG","LOOK","LOON","LOOT","LORD","LORE","LOSE","LOSS","LOST","LOUD","LOVE","LOWE","LUCK","LUCY","LUGE","LUKE","LULU","LUND","LUNG","LURA","LURE","LURK","LUSH","LUST","LYLE","LYNN","LYON","LYRA","MACE","MADE","MAGI","MAID","MAIL","MAIN","MAKE","MALE","MALI","MALL","MALT","MANA","MANN","MANY","MARC","MARE","MARK","MARS","MART","MARY","MASH","MASK","MASS","MAST","MATE","MATH","MAUL","MAYO","MEAD","MEAL","MEAN","MEAT","MEEK","MEET","MELD","MELT","MEMO","MEND","MENU","MERT","MESH","MESS","MICE","MIKE","MILD","MILE","MILK","MILL","MILT","MIMI","MIND","MINE","MINI","MINK","MINT","MIRE","MISS","MIST","MITE","MITT","MOAN","MOAT","MOCK","MODE","MOLD","MOLE","MOLL","MOLT","MONA","MONK","MONT","MOOD","MOON","MOOR","MOOT","MORE","MORN","MORT","MOSS","MOST","MOTH","MOVE","MUCH","MUCK","MUDD","MUFF","MULE","MULL","MURK","MUSH","MUST","MUTE","MUTT","MYRA","MYTH","NAGY","NAIL","NAIR","NAME","NARY","NASH","NAVE","NAVY","NEAL","NEAR","NEAT","NECK","NEED","NEIL","NELL","NEON","NERO","NESS","NEST","NEWS","NEWT","NIBS","NICE","NICK","NILE","NINA","NINE","NOAH","NODE","NOEL","NOLL","NONE","NOOK","NOON","NORM","NOSE","NOTE","NOUN","NOVA","NUDE","NULL","NUMB","OATH","OBEY","OBOE","ODIN","OHIO","OILY","OINT","OKAY","OLAF","OLDY","OLGA","OLIN","OMAN","OMEN","OMIT","ONCE","ONES","ONLY","ONTO","ONUS","ORAL","ORGY","OSLO","OTIS","OTTO","OUCH","OUST","OUTS","OVAL","OVEN","OVER","OWLY","OWNS","QUAD","QUIT","QUOD","RACE","RACK","RACY","RAFT","RAGE","RAID","RAIL","RAIN","RAKE","RANK","RANT","RARE","RASH","RATE","RAVE","RAYS","READ","REAL","REAM","REAR","RECK","REED","REEF","REEK","REEL","REID","REIN","RENA","REND","RENT","REST","RICE","RICH","RICK","RIDE","RIFT","RILL","RIME","RING","RINK","RISE","RISK","RITE","ROAD","ROAM","ROAR","ROBE","ROCK","RODE","ROIL","ROLL","ROME","ROOD","ROOF","ROOK","ROOM","ROOT","ROSA","ROSE","ROSS","ROSY","ROTH","ROUT","ROVE","ROWE","ROWS","RUBE","RUBY","RUDE","RUDY","RUIN","RULE","RUNG","RUNS","RUNT","RUSE","RUSH","RUSK","RUSS","RUST","RUTH","SACK","SAFE","SAGE","SAID","SAIL","SALE","SALK","SALT","SAME","SAND","SANE","SANG","SANK","SARA","SAUL","SAVE","SAYS","SCAN","SCAR","SCAT","SCOT","SEAL","SEAM","SEAR","SEAT","SEED","SEEK","SEEM","SEEN","SEES","SELF","SELL","SEND","SENT","SETS","SEWN","SHAG","SHAM","SHAW","SHAY","SHED","SHIM","SHIN","SHOD","SHOE","SHOT","SHOW","SHUN","SHUT","SICK","SIDE","SIFT","SIGH","SIGN","SILK","SILL","SILO","SILT","SINE","SING","SINK","SIRE","SITE","SITS","SITU","SKAT","SKEW","SKID","SKIM","SKIN","SKIT","SLAB","SLAM","SLAT","SLAY","SLED","SLEW","SLID","SLIM","SLIT","SLOB","SLOG","SLOT","SLOW","SLUG","SLUM","SLUR","SMOG","SMUG","SNAG","SNOB","SNOW","SNUB","SNUG","SOAK","SOAR","SOCK","SODA","SOFA","SOFT","SOIL","SOLD","SOME","SONG","SOON","SOOT","SORE","SORT","SOUL","SOUR","SOWN","STAB","STAG","STAN","STAR","STAY","STEM","STEW","STIR","STOW","STUB","STUN","SUCH","SUDS","SUIT","SULK","SUMS","SUNG","SUNK","SURE","SURF","SWAB","SWAG","SWAM","SWAN","SWAT","SWAY","SWIM","SWUM","TACK","TACT","TAIL","TAKE","TALE","TALK","TALL","TANK","TASK","TATE","TAUT","TEAL","TEAM","TEAR","TECH","TEEM","TEEN","TEET","TELL","TEND","TENT","TERM","TERN","TESS","TEST","THAN","THAT","THEE","THEM","THEN","THEY","THIN","THIS","THUD","THUG","TICK","TIDE","TIDY","TIED","TIER","TILE","TILL","TILT","TIME","TINA","TINE","TINT","TINY","TIRE","TOAD","TOGO","TOIL","TOLD","TOLL","TONE","TONG","TONY","TOOK","TOOL","TOOT","TORE","TORN","TOTE","TOUR","TOUT","TOWN","TRAG","TRAM","TRAY","TREE","TREK","TRIG","TRIM","TRIO","TROD","TROT","TROY","TRUE","TUBA","TUBE","TUCK","TUFT","TUNA","TUNE","TUNG","TURF","TURN","TUSK","TWIG","TWIN","TWIT","ULAN","UNIT","URGE","USED","USER","USES","UTAH","VAIL","VAIN","VALE","VARY","VASE","VAST","VEAL","VEDA","VEIL","VEIN","VEND","VENT","VERB","VERY","VETO","VICE","VIEW","VINE","VISE","VOID","VOLT","VOTE","WACK","WADE","WAGE","WAIL","WAIT","WAKE","WALE","WALK","WALL","WALT","WAND","WANE","WANG","WANT","WARD","WARM","WARN","WART","WASH","WAST","WATS","WATT","WAVE","WAVY","WAYS","WEAK","WEAL","WEAN","WEAR","WEED","WEEK","WEIR","WELD","WELL","WELT","WENT","WERE","WERT","WEST","WHAM","WHAT","WHEE","WHEN","WHET","WHOA","WHOM","WICK","WIFE","WILD","WILL","WIND","WINE","WING","WINK","WINO","WIRE","WISE","WISH","WITH","WOLF","WONT","WOOD","WOOL","WORD","WORE","WORK","WORM","WORN","WOVE","WRIT","WYNN","YALE","YANG","YANK","YARD","YARN","YAWL","YAWN","YEAH","YEAR","YELL","YOGA","YOKE"]');
+var hasRequiredRfc1751;
+function requireRfc1751() {
+  if (hasRequiredRfc1751) return rfc1751;
+  hasRequiredRfc1751 = 1;
+  var e = rfc1751 && rfc1751.__importDefault || function(w) {
+    return w && w.__esModule ? w : { default: w };
+  };
+  Object.defineProperty(rfc1751, "__esModule", { value: !0 }), rfc1751.keyToRFC1751Mnemonic = rfc1751.rfc1751MnemonicToKey = void 0;
+  const r = requireBrowser$4(), i = e(require$$1).default, n = [
+    "0000",
+    "0001",
+    "0010",
+    "0011",
+    "0100",
+    "0101",
+    "0110",
+    "0111",
+    "1000",
+    "1001",
+    "1010",
+    "1011",
+    "1100",
+    "1101",
+    "1110",
+    "1111"
+  ];
+  function s(w) {
+    let I = "";
+    for (const m of w)
+      I += n[m >> 4] + n[m & 15];
+    return I;
+  }
+  function a(w, I, m) {
+    const v = w.substring(I, I + m);
+    let h = 0;
+    for (let _ = 0; _ < v.length; _++)
+      h = h * 2 + v.charCodeAt(_) - 48;
+    return h;
+  }
+  function o(w) {
+    const I = (0, r.hexToBytes)(w.replace(/\s+/gu, ""));
+    let m = b(p(I));
+    const v = [];
+    for (let _ = 0; _ < (8 - m.length % 8) % 8; _++)
+      v.push(0);
+    m = v.concat(m);
+    const h = [];
+    for (let _ = 0; _ < m.length; _ += 8) {
+      const y = m.slice(_, _ + 8);
+      let c = s(y), R = 0;
+      for (let D = 0; D < 64; D += 2)
+        R += a(c, D, 2);
+      y.push(R << 6 & 255), c = s(y);
+      for (let D = 0; D < 64; D += 11)
+        h.push(i[a(c, D, 11)]);
+    }
+    return h.join(" ");
+  }
+  rfc1751.keyToRFC1751Mnemonic = o;
+  function d(w) {
+    const I = w.split(" ");
+    let m = [];
+    for (let h = 0; h < I.length; h += 6) {
+      const { subKey: _, word: y } = u(I, h), c = s(_);
+      let R = 0;
+      for (let T = 0; T < 64; T += 2)
+        R += a(c, T, 2);
+      const D = a(c, 64, 2), N = R & 3;
+      if (D !== N)
+        throw new Error(`Parity error at ${y}`);
+      m = m.concat(_.slice(0, 8));
+    }
+    return p(Uint8Array.from(m));
+  }
+  rfc1751.rfc1751MnemonicToKey = d;
+  function u(w, I) {
+    const m = w.slice(I, I + 6);
+    let v = 0;
+    const h = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let _ = "";
+    for (_ of m) {
+      const c = i.indexOf(_.toUpperCase());
+      if (c === -1)
+        throw new TypeError(`Expected an RFC1751 word, but received '${_}'. For the full list of words in the RFC1751 encoding see https://datatracker.ietf.org/doc/html/rfc1751`);
+      const R = (8 - (v + 11) % 8) % 8, D = c << R, N = D >> 16, T = D >> 8 & 255, f = D & 255, C = Math.floor(v / 8);
+      R > 5 ? (h[C] |= N, h[C + 1] |= T, h[C + 2] |= f) : R > -3 ? (h[C] |= T, h[C + 1] |= f) : h[C] |= f, v += 11;
+    }
+    return { subKey: h.slice(), word: _ };
+  }
+  function b(w) {
+    return Array.prototype.slice.call(w);
+  }
+  function l(w, I, m) {
+    const v = w[I];
+    w[I] = w[m], w[m] = v;
+  }
+  function g(w) {
+    const I = w.length;
+    for (let m = 0; m < I; m += 8)
+      l(w, m, m + 7), l(w, m + 1, m + 6), l(w, m + 2, m + 5), l(w, m + 3, m + 4);
+    return w;
+  }
+  function p(w) {
+    const I = g(w);
+    return (0, r.concat)([I.slice(8, 16), I.slice(0, 8)]);
+  }
+  return rfc1751;
+}
+var signer = {}, utils$3 = {}, hasRequiredUtils$3;
+function requireUtils$3() {
+  return hasRequiredUtils$3 || (hasRequiredUtils$3 = 1, (function(e) {
+    var r = utils$3 && utils$3.__importDefault || function(u) {
+      return u && u.__esModule ? u : { default: u };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.getDecodedTransaction = e.addressToBigNumber = e.NUM_BITS_IN_HEX = e.compareSigners = void 0;
+    const t = requireBrowser$4(), i = r(requireBignumber()), n = requireDist$3(), s = requireDist$2();
+    function a(u, b) {
+      return o(u.Account).comparedTo(o(b.Account));
+    }
+    e.compareSigners = a, e.NUM_BITS_IN_HEX = 16;
+    function o(u) {
+      const b = (0, t.bytesToHex)((0, n.decodeAccountID)(u));
+      return new i.default(b, e.NUM_BITS_IN_HEX);
+    }
+    e.addressToBigNumber = o;
+    function d(u) {
+      return typeof u == "object" ? (0, s.decode)((0, s.encode)(u)) : (0, s.decode)(u);
+    }
+    e.getDecodedTransaction = d;
+  })(utils$3)), utils$3;
+}
+var hasRequiredSigner;
+function requireSigner() {
+  if (hasRequiredSigner) return signer;
+  hasRequiredSigner = 1, Object.defineProperty(signer, "__esModule", { value: !0 }), signer.multisign = signer.verifySignature = void 0;
+  const e = requireDist$2(), r = requireDist$1(), t = requireErrors(), i = requireTransactions(), n = requireUtils$3();
+  function s(u) {
+    if (u.length === 0)
+      throw new t.ValidationError("There were 0 transactions to multisign");
+    const b = u.map((l) => (0, n.getDecodedTransaction)(l));
+    return b.forEach((l) => {
+      if ((0, i.validate)(l), l.Signers == null || l.Signers.length === 0)
+        throw new t.ValidationError("For multisigning all transactions must include a Signers field containing an array of signatures. You may have forgotten to pass the 'forMultisign' parameter when signing.");
+      if (l.SigningPubKey !== "")
+        throw new t.ValidationError("SigningPubKey must be an empty string for all transactions when multisigning.");
+    }), o(b), (0, e.encode)(d(b));
+  }
+  signer.multisign = s;
+  function a(u, b) {
+    const l = (0, n.getDecodedTransaction)(u);
+    let g = b;
+    if (typeof l.TxnSignature != "string" || !l.TxnSignature)
+      throw new Error("Transaction is missing a signature, TxnSignature");
+    if (!g) {
+      if (typeof l.SigningPubKey != "string" || !l.SigningPubKey)
+        throw new Error("Transaction is missing a public key, SigningPubKey");
+      g = l.SigningPubKey;
+    }
+    return (0, r.verify)((0, e.encodeForSigning)(l), l.TxnSignature, g);
+  }
+  signer.verifySignature = a;
+  function o(u) {
+    const b = JSON.stringify(Object.assign(Object.assign({}, u[0]), { Signers: null }));
+    if (u.slice(1).some((l) => JSON.stringify(Object.assign(Object.assign({}, l), { Signers: null })) !== b))
+      throw new t.ValidationError("txJSON is not the same for all signedTransactions");
+  }
+  function d(u) {
+    const b = u.flatMap((l) => {
+      var g;
+      return (g = l.Signers) !== null && g !== void 0 ? g : [];
+    }).sort((l, g) => (0, n.compareSigners)(l.Signer, g.Signer));
+    return Object.assign(Object.assign({}, u[0]), { Signers: b });
+  }
+  return signer;
+}
+var hasRequiredWallet;
+function requireWallet() {
+  if (hasRequiredWallet) return Wallet$1;
+  hasRequiredWallet = 1;
+  var e = Wallet$1 && Wallet$1.__importDefault || function(T) {
+    return T && T.__esModule ? T : { default: T };
+  };
+  Object.defineProperty(Wallet$1, "__esModule", { value: !0 }), Wallet$1.Wallet = void 0;
+  const r = /* @__PURE__ */ requireLib$1(), t = requireBip39(), i = requireEnglish(), n = requireBrowser$4(), s = e(requireBignumber()), a = requireDist$3(), o = requireDist$2(), d = requireDist$1(), u = e(requireECDSA()), b = requireErrors(), l = requireTransactions(), g = requireCommon(), p = requireUtils$8(), w = requireUtils$4(), I = requireCollections(), m = requireHashLedger(), v = requireRfc1751(), h = requireSigner(), _ = u.default.ed25519, y = "m/44'/144'/0'/0/0";
+  function c(T) {
+    if (!(T.privateKey instanceof Uint8Array))
+      throw new b.ValidationError("Unable to derive privateKey from mnemonic input");
+    if (!(T.publicKey instanceof Uint8Array))
+      throw new b.ValidationError("Unable to derive publicKey from mnemonic input");
+  }
+  class R {
+    constructor(f, C, A = {}) {
+      this.publicKey = f, this.privateKey = C, this.classicAddress = A.masterAddress ? (0, w.ensureClassicAddress)(A.masterAddress) : (0, d.deriveAddress)(f), this.seed = A.seed;
+    }
+    get address() {
+      return this.classicAddress;
+    }
+    static generate(f = _) {
+      if (!Object.values(u.default).includes(f))
+        throw new b.ValidationError("Invalid cryptographic signing algorithm");
+      const C = (0, d.generateSeed)({ algorithm: f });
+      return R.fromSeed(C, { algorithm: f });
+    }
+    static fromSeed(f, C = {}) {
+      return R.deriveWallet(f, {
+        algorithm: C.algorithm,
+        masterAddress: C.masterAddress
+      });
+    }
+    static fromEntropy(f, C = {}) {
+      var A;
+      const E = (A = C.algorithm) !== null && A !== void 0 ? A : _, S = {
+        entropy: Uint8Array.from(f),
+        algorithm: E
+      }, L = (0, d.generateSeed)(S);
+      return R.deriveWallet(L, {
+        algorithm: E,
+        masterAddress: C.masterAddress
+      });
+    }
+    static fromMnemonic(f, C = {}) {
+      var A;
+      if (C.mnemonicEncoding === "rfc1751")
+        return R.fromRFC1751Mnemonic(f, {
+          masterAddress: C.masterAddress,
+          algorithm: C.algorithm
+        });
+      if (!(0, t.validateMnemonic)(f, i.wordlist))
+        throw new b.ValidationError("Unable to parse the given mnemonic using bip39 encoding");
+      const E = (0, t.mnemonicToSeedSync)(f), L = r.HDKey.fromMasterSeed(E).derive((A = C.derivationPath) !== null && A !== void 0 ? A : y);
+      c(L);
+      const U = (0, n.bytesToHex)(L.publicKey), H = (0, n.bytesToHex)(L.privateKey);
+      return new R(U, `00${H}`, {
+        masterAddress: C.masterAddress
+      });
+    }
+    static fromRFC1751Mnemonic(f, C) {
+      const A = (0, v.rfc1751MnemonicToKey)(f);
+      let E;
+      C.algorithm === u.default.ed25519 ? E = "ed25519" : E = "secp256k1";
+      const S = (0, a.encodeSeed)(A, E);
+      return R.fromSeed(S, {
+        masterAddress: C.masterAddress,
+        algorithm: C.algorithm
+      });
+    }
+    static deriveWallet(f, C = {}) {
+      var A;
+      const { publicKey: E, privateKey: S } = (0, d.deriveKeypair)(f, {
+        algorithm: (A = C.algorithm) !== null && A !== void 0 ? A : _
+      });
+      return new R(E, S, {
+        seed: f,
+        masterAddress: C.masterAddress
+      });
+    }
+    sign(f, C) {
+      let A = !1;
+      typeof C == "string" ? A = C : C && (A = this.classicAddress);
+      const E = (0, I.omitBy)(Object.assign({}, f), (U) => U == null);
+      if (E.TxnSignature || E.Signers)
+        throw new b.ValidationError('txJSON must not contain "TxnSignature" or "Signers" properties');
+      if (N(E), (0, l.validate)(E), (0, p.hasFlag)(E, g.GlobalFlags.tfInnerBatchTxn, "tfInnerBatchTxn"))
+        throw new b.ValidationError("Cannot sign a Batch inner transaction.");
+      const S = Object.assign({}, E);
+      if (A) {
+        S.SigningPubKey = "";
+        const U = {
+          Account: A,
+          SigningPubKey: this.publicKey,
+          TxnSignature: D(S, this.privateKey, A)
+        };
+        S.Signers = [{ Signer: U }];
+      } else
+        S.SigningPubKey = this.publicKey, S.TxnSignature = D(S, this.privateKey);
+      const L = (0, o.encode)(S);
+      return {
+        tx_blob: L,
+        hash: (0, m.hashSignedTx)(L)
+      };
+    }
+    verifyTransaction(f) {
+      return (0, h.verifySignature)(f, this.publicKey);
+    }
+    getXAddress(f = !1, C = !1) {
+      return (0, a.classicAddressToXAddress)(this.classicAddress, f, C);
+    }
+  }
+  Wallet$1.Wallet = R, R.fromSecret = R.fromSeed;
+  function D(T, f, C) {
+    if (C) {
+      const A = (0, a.isValidXAddress)(C) ? (0, a.xAddressToClassicAddress)(C).classicAddress : C;
+      return (0, d.sign)((0, o.encodeForMultisigning)(T, A), f);
+    }
+    return (0, d.sign)((0, o.encodeForSigning)(T), f);
+  }
+  function N(T) {
+    T.TransactionType === "Payment" && typeof T.Amount != "string" && T.Amount.value.includes(".") && T.Amount.value.endsWith("0") && (T.Amount = Object.assign({}, T.Amount), T.Amount.value = new s.default(T.Amount.value).toString());
+  }
+  return Wallet$1;
+}
+var fundWallet = {}, defaultFaucets = {}, hasRequiredDefaultFaucets;
+function requireDefaultFaucets() {
+  return hasRequiredDefaultFaucets || (hasRequiredDefaultFaucets = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.getFaucetPath = e.getFaucetHost = e.faucetNetworkIDs = e.faucetNetworkPaths = e.FaucetNetwork = void 0;
+    const r = requireErrors();
+    var t;
+    (function(s) {
+      s.Testnet = "faucet.altnet.rippletest.net", s.Devnet = "faucet.devnet.rippletest.net";
+    })(t || (e.FaucetNetwork = t = {})), e.faucetNetworkPaths = {
+      [t.Testnet]: "/accounts",
+      [t.Devnet]: "/accounts"
+    }, e.faucetNetworkIDs = /* @__PURE__ */ new Map([
+      [1, t.Testnet],
+      [2, t.Devnet]
+    ]);
+    function i(s) {
+      if (s.networkID == null)
+        throw new r.XRPLFaucetError("Cannot create faucet URL without networkID or the faucetHost information");
+      if (e.faucetNetworkIDs.has(s.networkID))
+        return e.faucetNetworkIDs.get(s.networkID);
+      throw s.networkID === 0 ? new r.XRPLFaucetError("Faucet is not available for mainnet.") : new r.XRPLFaucetError("Faucet URL is not defined or inferrable.");
+    }
+    e.getFaucetHost = i;
+    function n(s) {
+      return s === void 0 ? "/accounts" : e.faucetNetworkPaths[s] || "/accounts";
+    }
+    e.getFaucetPath = n;
+  })(defaultFaucets)), defaultFaucets;
+}
+var hasRequiredFundWallet;
+function requireFundWallet() {
+  if (hasRequiredFundWallet) return fundWallet;
+  hasRequiredFundWallet = 1;
+  var e = fundWallet && fundWallet.__awaiter || function(p, w, I, m) {
+    function v(h) {
+      return h instanceof I ? h : new I(function(_) {
+        _(h);
+      });
+    }
+    return new (I || (I = Promise))(function(h, _) {
+      function y(D) {
+        try {
+          R(m.next(D));
+        } catch (N) {
+          _(N);
+        }
+      }
+      function c(D) {
+        try {
+          R(m.throw(D));
+        } catch (N) {
+          _(N);
+        }
+      }
+      function R(D) {
+        D.done ? h(D.value) : v(D.value).then(y, c);
+      }
+      R((m = m.apply(p, w || [])).next());
+    });
+  };
+  Object.defineProperty(fundWallet, "__esModule", { value: !0 }), fundWallet.requestFunding = fundWallet.getStartingBalance = fundWallet.generateWalletToFund = void 0;
+  const r = requireDist$3(), t = requireErrors(), i = requireDefaultFaucets(), n = requireWallet(), s = 1, a = 20;
+  function o(p) {
+    return p && (0, r.isValidClassicAddress)(p.classicAddress) ? p : n.Wallet.generate();
+  }
+  fundWallet.generateWalletToFund = o;
+  function d(p, w) {
+    return e(this, void 0, void 0, function* () {
+      let I = 0;
+      try {
+        I = Number(yield p.getXrpBalance(w));
+      } catch {
+      }
+      return I;
+    });
+  }
+  fundWallet.getStartingBalance = d;
+  function u(p, w, I, m, v) {
+    var h, _, y;
+    return e(this, void 0, void 0, function* () {
+      const c = (h = p.faucetHost) !== null && h !== void 0 ? h : (0, i.getFaucetHost)(w);
+      if (!c)
+        throw new t.XRPLFaucetError("No faucet hostname could be derived");
+      const R = (_ = p.faucetPath) !== null && _ !== void 0 ? _ : (0, i.getFaucetPath)(c), D = yield fetch(`https://${c}${R}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(v)
+      }), N = yield D.json();
+      if (D.ok && (!((y = D.headers.get("Content-Type")) === null || y === void 0) && y.startsWith("application/json"))) {
+        const T = N.account.classicAddress;
+        return b(w, T, m, I);
+      }
+      return l(D, N);
+    });
+  }
+  fundWallet.requestFunding = u;
+  function b(p, w, I, m) {
+    return e(this, void 0, void 0, function* () {
+      if (!w)
+        return Promise.reject(new t.XRPLFaucetError("The faucet account is undefined"));
+      const v = yield g(p, w, m);
+      if (v > m)
+        return {
+          wallet: I,
+          balance: v
+        };
+      throw new t.XRPLFaucetError(`Unable to fund address with faucet after waiting ${s * a} seconds`);
+    });
+  }
+  function l(p, w) {
+    return e(this, void 0, void 0, function* () {
+      return Promise.reject(new t.XRPLFaucetError(`Request failed: ${JSON.stringify({
+        body: w ?? {},
+        contentType: p.headers.get("Content-Type"),
+        statusCode: p.status
+      })}`));
+    });
+  }
+  function g(p, w, I) {
+    return e(this, void 0, void 0, function* () {
+      return new Promise((m, v) => {
+        let h = a;
+        const _ = setInterval(() => e(this, void 0, void 0, function* () {
+          h < 0 ? (clearInterval(_), m(I)) : h -= 1;
+          try {
+            let y;
+            try {
+              y = Number(yield p.getXrpBalance(w));
+            } catch {
+            }
+            y > I && (clearInterval(_), m(y));
+          } catch (y) {
+            clearInterval(_), y instanceof Error && v(new t.XRPLFaucetError(`Unable to check if the address ${w} balance has increased. Error: ${y.message}`)), v(y);
+          }
+        }), s * 1e3);
+      });
+    });
+  }
+  return fundWallet;
+}
+var connection = {}, browser = {}, hasRequiredBrowser;
+function requireBrowser() {
+  if (hasRequiredBrowser) return browser;
+  hasRequiredBrowser = 1, Object.defineProperty(browser, "__esModule", { value: !0 });
+  const e = requireEventemitter3();
+  class r extends e.EventEmitter {
+    /**
+     * Constructs a browser-safe websocket.
+     *
+     * @param url - URL to connect to.
+     * @param _protocols - Not used.
+     * @param _websocketOptions - Not used.
+     */
+    constructor(i, n, s) {
+      super(), this.ws = new WebSocket(i), this.ws.onclose = (a) => {
+        let o;
+        a.reason && (o = new TextEncoder().encode(a.reason)), this.emit("close", a.code, o);
+      }, this.ws.onopen = () => {
+        this.emit("open");
+      }, this.ws.onerror = (a) => {
+        this.emit("error", a);
+      }, this.ws.onmessage = (a) => {
+        this.emit("message", a.data);
+      };
+    }
+    /**
+     * Get the ready state of the websocket.
+     *
+     * @returns The Websocket's ready state.
+     */
+    get readyState() {
+      return this.ws.readyState;
+    }
+    /**
+     * Closes the websocket.
+     *
+     * @param code - Close code.
+     * @param reason - Close reason.
+     */
+    close(i, n) {
+      this.readyState === 1 && this.ws.close(i, n);
+    }
+    /**
+     * Sends a message over the Websocket connection.
+     *
+     * @param message - Message to send.
+     */
+    send(i) {
+      this.ws.send(i);
+    }
+  }
+  return r.CONNECTING = 0, r.OPEN = 1, r.CLOSING = 2, r.CLOSED = 3, browser.default = r, browser;
+}
+var ConnectionManager = {}, hasRequiredConnectionManager;
+function requireConnectionManager() {
+  if (hasRequiredConnectionManager) return ConnectionManager;
+  hasRequiredConnectionManager = 1;
+  var e = ConnectionManager && ConnectionManager.__awaiter || function(t, i, n, s) {
+    function a(o) {
+      return o instanceof n ? o : new n(function(d) {
+        d(o);
+      });
+    }
+    return new (n || (n = Promise))(function(o, d) {
+      function u(g) {
+        try {
+          l(s.next(g));
+        } catch (p) {
+          d(p);
+        }
+      }
+      function b(g) {
+        try {
+          l(s.throw(g));
+        } catch (p) {
+          d(p);
+        }
+      }
+      function l(g) {
+        g.done ? o(g.value) : a(g.value).then(u, b);
+      }
+      l((s = s.apply(t, i || [])).next());
+    });
+  };
+  Object.defineProperty(ConnectionManager, "__esModule", { value: !0 });
+  let r = class {
+    constructor() {
+      this.promisesAwaitingConnection = [];
+    }
+    resolveAllAwaiting() {
+      this.promisesAwaitingConnection.map(({ resolve: i }) => i()), this.promisesAwaitingConnection = [];
+    }
+    rejectAllAwaiting(i) {
+      this.promisesAwaitingConnection.map(({ reject: n }) => n(i)), this.promisesAwaitingConnection = [];
+    }
+    awaitConnection() {
+      return e(this, void 0, void 0, function* () {
+        return new Promise((i, n) => {
+          this.promisesAwaitingConnection.push({ resolve: i, reject: n });
+        });
+      });
+    }
+  };
+  return ConnectionManager.default = r, ConnectionManager;
+}
+var ExponentialBackoff = {}, hasRequiredExponentialBackoff;
+function requireExponentialBackoff() {
+  if (hasRequiredExponentialBackoff) return ExponentialBackoff;
+  hasRequiredExponentialBackoff = 1, Object.defineProperty(ExponentialBackoff, "__esModule", { value: !0 });
+  const e = 100, r = 1e3;
+  let t = class {
+    constructor(n = {}) {
+      var s, a;
+      this.factor = 2, this.numAttempts = 0, this.ms = (s = n.min) !== null && s !== void 0 ? s : e, this.max = (a = n.max) !== null && a !== void 0 ? a : r;
+    }
+    get attempts() {
+      return this.numAttempts;
+    }
+    duration() {
+      const n = this.ms * Math.pow(this.factor, this.numAttempts);
+      return this.numAttempts += 1, Math.floor(Math.min(n, this.max));
+    }
+    reset() {
+      this.numAttempts = 0;
+    }
+  };
+  return ExponentialBackoff.default = t, ExponentialBackoff;
+}
+var RequestManager = {}, hasRequiredRequestManager;
+function requireRequestManager() {
+  if (hasRequiredRequestManager) return RequestManager;
+  hasRequiredRequestManager = 1;
+  var e = RequestManager && RequestManager.__awaiter || function(i, n, s, a) {
+    function o(d) {
+      return d instanceof s ? d : new s(function(u) {
+        u(d);
+      });
+    }
+    return new (s || (s = Promise))(function(d, u) {
+      function b(p) {
+        try {
+          g(a.next(p));
+        } catch (w) {
+          u(w);
+        }
+      }
+      function l(p) {
+        try {
+          g(a.throw(p));
+        } catch (w) {
+          u(w);
+        }
+      }
+      function g(p) {
+        p.done ? d(p.value) : o(p.value).then(b, l);
+      }
+      g((a = a.apply(i, n || [])).next());
+    });
+  };
+  Object.defineProperty(RequestManager, "__esModule", { value: !0 });
+  const r = requireErrors();
+  let t = class {
+    constructor() {
+      this.nextId = 0, this.promisesAwaitingResponse = /* @__PURE__ */ new Map();
+    }
+    addPromise(n, s) {
+      return e(this, void 0, void 0, function* () {
+        return new Promise((a, o) => {
+          this.promisesAwaitingResponse.set(n, {
+            resolve: a,
+            reject: o,
+            timer: s
+          });
+        });
+      });
+    }
+    resolve(n, s) {
+      const a = this.promisesAwaitingResponse.get(n);
+      if (a == null)
+        throw new r.XrplError(`No existing promise with id ${n}`, {
+          type: "resolve",
+          response: s
+        });
+      clearTimeout(a.timer), a.resolve(s), this.deletePromise(n);
+    }
+    reject(n, s) {
+      const a = this.promisesAwaitingResponse.get(n);
+      if (a == null)
+        throw new r.XrplError(`No existing promise with id ${n}`, {
+          type: "reject",
+          error: s
+        });
+      clearTimeout(a.timer), a.reject(s), this.deletePromise(n);
+    }
+    rejectAll(n) {
+      this.promisesAwaitingResponse.forEach((s, a, o) => {
+        this.reject(a, n), this.deletePromise(a);
+      });
+    }
+    createRequest(n, s) {
+      let a;
+      n.id == null ? (a = this.nextId, this.nextId += 1) : a = n.id;
+      const o = JSON.stringify(Object.assign(Object.assign({}, n), { id: a })), d = setTimeout(() => {
+        this.reject(a, new r.TimeoutError(`Timeout for request: ${JSON.stringify(n)} with id ${a}`, n));
+      }, s);
+      if (d.unref && d.unref(), this.promisesAwaitingResponse.has(a))
+        throw clearTimeout(d), new r.XrplError(`Response with id '${a}' is already pending`, n);
+      const u = new Promise((b, l) => {
+        this.promisesAwaitingResponse.set(a, {
+          resolve: b,
+          reject: l,
+          timer: d
+        });
+      });
+      return [a, o, u];
+    }
+    handleResponse(n) {
+      var s, a, o;
+      if (n.id == null || !(typeof n.id == "string" || typeof n.id == "number"))
+        throw new r.ResponseFormatError("valid id not found in response", n);
+      if (this.promisesAwaitingResponse.has(n.id)) {
+        if (n.status == null) {
+          const d = new r.ResponseFormatError("Response has no status");
+          this.reject(n.id, d);
+        }
+        if (n.status === "error") {
+          const d = n, u = new r.RippledError((a = (s = d.error_message) !== null && s !== void 0 ? s : d.error_exception) !== null && a !== void 0 ? a : d.error, d);
+          this.reject(n.id, u);
+          return;
+        }
+        if (n.status !== "success") {
+          const d = new r.ResponseFormatError(`unrecognized response.status: ${(o = n.status) !== null && o !== void 0 ? o : ""}`, n);
+          this.reject(n.id, d);
+          return;
+        }
+        delete n.status, this.resolve(n.id, n);
+      }
+    }
+    deletePromise(n) {
+      this.promisesAwaitingResponse.delete(n);
+    }
+  };
+  return RequestManager.default = t, RequestManager;
+}
+var hasRequiredConnection;
+function requireConnection() {
+  return hasRequiredConnection || (hasRequiredConnection = 1, (function(e) {
+    var r = connection && connection.__awaiter || function(m, v, h, _) {
+      function y(c) {
+        return c instanceof h ? c : new h(function(R) {
+          R(c);
+        });
+      }
+      return new (h || (h = Promise))(function(c, R) {
+        function D(f) {
+          try {
+            T(_.next(f));
+          } catch (C) {
+            R(C);
+          }
+        }
+        function N(f) {
+          try {
+            T(_.throw(f));
+          } catch (C) {
+            R(C);
+          }
+        }
+        function T(f) {
+          f.done ? c(f.value) : y(f.value).then(D, N);
+        }
+        T((_ = _.apply(m, v || [])).next());
+      });
+    }, t = connection && connection.__importDefault || function(m) {
+      return m && m.__esModule ? m : { default: m };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.Connection = e.INTENTIONAL_DISCONNECT_CODE = void 0;
+    const i = requireBrowser$4(), n = t(requireBrowser()), s = requireEventemitter3(), a = requireErrors(), o = t(requireConnectionManager()), d = t(requireExponentialBackoff()), u = t(requireRequestManager()), b = 60, l = 20, g = 5;
+    e.INTENTIONAL_DISCONNECT_CODE = 4e3;
+    function p(m, v) {
+      const h = {
+        agent: v.agent
+      };
+      v.headers && (h.headers = v.headers), v.authorization != null && (h.headers = Object.assign(Object.assign({}, h.headers), { Authorization: `Basic ${btoa(v.authorization)}` }));
+      const _ = Object.assign({}, h);
+      return new n.default(m, _);
+    }
+    function w(m, v) {
+      return r(this, void 0, void 0, function* () {
+        return new Promise((h, _) => {
+          m.send(v, (y) => {
+            y ? _(new a.DisconnectedError(y.message, y)) : h();
+          });
+        });
+      });
+    }
+    class I extends s.EventEmitter {
+      constructor(v, h = {}) {
+        super(), this.ws = null, this.reconnectTimeoutID = null, this.heartbeatIntervalID = null, this.retryConnectionBackoff = new d.default({
+          min: 100,
+          max: b * 1e3
+        }), this.requestManager = new u.default(), this.connectionManager = new o.default(), this.trace = () => {
+        }, this.url = v, this.config = Object.assign({ timeout: l * 1e3, connectionTimeout: g * 1e3 }, h), typeof h.trace == "function" ? this.trace = h.trace : h.trace && (this.trace = console.log);
+      }
+      get state() {
+        return this.ws ? this.ws.readyState : n.default.CLOSED;
+      }
+      get shouldBeConnected() {
+        return this.ws !== null;
+      }
+      isConnected() {
+        return this.state === n.default.OPEN;
+      }
+      connect() {
+        return r(this, void 0, void 0, function* () {
+          if (this.isConnected())
+            return Promise.resolve();
+          if (this.state === n.default.CONNECTING)
+            return this.connectionManager.awaitConnection();
+          if (!this.url)
+            return Promise.reject(new a.ConnectionError("Cannot connect because no server was specified"));
+          if (this.ws != null)
+            return Promise.reject(new a.XrplError("Websocket connection never cleaned up.", {
+              state: this.state
+            }));
+          const v = setTimeout(() => {
+            this.onConnectionFailed(new a.ConnectionError(`Error: connect() timed out after ${this.config.connectionTimeout} ms. If your internet connection is working, the rippled server may be blocked or inaccessible. You can also try setting the 'connectionTimeout' option in the Client constructor.`));
+          }, this.config.connectionTimeout);
+          if (this.ws = p(this.url, this.config), this.ws == null)
+            throw new a.XrplError("Connect: created null websocket");
+          return this.ws.on("error", (h) => this.onConnectionFailed(h)), this.ws.on("error", () => clearTimeout(v)), this.ws.on("close", (h) => this.onConnectionFailed(h)), this.ws.on("close", () => clearTimeout(v)), this.ws.once("open", () => {
+            this.onceOpen(v);
+          }), this.connectionManager.awaitConnection();
+        });
+      }
+      disconnect() {
+        return r(this, void 0, void 0, function* () {
+          return this.clearHeartbeatInterval(), this.reconnectTimeoutID !== null && (clearTimeout(this.reconnectTimeoutID), this.reconnectTimeoutID = null), this.state === n.default.CLOSED || this.ws == null ? Promise.resolve(void 0) : new Promise((v) => {
+            this.ws == null && v(void 0), this.ws != null && this.ws.once("close", (h) => v(h)), this.ws != null && this.state !== n.default.CLOSING && this.ws.close(e.INTENTIONAL_DISCONNECT_CODE);
+          });
+        });
+      }
+      reconnect() {
+        return r(this, void 0, void 0, function* () {
+          this.emit("reconnect"), yield this.disconnect(), yield this.connect();
+        });
+      }
+      request(v, h) {
+        return r(this, void 0, void 0, function* () {
+          if (!this.shouldBeConnected || this.ws == null)
+            throw new a.NotConnectedError(JSON.stringify(v), v);
+          const [_, y, c] = this.requestManager.createRequest(v, h ?? this.config.timeout);
+          return this.trace("send", y), w(this.ws, y).catch((R) => {
+            try {
+              this.requestManager.reject(_, R);
+            } catch (D) {
+              D instanceof a.XrplError ? this.trace("send", `send errored after connection was closed: ${D.toString()}`) : this.trace("send", String(D));
+            }
+          }), c;
+        });
+      }
+      getUrl() {
+        var v;
+        return (v = this.url) !== null && v !== void 0 ? v : "";
+      }
+      onMessage(v) {
+        this.trace("receive", v);
+        let h;
+        try {
+          h = JSON.parse(v);
+        } catch (_) {
+          _ instanceof Error && this.emit("error", "badMessage", _.message, v);
+          return;
+        }
+        if (h.type == null && h.error) {
+          this.emit("error", h.error, h.error_message, h);
+          return;
+        }
+        if (h.type && this.emit(h.type, h), h.type === "response")
+          try {
+            this.requestManager.handleResponse(h);
+          } catch (_) {
+            _ instanceof Error ? this.emit("error", "badMessage", _.message, v) : this.emit("error", "badMessage", _, _);
+          }
+      }
+      onceOpen(v) {
+        return r(this, void 0, void 0, function* () {
+          if (this.ws == null)
+            throw new a.XrplError("onceOpen: ws is null");
+          this.ws.removeAllListeners(), clearTimeout(v), this.ws.on("message", (h) => this.onMessage(h)), this.ws.on("error", (h) => this.emit("error", "websocket", h.message, h)), this.ws.once("close", (h, _) => {
+            if (this.ws == null)
+              throw new a.XrplError("onceClose: ws is null");
+            this.clearHeartbeatInterval(), this.requestManager.rejectAll(new a.DisconnectedError(`websocket was closed, ${_ ? (0, i.hexToString)((0, i.bytesToHex)(_)) : ""}`)), this.ws.removeAllListeners(), this.ws = null, h === void 0 ? this.emit("disconnected", 1011) : this.emit("disconnected", h), h !== e.INTENTIONAL_DISCONNECT_CODE && h !== void 0 && this.intentionalDisconnect();
+          });
+          try {
+            this.retryConnectionBackoff.reset(), this.startHeartbeatInterval(), this.connectionManager.resolveAllAwaiting(), this.emit("connected");
+          } catch (h) {
+            h instanceof Error && (this.connectionManager.rejectAllAwaiting(h), yield this.disconnect().catch(() => {
+            }));
+          }
+        });
+      }
+      intentionalDisconnect() {
+        const v = this.retryConnectionBackoff.duration();
+        this.trace("reconnect", `Retrying connection in ${v}ms.`), this.emit("reconnecting", this.retryConnectionBackoff.attempts), this.reconnectTimeoutID = setTimeout(() => {
+          this.reconnect().catch((h) => {
+            this.emit("error", "reconnect", h.message, h);
+          });
+        }, v);
+      }
+      clearHeartbeatInterval() {
+        this.heartbeatIntervalID && clearInterval(this.heartbeatIntervalID);
+      }
+      startHeartbeatInterval() {
+        this.clearHeartbeatInterval(), this.heartbeatIntervalID = setInterval(() => {
+          this.heartbeat();
+        }, this.config.timeout);
+      }
+      heartbeat() {
+        return r(this, void 0, void 0, function* () {
+          this.request({ command: "ping" }).catch(() => r(this, void 0, void 0, function* () {
+            return this.reconnect().catch((v) => {
+              this.emit("error", "reconnect", v.message, v);
+            });
+          }));
+        });
+      }
+      onConnectionFailed(v) {
+        this.ws && (this.ws.removeAllListeners(), this.ws.on("error", () => {
+        }), this.ws.close(), this.ws = null), typeof v == "number" ? this.connectionManager.rejectAllAwaiting(new a.NotConnectedError(`Connection failed with code ${v}.`, {
+          code: v
+        })) : v?.message ? this.connectionManager.rejectAllAwaiting(new a.NotConnectedError(v.message, v)) : this.connectionManager.rejectAllAwaiting(new a.NotConnectedError("Connection failed."));
+      }
+    }
+    e.Connection = I;
+  })(connection)), connection;
+}
+var partialPayment = {}, hasRequiredPartialPayment;
+function requirePartialPayment() {
+  if (hasRequiredPartialPayment) return partialPayment;
+  hasRequiredPartialPayment = 1;
+  var e = partialPayment && partialPayment.__importDefault || function(w) {
+    return w && w.__esModule ? w : { default: w };
+  };
+  Object.defineProperty(partialPayment, "__esModule", { value: !0 }), partialPayment.handleStreamPartialPayment = partialPayment.handlePartialPayment = void 0;
+  const r = e(requireBignumber()), t = requireDist$2(), i = requireTransactions(), n = requireUtils$8(), s = 2001;
+  function a(w, I) {
+    if (typeof w == "string" && typeof I == "string")
+      return w === I;
+    if (typeof w == "string" || typeof I == "string")
+      return !1;
+    if ((0, i.isMPTAmount)(w) && (0, i.isMPTAmount)(I)) {
+      const h = new r.default(w.value), _ = new r.default(I.value);
+      return w.mpt_issuance_id === I.mpt_issuance_id && h.isEqualTo(_);
+    }
+    if ((0, i.isMPTAmount)(w) || (0, i.isMPTAmount)(I))
+      return !1;
+    const m = new r.default(w.value), v = new r.default(I.value);
+    return w.currency === I.currency && w.issuer === I.issuer && m.isEqualTo(v);
+  }
+  function o(w, I) {
+    var m, v;
+    if (w == null || I == null || w.TransactionType !== "Payment")
+      return !1;
+    let h = I;
+    if (typeof h == "string") {
+      if (h === "unavailable")
+        return !1;
+      h = (0, t.decode)(h);
+    }
+    if (!(typeof w.Flags == "number" ? (0, n.isFlagEnabled)(w.Flags, i.PaymentFlags.tfPartialPayment) : (m = w.Flags) === null || m === void 0 ? void 0 : m.tfPartialPayment))
+      return !1;
+    const y = h.delivered_amount, c = (v = w.DeliverMax) !== null && v !== void 0 ? v : w.Amount;
+    return y === void 0 ? !1 : !a(y, c);
+  }
+  function d(w) {
+    return o(w.result.tx_json, w.result.meta);
+  }
+  function u(w) {
+    return o(w.result.tx_json, w.result.metadata);
+  }
+  function b(w) {
+    const { transactions: I } = w.result;
+    return I.some((v) => {
+      if (v.tx_json != null) {
+        const _ = v;
+        return o(_.tx_json, _.meta);
+      }
+      const h = v;
+      return o(h.tx, h.meta);
+    });
+  }
+  function l(w, I) {
+    switch (w) {
+      case "tx":
+        return d(I);
+      case "transaction_entry":
+        return u(I);
+      case "account_tx":
+        return b(I);
+      default:
+        return !1;
+    }
+  }
+  function g(w, I) {
+    var m;
+    if (l(w, I)) {
+      const v = (m = I.warnings) !== null && m !== void 0 ? m : [], h = {
+        id: s,
+        message: "This response contains a Partial Payment"
+      };
+      v.push(h), I.warnings = v;
+    }
+  }
+  partialPayment.handlePartialPayment = g;
+  function p(w, I) {
+    var m, v;
+    if (o((m = w.tx_json) !== null && m !== void 0 ? m : w.transaction, w.meta)) {
+      const h = (v = w.warnings) !== null && v !== void 0 ? v : [], _ = {
+        id: s,
+        message: "This response contains a Partial Payment"
+      };
+      h.push(_), w.warnings = h, I("Partial payment received", JSON.stringify(w));
+    }
+  }
+  return partialPayment.handleStreamPartialPayment = p, partialPayment;
+}
+var hasRequiredClient;
+function requireClient() {
+  if (hasRequiredClient) return client;
+  hasRequiredClient = 1;
+  var e = client && client.__awaiter || function(R, D, N, T) {
+    function f(C) {
+      return C instanceof N ? C : new N(function(A) {
+        A(C);
+      });
+    }
+    return new (N || (N = Promise))(function(C, A) {
+      function E(U) {
+        try {
+          L(T.next(U));
+        } catch (H) {
+          A(H);
+        }
+      }
+      function S(U) {
+        try {
+          L(T.throw(U));
+        } catch (H) {
+          A(H);
+        }
+      }
+      function L(U) {
+        U.done ? C(U.value) : f(U.value).then(E, S);
+      }
+      L((T = T.apply(R, D || [])).next());
+    });
+  };
+  Object.defineProperty(client, "__esModule", { value: !0 }), client.Client = void 0;
+  const r = requireEventemitter3(), t = requireErrors(), i = requireCommon$1(), n = requireFlags(), s = requireSugar(), a = requireAutofill(), o = requireBalances(), d = requireGetOrderbook(), u = requireUtils$5(), b = requireWallet(), l = requireFundWallet(), g = requireConnection(), p = requirePartialPayment();
+  function w(R) {
+    switch (R) {
+      case "account_channels":
+        return "channels";
+      case "account_lines":
+        return "lines";
+      case "account_objects":
+        return "account_objects";
+      case "account_tx":
+        return "transactions";
+      case "account_offers":
+      case "book_offers":
+        return "offers";
+      case "ledger_data":
+        return "state";
+      default:
+        return null;
+    }
+  }
+  function I(R, D, N) {
+    return Math.min(Math.max(R, D), N);
+  }
+  const m = 1.2, v = "2", h = 10, _ = 400, y = 1e3;
+  class c extends r.EventEmitter {
+    constructor(D, N = {}) {
+      var T, f;
+      if (super(), this.apiVersion = i.DEFAULT_API_VERSION, typeof D != "string" || !/wss?(?:\+unix)?:\/\//u.exec(D))
+        throw new t.ValidationError("server URI must start with `wss://`, `ws://`, `wss+unix://`, or `ws+unix://`.");
+      this.feeCushion = (T = N.feeCushion) !== null && T !== void 0 ? T : m, this.maxFeeXRP = (f = N.maxFeeXRP) !== null && f !== void 0 ? f : v, this.connection = new g.Connection(D, N), this.connection.on("error", (C, A, E) => {
+        this.emit("error", C, A, E);
+      }), this.connection.on("reconnect", () => {
+        this.connection.on("connected", () => this.emit("connected"));
+      }), this.connection.on("disconnected", (C) => {
+        let A = C;
+        A === g.INTENTIONAL_DISCONNECT_CODE && (A = y), this.emit("disconnected", A);
+      }), this.connection.on("ledgerClosed", (C) => {
+        this.emit("ledgerClosed", C);
+      }), this.connection.on("transaction", (C) => {
+        (0, p.handleStreamPartialPayment)(C, this.connection.trace), this.emit("transaction", C);
+      }), this.connection.on("validationReceived", (C) => {
+        this.emit("validationReceived", C);
+      }), this.connection.on("manifestReceived", (C) => {
+        this.emit("manifestReceived", C);
+      }), this.connection.on("peerStatusChange", (C) => {
+        this.emit("peerStatusChange", C);
+      }), this.connection.on("consensusPhase", (C) => {
+        this.emit("consensusPhase", C);
+      }), this.connection.on("path_find", (C) => {
+        this.emit("path_find", C);
+      });
+    }
+    get url() {
+      return this.connection.getUrl();
+    }
+    request(D) {
+      var N;
+      return e(this, void 0, void 0, function* () {
+        const T = Object.assign(Object.assign({}, D), { account: typeof D.account == "string" ? (0, s.ensureClassicAddress)(D.account) : void 0, api_version: (N = D.api_version) !== null && N !== void 0 ? N : this.apiVersion }), f = yield this.connection.request(T);
+        return (0, p.handlePartialPayment)(D.command, f), f;
+      });
+    }
+    requestNextPage(D, N) {
+      return e(this, void 0, void 0, function* () {
+        if (!N.result.marker)
+          return Promise.reject(new t.NotFoundError("response does not have a next page"));
+        const T = Object.assign(Object.assign({}, D), { marker: N.result.marker });
+        return this.request(T);
+      });
+    }
+    on(D, N) {
+      return super.on(D, N);
+    }
+    requestAll(D, N) {
+      var T;
+      return e(this, void 0, void 0, function* () {
+        const f = N ?? w(D.command);
+        if (!f)
+          throw new t.ValidationError(`no collect key for command ${D.command}`);
+        const C = (T = D.limit) !== null && T !== void 0 ? T : 1 / 0;
+        let A = 0, E = D.marker;
+        const S = [];
+        do {
+          const L = I(C - A, h, _), U = Object.assign(Object.assign({}, D), { limit: L, marker: E }), H = yield this.connection.request(U), K = H.result;
+          if (!(f in K))
+            throw new t.XrplError(`${f} not in result`);
+          const $ = K[f];
+          E = K.marker, S.push(H), Array.isArray($) && (A += $.length);
+        } while (E && A < C);
+        return S;
+      });
+    }
+    getServerInfo() {
+      var D;
+      return e(this, void 0, void 0, function* () {
+        try {
+          const N = yield this.request({
+            command: "server_info"
+          });
+          this.networkID = (D = N.result.info.network_id) !== null && D !== void 0 ? D : void 0, this.buildVersion = N.result.info.build_version;
+        } catch (N) {
+          console.error(N);
+        }
+      });
+    }
+    connect() {
+      return e(this, void 0, void 0, function* () {
+        return this.connection.connect().then(() => e(this, void 0, void 0, function* () {
+          yield this.getServerInfo(), this.emit("connected");
+        }));
+      });
+    }
+    disconnect() {
+      return e(this, void 0, void 0, function* () {
+        yield this.connection.disconnect();
+      });
+    }
+    isConnected() {
+      return this.connection.isConnected();
+    }
+    autofill(D, N) {
+      var T;
+      return e(this, void 0, void 0, function* () {
+        const f = Object.assign({}, D);
+        (0, a.setValidAddresses)(f), f.Flags = (0, n.convertTxFlagsToNumber)(f);
+        const C = [];
+        return (T = f.NetworkID) !== null && T !== void 0 || (f.NetworkID = (0, a.txNeedsNetworkID)(this) ? this.networkID : void 0), f.Sequence == null && C.push((0, a.setNextValidSequenceNumber)(this, f)), f.Fee == null && C.push((0, a.getTransactionFee)(this, f, N)), f.LastLedgerSequence == null && C.push((0, a.setLatestValidatedLedgerSequence)(this, f)), f.TransactionType === "AccountDelete" && C.push((0, a.checkAccountDeleteBlockers)(this, f)), f.TransactionType === "Batch" && C.push((0, a.autofillBatchTxn)(this, f)), f.TransactionType === "Payment" && f.DeliverMax != null && (0, a.handleDeliverMax)(f), Promise.all(C).then(() => f);
+      });
+    }
+    simulate(D, N) {
+      var T;
+      return e(this, void 0, void 0, function* () {
+        const f = (T = N?.binary) !== null && T !== void 0 ? T : !1, C = typeof D == "string" ? { command: "simulate", tx_blob: D, binary: f } : { command: "simulate", tx_json: D, binary: f };
+        return this.request(C);
+      });
+    }
+    submit(D, N) {
+      return e(this, void 0, void 0, function* () {
+        const T = yield (0, s.getSignedTx)(this, D, N);
+        return (0, s.submitRequest)(this, T, N?.failHard);
+      });
+    }
+    submitAndWait(D, N) {
+      return e(this, void 0, void 0, function* () {
+        const T = yield (0, s.getSignedTx)(this, D, N), f = (0, s.getLastLedgerSequence)(T);
+        if (f == null)
+          throw new t.ValidationError("Transaction must contain a LastLedgerSequence value for reliable submission.");
+        const C = yield (0, s.submitRequest)(this, T, N?.failHard);
+        if (C.result.engine_result.startsWith("tem"))
+          throw new t.XrplError(`Transaction failed, ${C.result.engine_result}: ${C.result.engine_result_message}`);
+        const A = u.hashes.hashSignedTx(T);
+        return (0, s.waitForFinalTransactionOutcome)(this, A, f, C.result.engine_result);
+      });
+    }
+    prepareTransaction(D, N) {
+      return e(this, void 0, void 0, function* () {
+        return this.autofill(D, N);
+      });
+    }
+    getXrpBalance(D, N = {}) {
+      var T;
+      return e(this, void 0, void 0, function* () {
+        const f = {
+          command: "account_info",
+          account: D,
+          ledger_index: (T = N.ledger_index) !== null && T !== void 0 ? T : "validated",
+          ledger_hash: N.ledger_hash
+        }, C = yield this.request(f);
+        return (0, u.dropsToXrp)(C.result.account_data.Balance);
+      });
+    }
+    getBalances(D, N = {}) {
+      var T;
+      return e(this, void 0, void 0, function* () {
+        const f = [];
+        let C = Promise.resolve(0);
+        N.peer || (C = this.getXrpBalance(D, {
+          ledger_hash: N.ledger_hash,
+          ledger_index: N.ledger_index
+        }));
+        const A = {
+          command: "account_lines",
+          account: D,
+          ledger_index: (T = N.ledger_index) !== null && T !== void 0 ? T : "validated",
+          ledger_hash: N.ledger_hash,
+          peer: N.peer,
+          limit: N.limit
+        }, E = this.requestAll(A);
+        return yield Promise.all([C, E]).then(([S, L]) => {
+          const U = L.flatMap((H) => (0, o.formatBalances)(H.result.lines));
+          S !== 0 && f.push({ currency: "XRP", value: S.toString() }), f.push(...U);
+        }), f.slice(0, N.limit);
+      });
+    }
+    getOrderbook(D, N, T = {}) {
+      return e(this, void 0, void 0, function* () {
+        (0, d.validateOrderbookOptions)(T);
+        const f = (0, d.createBookOffersRequest)(D, N, T), C = yield (0, d.requestAllOffers)(this, f), A = yield (0, d.requestAllOffers)(this, (0, d.reverseRequest)(f)), E = (0, d.extractOffers)(C), S = (0, d.extractOffers)(A), L = (0, d.combineOrders)(E, S), { buy: U, sell: H } = (0, d.separateBuySellOrders)(L);
+        return {
+          buy: (0, d.sortAndLimitOffers)(U, T.limit),
+          sell: (0, d.sortAndLimitOffers)(H, T.limit)
+        };
+      });
+    }
+    getLedgerIndex() {
+      return e(this, void 0, void 0, function* () {
+        return (yield this.request({
+          command: "ledger",
+          ledger_index: "validated"
+        })).result.ledger_index;
+      });
+    }
+    fundWallet(D, N = {}) {
+      return e(this, void 0, void 0, function* () {
+        if (!this.isConnected())
+          throw new t.RippledError("Client not connected, cannot call faucet");
+        const T = !!D, f = D && (0, u.isValidClassicAddress)(D.classicAddress) ? D : b.Wallet.generate(), C = {
+          destination: f.classicAddress,
+          xrpAmount: N.amount,
+          usageContext: N.usageContext,
+          userAgent: "xrpl.js"
+        };
+        let A = 0;
+        if (T)
+          try {
+            A = Number(yield this.getXrpBalance(f.classicAddress));
+          } catch {
+          }
+        return (0, l.requestFunding)(N, this, A, f, C);
+      });
+    }
+  }
+  return client.Client = c, client;
+}
+var models = {}, ledger = {}, Amendments = {}, hasRequiredAmendments;
+function requireAmendments() {
+  return hasRequiredAmendments || (hasRequiredAmendments = 1, Object.defineProperty(Amendments, "__esModule", { value: !0 }), Amendments.AMENDMENTS_ID = void 0, Amendments.AMENDMENTS_ID = "7DB0788C020F02780A673DC74757F23823FA3014C1866E72CC4CD8B226CD6EF4"), Amendments;
+}
+var FeeSettings = {}, hasRequiredFeeSettings;
+function requireFeeSettings() {
+  return hasRequiredFeeSettings || (hasRequiredFeeSettings = 1, Object.defineProperty(FeeSettings, "__esModule", { value: !0 }), FeeSettings.FEE_SETTINGS_ID = void 0, FeeSettings.FEE_SETTINGS_ID = "4BC50C9B0D8515D3EAAE1E74B29A95804346C491EE1A95BF25E4AAB854A6A651"), FeeSettings;
+}
+var NegativeUNL = {}, hasRequiredNegativeUNL;
+function requireNegativeUNL() {
+  return hasRequiredNegativeUNL || (hasRequiredNegativeUNL = 1, Object.defineProperty(NegativeUNL, "__esModule", { value: !0 }), NegativeUNL.NEGATIVE_UNL_ID = void 0, NegativeUNL.NEGATIVE_UNL_ID = "2E8A59AA9D3B5B186B0B9E0F62E6C02587CA74A4D778938E957B6357D364B244"), NegativeUNL;
+}
+var RippleState = {}, hasRequiredRippleState;
+function requireRippleState() {
+  if (hasRequiredRippleState) return RippleState;
+  hasRequiredRippleState = 1, Object.defineProperty(RippleState, "__esModule", { value: !0 }), RippleState.RippleStateFlags = void 0;
+  var e;
+  return (function(r) {
+    r[r.lsfLowReserve = 65536] = "lsfLowReserve", r[r.lsfHighReserve = 131072] = "lsfHighReserve", r[r.lsfLowAuth = 262144] = "lsfLowAuth", r[r.lsfHighAuth = 524288] = "lsfHighAuth", r[r.lsfLowNoRipple = 1048576] = "lsfLowNoRipple", r[r.lsfHighNoRipple = 2097152] = "lsfHighNoRipple", r[r.lsfLowFreeze = 4194304] = "lsfLowFreeze", r[r.lsfHighFreeze = 8388608] = "lsfHighFreeze", r[r.lsfAMMNode = 16777216] = "lsfAMMNode", r[r.lsfLowDeepFreeze = 33554432] = "lsfLowDeepFreeze", r[r.lsfHighDeepFreeze = 67108864] = "lsfHighDeepFreeze";
+  })(e || (RippleState.RippleStateFlags = e = {})), RippleState;
+}
+var SignerList = {}, hasRequiredSignerList;
+function requireSignerList() {
+  if (hasRequiredSignerList) return SignerList;
+  hasRequiredSignerList = 1, Object.defineProperty(SignerList, "__esModule", { value: !0 }), SignerList.SignerListFlags = void 0;
+  var e;
+  return (function(r) {
+    r[r.lsfOneOwnerCount = 65536] = "lsfOneOwnerCount";
+  })(e || (SignerList.SignerListFlags = e = {})), SignerList;
+}
+var hasRequiredLedger;
+function requireLedger() {
+  return hasRequiredLedger || (hasRequiredLedger = 1, (function(e) {
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.SignerListFlags = e.RippleStateFlags = e.OfferFlags = e.NEGATIVE_UNL_ID = e.FEE_SETTINGS_ID = e.AMENDMENTS_ID = e.AccountRootFlags = void 0;
+    const r = requireAccountRoot();
+    Object.defineProperty(e, "AccountRootFlags", { enumerable: !0, get: function() {
+      return r.AccountRootFlags;
+    } });
+    const t = requireAmendments();
+    Object.defineProperty(e, "AMENDMENTS_ID", { enumerable: !0, get: function() {
+      return t.AMENDMENTS_ID;
+    } });
+    const i = requireFeeSettings();
+    Object.defineProperty(e, "FEE_SETTINGS_ID", { enumerable: !0, get: function() {
+      return i.FEE_SETTINGS_ID;
+    } });
+    const n = requireNegativeUNL();
+    Object.defineProperty(e, "NEGATIVE_UNL_ID", { enumerable: !0, get: function() {
+      return n.NEGATIVE_UNL_ID;
+    } });
+    const s = requireOffer();
+    Object.defineProperty(e, "OfferFlags", { enumerable: !0, get: function() {
+      return s.OfferFlags;
+    } });
+    const a = requireRippleState();
+    Object.defineProperty(e, "RippleStateFlags", { enumerable: !0, get: function() {
+      return a.RippleStateFlags;
+    } });
+    const o = requireSignerList();
+    Object.defineProperty(e, "SignerListFlags", { enumerable: !0, get: function() {
+      return o.SignerListFlags;
+    } });
+  })(ledger)), ledger;
+}
+var methods = {}, hasRequiredMethods;
+function requireMethods() {
+  return hasRequiredMethods || (hasRequiredMethods = 1, Object.defineProperty(methods, "__esModule", { value: !0 })), methods;
+}
+var hasRequiredModels;
+function requireModels() {
+  return hasRequiredModels || (hasRequiredModels = 1, (function(e) {
+    var r = models && models.__createBinding || (Object.create ? (function(a, o, d, u) {
+      u === void 0 && (u = d);
+      var b = Object.getOwnPropertyDescriptor(o, d);
+      (!b || ("get" in b ? !o.__esModule : b.writable || b.configurable)) && (b = { enumerable: !0, get: function() {
+        return o[d];
+      } }), Object.defineProperty(a, u, b);
+    }) : (function(a, o, d, u) {
+      u === void 0 && (u = d), a[u] = o[d];
+    })), t = models && models.__setModuleDefault || (Object.create ? (function(a, o) {
+      Object.defineProperty(a, "default", { enumerable: !0, value: o });
+    }) : function(a, o) {
+      a.default = o;
+    }), i = models && models.__importStar || function(a) {
+      if (a && a.__esModule) return a;
+      var o = {};
+      if (a != null) for (var d in a) d !== "default" && Object.prototype.hasOwnProperty.call(a, d) && r(o, a, d);
+      return t(o, a), o;
+    }, n = models && models.__exportStar || function(a, o) {
+      for (var d in a) d !== "default" && !Object.prototype.hasOwnProperty.call(o, d) && r(o, a, d);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.parseTransactionFlags = e.convertTxFlagsToNumber = e.setTransactionFlagsToNumber = e.parseAccountRootFlags = e.LedgerEntry = void 0, e.LedgerEntry = i(requireLedger());
+    var s = requireFlags();
+    Object.defineProperty(e, "parseAccountRootFlags", { enumerable: !0, get: function() {
+      return s.parseAccountRootFlags;
+    } }), Object.defineProperty(e, "setTransactionFlagsToNumber", { enumerable: !0, get: function() {
+      return s.setTransactionFlagsToNumber;
+    } }), Object.defineProperty(e, "convertTxFlagsToNumber", { enumerable: !0, get: function() {
+      return s.convertTxFlagsToNumber;
+    } }), Object.defineProperty(e, "parseTransactionFlags", { enumerable: !0, get: function() {
+      return s.parseTransactionFlags;
+    } }), n(requireMethods(), e), n(requireTransactions(), e), n(requireCommon$1(), e);
+  })(models)), models;
+}
+var walletFromSecretNumbers = {}, dist = {}, Account$1 = {}, utils$2 = {}, hasRequiredUtils$2;
+function requireUtils$2() {
+  if (hasRequiredUtils$2) return utils$2;
+  hasRequiredUtils$2 = 1, Object.defineProperty(utils$2, "__esModule", { value: !0 }), utils$2.parseSecretString = utils$2.checkChecksum = utils$2.calculateChecksum = utils$2.secretToEntropy = utils$2.entropyToSecret = utils$2.randomSecret = utils$2.randomEntropy = void 0;
+  const e = requireBrowser$4();
+  function r() {
+    return (0, e.randomBytes)(16);
+  }
+  utils$2.randomEntropy = r;
+  function t(d, u) {
+    return u * (d * 2 + 1) % 9;
+  }
+  utils$2.calculateChecksum = t;
+  function i(d, u, b) {
+    let l, g;
+    if (typeof u == "string") {
+      if (u.length !== 6)
+        throw new Error("value must have a length of 6");
+      l = parseInt(u.slice(5), 10), g = parseInt(u.slice(0, 5), 10);
+    } else {
+      if (typeof b != "number")
+        throw new Error("checksum must be a number when value is a number");
+      l = b, g = u;
+    }
+    return g * (d * 2 + 1) % 9 === l;
+  }
+  utils$2.checkChecksum = i;
+  function n(d) {
+    const u = new Array(Math.ceil(d.length / 2)), b = Array.from(u, (l, g) => {
+      const p = d.slice(g * 2, (g + 1) * 2), w = parseInt((0, e.bytesToHex)(p), 16);
+      return "0".repeat(5 - String(w).length) + String(w) + String(t(g, w));
+    });
+    if (b.length !== 8)
+      throw new Error("Chucks must have 8 digits");
+    return b;
+  }
+  utils$2.entropyToSecret = n;
+  function s() {
+    return n(r());
+  }
+  utils$2.randomSecret = s;
+  function a(d) {
+    return (0, e.concat)(d.map((u, b) => {
+      const l = Number(u.slice(0, 5)), g = Number(u.slice(5));
+      if (u.length !== 6)
+        throw new Error("Invalid secret: number invalid");
+      if (!i(b, l, g))
+        throw new Error("Invalid secret part: checksum invalid");
+      const p = `0000${l.toString(16)}`.slice(-4);
+      return (0, e.hexToBytes)(p);
+    }));
+  }
+  utils$2.secretToEntropy = a;
+  function o(d) {
+    const u = d.replace(/[^0-9]/gu, "");
+    if (u.length !== 48)
+      throw new Error("Invalid secret string (should contain 8 blocks of 6 digits");
+    return Array.from(new Array(8), (b, l) => u.slice(l * 6, (l + 1) * 6));
+  }
+  return utils$2.parseSecretString = o, utils$2;
+}
+var hasRequiredAccount;
+function requireAccount() {
+  if (hasRequiredAccount) return Account$1;
+  hasRequiredAccount = 1, Object.defineProperty(Account$1, "__esModule", { value: !0 }), Account$1.Account = void 0;
+  const e = requireDist$1(), r = requireUtils$2();
+  class t {
+    constructor(s) {
+      this._account = {
+        familySeed: "",
+        address: "",
+        keypair: {
+          publicKey: "",
+          privateKey: ""
+        }
+      }, typeof s == "string" ? this._secret = (0, r.parseSecretString)(s) : Array.isArray(s) ? this._secret = s : s instanceof Uint8Array ? this._secret = (0, r.entropyToSecret)(s) : this._secret = (0, r.randomSecret)(), i(this._secret), this.derive();
+    }
+    getSecret() {
+      return this._secret;
+    }
+    getSecretString() {
+      return this._secret.join(" ");
+    }
+    getAddress() {
+      return this._account.address;
+    }
+    getFamilySeed() {
+      return this._account.familySeed;
+    }
+    getKeypair() {
+      return this._account.keypair;
+    }
+    toString() {
+      return this.getSecretString();
+    }
+    derive() {
+      try {
+        const s = (0, r.secretToEntropy)(this._secret);
+        this._account.familySeed = (0, e.generateSeed)({ entropy: s }), this._account.keypair = (0, e.deriveKeypair)(this._account.familySeed), this._account.address = (0, e.deriveAddress)(this._account.keypair.publicKey);
+      } catch (s) {
+        let a = "Unknown Error";
+        throw s instanceof Error && (a = s.message), new Error(a);
+      }
+    }
+  }
+  Account$1.Account = t;
+  function i(n) {
+    if (n.length !== 8)
+      throw new Error("Secret must have 8 numbers");
+    n.forEach((s) => {
+      if (s.length !== 6)
+        throw new Error("Each secret number must be 6 digits");
+    });
+  }
+  return Account$1;
+}
+var hasRequiredDist;
+function requireDist() {
+  return hasRequiredDist || (hasRequiredDist = 1, (function(e) {
+    var r = dist && dist.__createBinding || (Object.create ? (function(i, n, s, a) {
+      a === void 0 && (a = s);
+      var o = Object.getOwnPropertyDescriptor(n, s);
+      (!o || ("get" in o ? !n.__esModule : o.writable || o.configurable)) && (o = { enumerable: !0, get: function() {
+        return n[s];
+      } }), Object.defineProperty(i, a, o);
+    }) : (function(i, n, s, a) {
+      a === void 0 && (a = s), i[a] = n[s];
+    })), t = dist && dist.__exportStar || function(i, n) {
+      for (var s in i) s !== "default" && !Object.prototype.hasOwnProperty.call(n, s) && r(n, i, s);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), t(requireAccount(), e), t(requireUtils$2(), e);
+  })(dist)), dist;
+}
+var hasRequiredWalletFromSecretNumbers;
+function requireWalletFromSecretNumbers() {
+  if (hasRequiredWalletFromSecretNumbers) return walletFromSecretNumbers;
+  hasRequiredWalletFromSecretNumbers = 1;
+  var e = walletFromSecretNumbers && walletFromSecretNumbers.__importDefault || function(s) {
+    return s && s.__esModule ? s : { default: s };
+  };
+  Object.defineProperty(walletFromSecretNumbers, "__esModule", { value: !0 }), walletFromSecretNumbers.walletFromSecretNumbers = void 0;
+  const r = requireDist(), t = e(requireECDSA()), i = requireWallet();
+  function n(s, a) {
+    var o;
+    const d = new r.Account(s).getFamilySeed(), u = {
+      masterAddress: void 0,
+      algorithm: void 0
+    };
+    return a === void 0 ? u.algorithm = t.default.secp256k1 : (u.masterAddress = a.masterAddress, u.algorithm = (o = a.algorithm) !== null && o !== void 0 ? o : t.default.secp256k1), i.Wallet.fromSecret(d, u);
+  }
+  return walletFromSecretNumbers.walletFromSecretNumbers = n, walletFromSecretNumbers;
+}
+var hasRequiredNpm;
+function requireNpm() {
+  return hasRequiredNpm || (hasRequiredNpm = 1, (function(e) {
+    var r = npm && npm.__createBinding || (Object.create ? (function(u, b, l, g) {
+      g === void 0 && (g = l);
+      var p = Object.getOwnPropertyDescriptor(b, l);
+      (!p || ("get" in p ? !b.__esModule : p.writable || p.configurable)) && (p = { enumerable: !0, get: function() {
+        return b[l];
+      } }), Object.defineProperty(u, g, p);
+    }) : (function(u, b, l, g) {
+      g === void 0 && (g = l), u[g] = b[l];
+    })), t = npm && npm.__exportStar || function(u, b) {
+      for (var l in u) l !== "default" && !Object.prototype.hasOwnProperty.call(b, l) && r(b, u, l);
+    }, i = npm && npm.__importDefault || function(u) {
+      return u && u.__esModule ? u : { default: u };
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), e.rfc1751MnemonicToKey = e.keyToRFC1751Mnemonic = e.walletFromSecretNumbers = e.Wallet = e.ECDSA = e.Client = void 0;
+    var n = requireClient();
+    Object.defineProperty(e, "Client", { enumerable: !0, get: function() {
+      return n.Client;
+    } }), t(requireModels(), e), t(requireUtils$5(), e);
+    var s = requireECDSA();
+    Object.defineProperty(e, "ECDSA", { enumerable: !0, get: function() {
+      return i(s).default;
+    } }), t(requireErrors(), e);
+    var a = requireWallet();
+    Object.defineProperty(e, "Wallet", { enumerable: !0, get: function() {
+      return a.Wallet;
+    } });
+    var o = requireWalletFromSecretNumbers();
+    Object.defineProperty(e, "walletFromSecretNumbers", { enumerable: !0, get: function() {
+      return o.walletFromSecretNumbers;
+    } });
+    var d = requireRfc1751();
+    Object.defineProperty(e, "keyToRFC1751Mnemonic", { enumerable: !0, get: function() {
+      return d.keyToRFC1751Mnemonic;
+    } }), Object.defineProperty(e, "rfc1751MnemonicToKey", { enumerable: !0, get: function() {
+      return d.rfc1751MnemonicToKey;
+    } }), t(requireSigner(), e);
+  })(npm)), npm;
+}
+var npmExports = requireNpm();
+const XRPLClientContext = createContext(null);
+function isFunction(e) {
+  return typeof e == "function";
+}
+function createStore(e) {
+  let r = e;
+  const t = () => r, i = /* @__PURE__ */ new Set();
+  return {
+    getState: t,
+    setState: (a) => {
+      let o = r;
+      if (isFunction(a) ? o = a(r) : o = a, o !== r) {
+        r = o;
+        for (const d of i)
+          d();
+      }
+    },
+    subscribe: (a) => (i.add(a), () => i.delete(a))
+  };
+}
+const ClientStoreContext = createContext(null);
+function useClientStores() {
+  return useContext(ClientStoreContext);
+}
+async function getTokens(e, r) {
+  await e.connect();
+  const t = await e.request({
+    command: "account_nfts",
+    account: r
+  });
+  let i = [];
+  for (const n of t.result.account_nfts)
+    i.push({
+      flags: n.Flags,
+      id: n.NFTokenID,
+      issuer: n.Issuer,
+      taxon: n.NFTokenTaxon,
+      uri: n.URI ? npmExports.convertHexToString(n.URI) : ""
+    });
+  return i;
+}
+async function getBalances(e, r) {
+  await e.connect();
+  const t = await e.getBalances(r);
+  let i = "", n = [];
+  for (const s of t)
+    s.currency === "XRP" && (i = s.value), s.issuer && n.push({
+      currency: s.currency,
+      issuer: s.issuer,
+      value: parseFloat(s.value) ?? 0
+    });
+  return [i, n];
+}
+async function getBuyOffers(e, r) {
+  await e.connect();
+  const t = await e.request({
+    command: "nft_buy_offers",
+    nft_id: r
+  });
+  let i = [];
+  for (const n of t.result.offers)
+    i.push({
+      amount: typeof n.amount == "string" ? n.amount : n.amount.value,
+      index: n.nft_offer_index,
+      owner: n.owner,
+      expiration: n.expiration,
+      destination: n.destination
+    });
+  return i;
+}
+async function getSellOffers(e, r) {
+  await e.connect();
+  const t = await e.request({
+    command: "nft_sell_offers",
+    nft_id: r
+  });
+  let i = [];
+  for (const n of t.result.offers)
+    i.push({
+      amount: typeof n.amount == "string" ? n.amount : n.amount.value,
+      index: n.nft_offer_index,
+      owner: n.owner,
+      expiration: n.expiration,
+      destination: n.destination
+    });
+  return i;
+}
+async function getXRPBalance(e, r) {
+  return await e.connect(), await e.getXrpBalance(r);
+}
+function createWallet(e) {
+  return e ? npmExports.Wallet.fromSeed(e) : npmExports.Wallet.generate();
+}
+async function createAndFundWallet(e, r = "1000") {
+  await e.connect();
+  const { wallet: t } = await e.fundWallet(null, {
+    amount: r
+  });
+  return t;
+}
+async function getInitialWalletState(e, r) {
+  const [t, i] = await getBalances(
+    e,
+    r
+  ), n = await getTokens(e, r);
+  let s = {}, a = {};
+  for (const o of n)
+    s[o.id] = [], a[o.id] = [];
+  return {
+    balance: t,
+    currencies: i,
+    tokens: n,
+    buyOffers: {},
+    sellOffers: {}
+  };
+}
+function useCreateWallet() {
+  return useCallback((r) => createWallet(
+    /* clientRef.current,  */
+    r
+  ), []);
+}
+function useCreateAndFundWallet() {
+  const e = useXRPLClient(), r = useRef(e);
+  return r.current = e, useCallback(async (i) => await createAndFundWallet(r.current, i), []);
+}
+function useStore(e) {
+  return useSyncExternalStore(e.subscribe, e.getState);
+}
+function useIsConnected() {
+  const { connected: e } = useClientStores();
+  return useStore(e);
+}
+const NetworkEmitterContext = createContext(null);
+function useNetworkEmitter() {
+  const e = useContext(NetworkEmitterContext);
+  if (!e)
+    throw new Error("Network emitter context not found!");
+  return e;
+}
+const WalletAddressContext = createContext(null);
+function useXRPLClient() {
+  const e = useContext(XRPLClientContext);
+  if (!e)
+    throw new Error("Client context not found!");
+  return e;
+}
+const WalletEvents = {
+  BalanceChange: "balance-change",
+  PaymentSent: "payment-sent",
+  PaymentRecieved: "payment-recieved",
+  CurrencyChange: "currency-change",
+  CurrencySent: "currency-sent",
+  CurrencyRecieved: "currency-recieved",
+  TokenMint: "token-mint",
+  TokenBurn: "token-burn",
+  CreateBuyOffer: "create-buy-offer",
+  CreateSellOffer: "create-sell-offer",
+  CancelBuyOffer: "cancel-buy-offer",
+  CancelSellOffer: "cancel-sell-offer",
+  AcceptBuyOffer: "accept-buy-offer",
+  AcceptSellOffer: "accept-sell-offer",
+  TransferToken: "transfer-token",
+  RefreshTokens: "refresh-tokens"
+};
+var commonExports = requireCommon();
+async function getTransactions(e, r, t) {
+  const i = await e.request({
+    command: "account_tx",
+    account: r,
+    ledger_index_max: -1,
+    limit: t
+  });
+  return console.log("ACCOUNT TX: ", i), i;
+}
+function processTransactions(e) {
+  let r = [], i = (Array.isArray(e) ? e : [e]).flatMap(
+    (n) => n.result.transactions.map((s) => ({
+      account: n.result.account,
+      transaction: s
+    }))
+  );
+  i.sort((n, s) => {
+    const a = n.transaction.tx_json ?? n.transaction.tx, o = s.transaction.tx_json ?? s.transaction.tx;
+    let d = a?.date ?? 0, u = o?.date ?? 0;
+    return d - u;
+  });
+  for (const n of i) {
+    let s = n.transaction.tx_json ?? n.transaction.tx;
+    s?.TransactionType === "NFTokenCreateOffer" && typeof n.transaction.meta != "string" && s?.Flags === 1 && r.push({
+      type: "CreateSellOffer",
+      payload: {
+        token: s.NFTokenID,
+        // @ts-expect-error
+        offerId: n.transaction.meta.offer_id
+      },
+      timestamp: s.date ?? 0,
+      hash: s.hash ?? s.hash ?? ""
+    }), s?.TransactionType === "NFTokenAcceptOffer" && typeof n.transaction.meta != "string" && s?.NFTokenSellOffer && s?.Account === n.account && r.push({
+      type: "AcceptSellOffer",
+      payload: {
+        // @ts-expect-error
+        token: n.transaction.meta.nftoken_id,
+        offerId: s.NFTokenSellOffer
+      },
+      timestamp: s.date ?? 0,
+      hash: s.hash ?? s.hash ?? ""
+    }), s?.TransactionType === "NFTokenBurn" && typeof n.transaction.meta != "string" && s.Account === n.account && r.push({
+      type: "TokenBurn",
+      payload: {
+        token: s.NFTokenID
+      },
+      timestamp: s.date ?? 0,
+      hash: s.hash ?? s.hash ?? ""
+    }), s?.TransactionType === "NFTokenMint" && typeof n.transaction.meta != "string" && s.Account === n.account && r.push({
+      type: "TokenMint",
+      payload: {
+        // @ts-expect-error
+        token: n.transaction.meta.nftoken_id
+      },
+      timestamp: s.date ?? 0,
+      hash: s.hash ?? s.hash ?? ""
+    }), s?.TransactionType === "Payment" && (commonExports.isIssuedCurrency(s.Amount) ? (s.Destination === n.account && r.push({
+      type: "CurrencyReceived",
+      from: s.Account,
+      payload: {
+        amount: s.Amount
+      },
+      timestamp: s.date ?? 0,
+      account: s.Destination,
+      hash: s.hash ?? s.hash ?? ""
+    }), s.Account === n.account && r.push({
+      type: "CurrencySent",
+      to: s.Destination,
+      payload: {
+        amount: s.Amount
+      },
+      timestamp: s.date ?? 0,
+      account: s.Account,
+      hash: s.hash ?? s.hash ?? ""
+    })) : commonExports.isMPTAmount(s.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", s.Amount)) : (s.Destination === n.account && r.push({
+      type: "PaymentReceived",
+      from: s.Account,
+      payload: {
+        amount: s.Amount
+      },
+      timestamp: s.date ?? 0,
+      account: s.Destination,
+      hash: s.hash ?? s.hash ?? ""
+    }), s.Account === n.account && r.push({
+      type: "PaymentSent",
+      to: s.Destination,
+      payload: {
+        amount: s.Amount
+      },
+      timestamp: s.date ?? 0,
+      account: s.Account,
+      hash: s.hash ?? s.hash ?? ""
+    })));
+  }
+  return r;
+}
+async function getTransactionsForAccounts(e, r, t = 10) {
+  return e.connect().then(() => Promise.all(
+    r.map(
+      (i) => getTransactions(e, i, t).catch((n) => (console.log("error: ", n), {}))
+    )
+  ).catch((i) => (console.log("error: ", i), []))).then((i) => Promise.resolve(processTransactions(i)));
+}
+function useTransactionLogInternal(e = [], r = 10) {
+  const t = useXRPLClient(), i = useIsConnected(), n = useNetworkEmitter();
+  useEffect(() => {
+    let o = !1;
+    return getTransactionsForAccounts(t, e, r).then((d) => {
+      o || a(d);
+    }), () => {
+      o = !0;
+    };
+  }, []);
+  const [s, a] = useState(() => []);
+  return useEffect(() => {
+    const o = e.map((d) => {
+      const u = (T, f, C, A) => {
+        a((E) => {
+          let L = [{
+            type: "PaymentSent",
+            payload: {
+              amount: f
+            },
+            timestamp: C,
+            to: T,
+            account: d,
+            hash: A
+          }, ...E];
+          return L.length > r && L.splice(L.length - 1, 1), L;
+        });
+      }, b = (T, f, C, A) => {
+        a((E) => {
+          let L = [{
+            type: "PaymentReceived",
+            payload: {
+              amount: f
+            },
+            timestamp: C,
+            from: T,
+            account: d,
+            hash: A
+          }, ...E];
+          return L.length > r && L.splice(L.length - 1, 1), L;
+        });
+      }, l = (T, f, C, A) => {
+        a((E) => {
+          let L = [{
+            type: "CurrencySent",
+            payload: {
+              amount: f
+            },
+            timestamp: C,
+            to: T,
+            account: d,
+            hash: A
+          }, ...E];
+          return L.length > r && L.splice(L.length - 1, 1), L;
+        });
+      }, g = (T, f, C, A) => {
+        a((E) => {
+          let L = [{
+            type: "CurrencyReceived",
+            payload: {
+              amount: f
+            },
+            timestamp: C,
+            from: T,
+            account: d,
+            hash: A
+          }, ...E];
+          return L.length > r && L.splice(L.length - 1, 1), L;
+        });
+      }, p = (T, f, C, A, E) => {
+        a((S) => {
+          let U = [{
+            type: "CreateSellOffer",
+            payload: {
+              token: f,
+              offerId: T
+            },
+            timestamp: A,
+            hash: E
+          }, ...S];
+          return U.length > r && U.splice(U.length - 1, 1), U;
+        });
+      }, w = (T, f, C, A) => {
+        a((E) => {
+          let L = [{
+            type: "AcceptSellOffer",
+            payload: {
+              token: f,
+              offerId: T
+            },
+            timestamp: C,
+            hash: A
+          }, ...E];
+          return L.length > r && L.splice(L.length - 1, 1), L;
+        });
+      }, I = (T, f, C) => {
+        a((A) => {
+          let S = [{
+            type: "TokenMint",
+            payload: {
+              token: T
+            },
+            timestamp: f,
+            hash: C
+          }, ...A];
+          return S.length > r && S.splice(S.length - 1, 1), S;
+        });
+      }, m = (T, f, C) => {
+        a((A) => {
+          let S = [{
+            type: "TokenBurn",
+            payload: {
+              token: T
+            },
+            timestamp: f,
+            hash: C
+          }, ...A];
+          return S.length > r && S.splice(S.length - 1, 1), S;
+        });
+      };
+      if (!i)
+        return () => {
+        };
+      const v = n.on(
+        d,
+        WalletEvents.PaymentSent,
+        u
+      ), h = n.on(
+        d,
+        WalletEvents.PaymentRecieved,
+        b
+      ), _ = n.on(
+        d,
+        WalletEvents.CurrencySent,
+        l
+      ), y = n.on(
+        d,
+        WalletEvents.CurrencyRecieved,
+        g
+      ), c = n.on(
+        d,
+        WalletEvents.CreateSellOffer,
+        p
+      ), R = n.on(
+        d,
+        WalletEvents.AcceptSellOffer,
+        w
+      ), D = n.on(
+        d,
+        WalletEvents.TokenMint,
+        I
+      ), N = n.on(
+        d,
+        WalletEvents.TokenBurn,
+        m
+      );
+      return () => {
+        v(), h(), _(), y(), c(), R(), D(), N();
+      };
+    });
+    return () => {
+      o.forEach((d) => d());
+    };
+  }, [e, i]), s;
+}
+function useTransactionLog(e, r) {
+  const t = useContext(WalletAddressContext), i = useMemo(() => t && !e ? [t] : typeof e == "string" ? [e] : Array.isArray(e) ? e : [], [t, e]);
+  return useTransactionLogInternal(i, r);
+}
+function useWalletAddress() {
+  return useContext(WalletAddressContext);
+}
+const WalletContext = createContext(null);
+function useWallet() {
+  return useContext(WalletContext);
+}
+var lib = {}, types = {}, hasRequiredTypes;
+function requireTypes() {
+  return hasRequiredTypes || (hasRequiredTypes = 1, Object.defineProperty(types, "__esModule", { value: !0 })), types;
+}
+var ee = {}, taskCollection$1 = {}, taskCollection = {}, utils$1 = {}, hasRequiredUtils$1;
+function requireUtils$1() {
+  if (hasRequiredUtils$1) return utils$1;
+  hasRequiredUtils$1 = 1, Object.defineProperty(utils$1, "__esModule", { value: !0 }), utils$1._fast_remove_single = void 0;
+  function e(r, t) {
+    t !== -1 && (t === 0 ? r.shift() : t === r.length - 1 ? r.length = r.length - 1 : r.splice(t, 1));
+  }
+  return utils$1._fast_remove_single = e, utils$1;
+}
+var bakeCollection = {}, hasRequiredBakeCollection;
+function requireBakeCollection() {
+  return hasRequiredBakeCollection || (hasRequiredBakeCollection = 1, (function(exports) {
+    Object.defineProperty(exports, "__esModule", { value: !0 }), exports.bakeCollectionVariadic = exports.bakeCollectionAwait = exports.bakeCollection = exports.BAKED_EMPTY_FUNC = void 0, exports.BAKED_EMPTY_FUNC = (function() {
+    });
+    var FORLOOP_FALLBACK = 1500;
+    function generateArgsDefCode(e) {
+      var r = "";
+      if (e === 0)
+        return r;
+      for (var t = 0; t < e - 1; ++t)
+        r += "arg" + String(t) + ", ";
+      return r += "arg" + String(e - 1), r;
+    }
+    function generateBodyPartsCode(e, r) {
+      for (var t = "", i = "", n = 0; n < r; ++n)
+        t += "var f".concat(n, " = collection[").concat(n, `];
+`), i += "f".concat(n, "(").concat(e, `)
+`);
+      return { funcDefCode: t, funcCallCode: i };
+    }
+    function generateBodyPartsVariadicCode(e) {
+      for (var r = "", t = "", i = 0; i < e; ++i)
+        r += "var f".concat(i, " = collection[").concat(i, `];
+`), t += "f".concat(i, `.apply(undefined, arguments)
+`);
+      return { funcDefCode: r, funcCallCode: t };
+    }
+    function bakeCollection(collection, fixedArgsNum) {
+      if (collection.length === 0)
+        return exports.BAKED_EMPTY_FUNC;
+      if (collection.length === 1)
+        return collection[0];
+      var funcFactoryCode;
+      if (collection.length < FORLOOP_FALLBACK) {
+        var argsDefCode = generateArgsDefCode(fixedArgsNum), _a = generateBodyPartsCode(argsDefCode, collection.length), funcDefCode = _a.funcDefCode, funcCallCode = _a.funcCallCode;
+        funcFactoryCode = `(function(collection) {
+            `.concat(funcDefCode, `
+            collection = undefined;
+            return (function(`).concat(argsDefCode, `) {
+                `).concat(funcCallCode, `
+            });
+        })`);
+      } else {
+        var argsDefCode = generateArgsDefCode(fixedArgsNum);
+        collection.length % 10 === 0 ? funcFactoryCode = `(function(collection) {
+                return (function(`.concat(argsDefCode, `) {
+                    for (var i = 0; i < collection.length; i += 10) {
+                        collection[i](`).concat(argsDefCode, `);
+                        collection[i+1](`).concat(argsDefCode, `);
+                        collection[i+2](`).concat(argsDefCode, `);
+                        collection[i+3](`).concat(argsDefCode, `);
+                        collection[i+4](`).concat(argsDefCode, `);
+                        collection[i+5](`).concat(argsDefCode, `);
+                        collection[i+6](`).concat(argsDefCode, `);
+                        collection[i+7](`).concat(argsDefCode, `);
+                        collection[i+8](`).concat(argsDefCode, `);
+                        collection[i+9](`).concat(argsDefCode, `);
+                    }
+                });
+            })`) : collection.length % 4 === 0 ? funcFactoryCode = `(function(collection) {
+                return (function(`.concat(argsDefCode, `) {
+                    for (var i = 0; i < collection.length; i += 4) {
+                        collection[i](`).concat(argsDefCode, `);
+                        collection[i+1](`).concat(argsDefCode, `);
+                        collection[i+2](`).concat(argsDefCode, `);
+                        collection[i+3](`).concat(argsDefCode, `);
+                    }
+                });
+            })`) : collection.length % 3 === 0 ? funcFactoryCode = `(function(collection) {
+                return (function(`.concat(argsDefCode, `) {
+                    for (var i = 0; i < collection.length; i += 3) {
+                        collection[i](`).concat(argsDefCode, `);
+                        collection[i+1](`).concat(argsDefCode, `);
+                        collection[i+2](`).concat(argsDefCode, `);
+                    }
+                });
+            })`) : funcFactoryCode = `(function(collection) {
+                return (function(`.concat(argsDefCode, `) {
+                    for (var i = 0; i < collection.length; ++i) {
+                        collection[i](`).concat(argsDefCode, `);
+                    }
+                });
+            })`);
+      }
+      {
+        var funcFactory = eval(funcFactoryCode);
+        return funcFactory(collection);
+      }
+    }
+    exports.bakeCollection = bakeCollection;
+    function bakeCollectionAwait(collection, fixedArgsNum) {
+      if (collection.length === 0)
+        return exports.BAKED_EMPTY_FUNC;
+      if (collection.length === 1)
+        return collection[0];
+      var funcFactoryCode;
+      if (collection.length < FORLOOP_FALLBACK) {
+        var argsDefCode = generateArgsDefCode(fixedArgsNum), _a = generateBodyPartsCode(argsDefCode, collection.length), funcDefCode = _a.funcDefCode, funcCallCode = _a.funcCallCode;
+        funcFactoryCode = `(function(collection) {
+            `.concat(funcDefCode, `
+            collection = undefined;
+            return (function(`).concat(argsDefCode, `) {
+                return Promise.all([ `).concat(funcCallCode, ` ]);
+            });
+        })`);
+      } else {
+        var argsDefCode = generateArgsDefCode(fixedArgsNum);
+        funcFactoryCode = `(function(collection) {
+            return (function(`.concat(argsDefCode, `) {
+                var promises = Array(collection.length);
+                for (var i = 0; i < collection.length; ++i) {
+                    promises[i] = collection[i](`).concat(argsDefCode, `);
+                }
+                return Promise.all(promises);
+            });
+        })`);
+      }
+      {
+        var funcFactory = eval(funcFactoryCode);
+        return funcFactory(collection);
+      }
+    }
+    exports.bakeCollectionAwait = bakeCollectionAwait;
+    function bakeCollectionVariadic(collection) {
+      if (collection.length === 0)
+        return exports.BAKED_EMPTY_FUNC;
+      if (collection.length === 1)
+        return collection[0];
+      var funcFactoryCode;
+      if (collection.length < FORLOOP_FALLBACK) {
+        var _a = generateBodyPartsVariadicCode(collection.length), funcDefCode = _a.funcDefCode, funcCallCode = _a.funcCallCode;
+        funcFactoryCode = `(function(collection) {
+            `.concat(funcDefCode, `
+            collection = undefined;
+            return (function() {
+                `).concat(funcCallCode, `
+            });
+        })`);
+      } else
+        funcFactoryCode = `(function(collection) {
+            return (function() {
+                for (var i = 0; i < collection.length; ++i) {
+                    collection[i].apply(undefined, arguments);
+                }
+            });
+        })`;
+      {
+        var funcFactory = eval(funcFactoryCode);
+        return funcFactory(collection);
+      }
+    }
+    exports.bakeCollectionVariadic = bakeCollectionVariadic;
+  })(bakeCollection)), bakeCollection;
+}
+var hasRequiredTaskCollection$1;
+function requireTaskCollection$1() {
+  if (hasRequiredTaskCollection$1) return taskCollection;
+  hasRequiredTaskCollection$1 = 1;
+  var e = taskCollection && taskCollection.__spreadArray || function(_, y, c) {
+    if (c || arguments.length === 2) for (var R = 0, D = y.length, N; R < D; R++)
+      (N || !(R in y)) && (N || (N = Array.prototype.slice.call(y, 0, R)), N[R] = y[R]);
+    return _.concat(N || Array.prototype.slice.call(y));
+  };
+  Object.defineProperty(taskCollection, "__esModule", { value: !0 }), taskCollection.TaskCollection = void 0;
+  var r = requireUtils$1(), t = requireBakeCollection();
+  function i(_, y) {
+    var c = this.length;
+    if (c > 1)
+      if (y) {
+        var R;
+        (R = this._tasks).push.apply(R, arguments), this.length += arguments.length;
+      } else
+        this._tasks.push(_), this.length++;
+    else if (y) {
+      if (c === 1) {
+        var D = Array(1 + arguments.length);
+        D.push(D), D.push.apply(D, arguments), this._tasks = D;
+      } else {
+        var D = Array(arguments.length);
+        D.push.apply(D, arguments), this._tasks = D;
+      }
+      this.length += arguments.length;
+    } else
+      c === 1 ? this._tasks = [this._tasks, _] : this._tasks = _, this.length++;
+  }
+  function n(_, y) {
+    var c = this.length;
+    if (c > 1)
+      if (y) {
+        var R;
+        (R = this._tasks).push.apply(R, arguments), this.length += arguments.length;
+      } else
+        this._tasks.push(_), this.length++;
+    else if (y) {
+      if (c === 1) {
+        var D = Array(1 + arguments.length);
+        D.push(D), D.push.apply(D, arguments), this._tasks = D;
+      } else {
+        var D = Array(arguments.length);
+        D.push.apply(D, arguments), this._tasks = D;
+      }
+      this.length += arguments.length;
+    } else
+      c === 1 ? this._tasks = [this._tasks, _] : this._tasks = _, this.length++;
+    this.firstEmitBuildStrategy ? this.call = l : this.rebuild();
+  }
+  function s(_) {
+    this.length !== 0 && (this.length === 1 ? this._tasks === _ && (this.length = 0) : ((0, r._fast_remove_single)(this._tasks, this._tasks.lastIndexOf(_)), this._tasks.length === 1 ? (this._tasks = this._tasks[0], this.length = 1) : this.length = this._tasks.length));
+  }
+  function a(_) {
+    if (this.length !== 0) {
+      if (this.length === 1)
+        if (this._tasks === _ && (this.length = 0), this.firstEmitBuildStrategy) {
+          this.call = t.BAKED_EMPTY_FUNC;
+          return;
+        } else {
+          this.rebuild();
+          return;
+        }
+      else
+        (0, r._fast_remove_single)(this._tasks, this._tasks.lastIndexOf(_)), this._tasks.length === 1 ? (this._tasks = this._tasks[0], this.length = 1) : this.length = this._tasks.length;
+      this.firstEmitBuildStrategy ? this.call = l : this.rebuild();
+    }
+  }
+  function o(_) {
+    for (var y, c = [], R = 1; R < arguments.length; R++)
+      c[R - 1] = arguments[R];
+    this.length === 0 ? (this._tasks = c, this.length = 1) : this.length === 1 ? (c.unshift(this._tasks), this._tasks = c, this.length = this._tasks.length) : ((y = this._tasks).splice.apply(y, e([_, 0], c, !1)), this.length = this._tasks.length);
+  }
+  function d(_) {
+    for (var y, c = [], R = 1; R < arguments.length; R++)
+      c[R - 1] = arguments[R];
+    this.length === 0 ? (this._tasks = c, this.length = 1) : this.length === 1 ? (c.unshift(this._tasks), this._tasks = c, this.length = this._tasks.length) : ((y = this._tasks).splice.apply(y, e([_, 0], c, !1)), this.length = this._tasks.length), this.firstEmitBuildStrategy ? this.call = l : this.rebuild();
+  }
+  function u() {
+    this.length === 0 ? this.call = t.BAKED_EMPTY_FUNC : this.length === 1 ? this.call = this._tasks : this.call = (0, t.bakeCollection)(this._tasks, this.argsNum);
+  }
+  function b() {
+    this.length === 0 ? this.call = t.BAKED_EMPTY_FUNC : this.length === 1 ? this.call = this._tasks : this.call = (0, t.bakeCollectionAwait)(this._tasks, this.argsNum);
+  }
+  function l() {
+    this.rebuild(), this.call.apply(void 0, arguments);
+  }
+  var g = (
+    /** @class */
+    /* @__PURE__ */ (function() {
+      function _(y, c, R, D) {
+        c === void 0 && (c = !0), R === void 0 && (R = null), D === void 0 && (D = !1), this.awaitTasks = D, this.call = t.BAKED_EMPTY_FUNC, this.argsNum = y, this.firstEmitBuildStrategy = !0, D ? this.rebuild = b.bind(this) : this.rebuild = u.bind(this), this.setAutoRebuild(c), R ? typeof R == "function" ? (this._tasks = R, this.length = 1) : (this._tasks = R, this.length = R.length) : (this._tasks = null, this.length = 0), c && this.rebuild();
+      }
+      return _;
+    })()
+  );
+  taskCollection.TaskCollection = g;
+  function p() {
+    this._tasks = null, this.length = 0, this.call = t.BAKED_EMPTY_FUNC;
+  }
+  function w() {
+    this._tasks = null, this.length = 0, this.call = t.BAKED_EMPTY_FUNC;
+  }
+  function I(_) {
+    this.argsNum < _ && (this.argsNum = _, this.firstEmitBuildStrategy ? this.call = l : this.rebuild());
+  }
+  function m(_) {
+    _ ? (this.push = n.bind(this), this.insert = d.bind(this), this.removeLast = a.bind(this)) : (this.push = i.bind(this), this.insert = o.bind(this), this.removeLast = s.bind(this));
+  }
+  function v() {
+    return this.length === 0 ? [] : this.length === 1 ? [this._tasks] : this._tasks;
+  }
+  function h(_) {
+    _.length === 0 ? (this.length = 0, this.call = t.BAKED_EMPTY_FUNC) : _.length === 1 ? (this.length = 1, this.call = _[0], this._tasks = _[0]) : (this.length = _.length, this._tasks = _, this.firstEmitBuildStrategy ? this.call = l : this.rebuild());
+  }
+  return g.prototype.fastClear = p, g.prototype.clear = w, g.prototype.growArgsNum = I, g.prototype.setAutoRebuild = m, g.prototype.tasksAsArray = v, g.prototype.setTasks = h, taskCollection;
+}
+var hasRequiredTaskCollection;
+function requireTaskCollection() {
+  return hasRequiredTaskCollection || (hasRequiredTaskCollection = 1, (function(e) {
+    var r = taskCollection$1 && taskCollection$1.__createBinding || (Object.create ? (function(i, n, s, a) {
+      a === void 0 && (a = s);
+      var o = Object.getOwnPropertyDescriptor(n, s);
+      (!o || ("get" in o ? !n.__esModule : o.writable || o.configurable)) && (o = { enumerable: !0, get: function() {
+        return n[s];
+      } }), Object.defineProperty(i, a, o);
+    }) : (function(i, n, s, a) {
+      a === void 0 && (a = s), i[a] = n[s];
+    })), t = taskCollection$1 && taskCollection$1.__exportStar || function(i, n) {
+      for (var s in i) s !== "default" && !Object.prototype.hasOwnProperty.call(n, s) && r(n, i, s);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), t(requireTaskCollection$1(), e);
+  })(taskCollection$1)), taskCollection$1;
+}
+var utils = {}, hasRequiredUtils;
+function requireUtils() {
+  if (hasRequiredUtils) return utils;
+  hasRequiredUtils = 1, Object.defineProperty(utils, "__esModule", { value: !0 }), utils.nullObj = void 0;
+  function e() {
+    var r = {};
+    return r.__proto__ = null, r;
+  }
+  return utils.nullObj = e, utils;
+}
+var hasRequiredEe;
+function requireEe() {
+  if (hasRequiredEe) return ee;
+  hasRequiredEe = 1;
+  var e = ee && ee.__spreadArray || function(c, R, D) {
+    if (D || arguments.length === 2) for (var N = 0, T = R.length, f; N < T; N++)
+      (f || !(N in R)) && (f || (f = Array.prototype.slice.call(R, 0, N)), f[N] = R[N]);
+    return c.concat(f || Array.prototype.slice.call(R));
+  };
+  Object.defineProperty(ee, "__esModule", { value: !0 }), ee.EventEmitter = void 0;
+  var r = requireTaskCollection(), t = requireUtils$1(), i = requireUtils();
+  function n(c, R, D, N, T, f) {
+    var C = this.events[c];
+    if (C) {
+      if (C.length === 0)
+        return !1;
+      if (C.argsNum < 6)
+        C.call(R, D, N, T, f);
+      else {
+        for (var A = new Array(C.argsNum), E = 0, S = A.length; E < S; ++E)
+          A[E] = arguments[E + 1];
+        C.call.apply(void 0, A);
+      }
+      return !0;
+    }
+    return !1;
+  }
+  function s(c, R, D, N, T, f) {
+    var C = this.events[c], A;
+    if (C !== void 0) {
+      if (C.length === 0)
+        return !1;
+      if (C.argsNum < 6)
+        C.call(R, D, N, T, f);
+      else {
+        A = new Array(C.argsNum);
+        for (var E = 0, S = A.length; E < S; ++E)
+          A[E] = arguments[E + 1];
+        C.call.apply(void 0, A);
+      }
+    }
+    var L = this.onceEvents[c];
+    if (L) {
+      if (typeof L == "function")
+        if (this.onceEvents[c] = void 0, arguments.length < 6)
+          L(R, D, N, T, f);
+        else {
+          if (A === void 0) {
+            A = new Array(arguments.length - 1);
+            for (var E = 0, S = A.length; E < S; ++E)
+              A[E] = arguments[E + 1];
+          }
+          L.apply(void 0, A);
+        }
+      else {
+        var U = L;
+        if (this.onceEvents[c] = void 0, arguments.length < 6)
+          for (var E = 0; E < U.length; ++E)
+            U[E](R, D, N, T, f);
+        else {
+          if (A === void 0) {
+            A = new Array(arguments.length - 1);
+            for (var E = 0, S = A.length; E < S; ++E)
+              A[E] = arguments[E + 1];
+          }
+          for (var E = 0; E < U.length; ++E)
+            U[E].apply(void 0, A);
+        }
+      }
+      return !0;
+    }
+    return C !== void 0;
+  }
+  var a = (
+    /** @class */
+    (function() {
+      function c() {
+        this.events = (0, i.nullObj)(), this.onceEvents = (0, i.nullObj)(), this._symbolKeys = /* @__PURE__ */ new Set(), this.maxListeners = 1 / 0;
+      }
+      return Object.defineProperty(c.prototype, "_eventsCount", {
+        get: function() {
+          return this.eventNames().length;
+        },
+        enumerable: !1,
+        configurable: !0
+      }), c;
+    })()
+  );
+  ee.EventEmitter = a;
+  function o(c, R) {
+    switch (this.emit === n && (this.emit = s), typeof this.onceEvents[c]) {
+      case "undefined":
+        this.onceEvents[c] = R, typeof c == "symbol" && this._symbolKeys.add(c);
+        break;
+      case "function":
+        this.onceEvents[c] = [this.onceEvents[c], R];
+        break;
+      case "object":
+        this.onceEvents[c].push(R);
+    }
+    return this;
+  }
+  function d(c, R, D) {
+    if (D === void 0 && (D = R.length), typeof R != "function")
+      throw new TypeError("The listener must be a function");
+    var N = this.events[c];
+    return N ? (N.push(R), N.growArgsNum(D), this.maxListeners !== 1 / 0 && this.maxListeners <= N.length && console.warn('Maximum event listeners for "'.concat(String(c), '" event!'))) : (this.events[c] = new r.TaskCollection(D, !0, R, !1), typeof c == "symbol" && this._symbolKeys.add(c)), this;
+  }
+  function u(c, R) {
+    var D = this.events[c];
+    D && D.removeLast(R);
+    var N = this.onceEvents[c];
+    return N && (typeof N == "function" ? this.onceEvents[c] = void 0 : typeof N == "object" && (N.length === 1 && N[0] === R ? this.onceEvents[c] = void 0 : (0, t._fast_remove_single)(N, N.lastIndexOf(R)))), this;
+  }
+  function b(c, R, D, N) {
+    D === void 0 && (D = this), N === void 0 && (N = R.length), this.boundFuncs || (this.boundFuncs = /* @__PURE__ */ new Map());
+    var T = R.bind(D);
+    return this.boundFuncs.set(R, T), this.addListener(c, T, N);
+  }
+  function l(c, R) {
+    var D, N, T = (D = this.boundFuncs) === null || D === void 0 ? void 0 : D.get(R);
+    return (N = this.boundFuncs) === null || N === void 0 || N.delete(R), this.removeListener(c, T);
+  }
+  function g(c) {
+    return this.events[c] && !!this.events[c].length;
+  }
+  function p(c, R, D) {
+    if (D === void 0 && (D = R.length), typeof R != "function")
+      throw new TypeError("The listener must be a function");
+    var N = this.events[c];
+    return !N || !(N instanceof r.TaskCollection) ? (N = this.events[c] = new r.TaskCollection(D, !0, R, !1), typeof c == "symbol" && this._symbolKeys.add(c)) : (N.insert(0, R), N.growArgsNum(D), this.maxListeners !== 1 / 0 && this.maxListeners <= N.length && console.warn('Maximum event listeners for "'.concat(String(c), '" event!'))), this;
+  }
+  function w(c, R) {
+    this.emit === n && (this.emit = s);
+    var D = this.onceEvents[c];
+    return D ? typeof D != "object" ? (this.onceEvents[c] = [R, D], typeof c == "symbol" && this._symbolKeys.add(c)) : (D.unshift(R), this.maxListeners !== 1 / 0 && this.maxListeners <= D.length && console.warn('Maximum event listeners for "'.concat(String(c), '" once event!'))) : (this.onceEvents[c] = [R], typeof c == "symbol" && this._symbolKeys.add(c)), this;
+  }
+  function I(c) {
+    return c === void 0 ? (this.events = (0, i.nullObj)(), this.onceEvents = (0, i.nullObj)(), this._symbolKeys = /* @__PURE__ */ new Set()) : (this.events[c] = void 0, this.onceEvents[c] = void 0, typeof c == "symbol" && this._symbolKeys.delete(c)), this;
+  }
+  function m(c) {
+    return this.maxListeners = c, this;
+  }
+  function v() {
+    return this.maxListeners;
+  }
+  function h(c) {
+    return this.emit === n ? this.events[c] ? this.events[c].tasksAsArray().slice() : [] : this.events[c] && this.onceEvents[c] ? e(e([], this.events[c].tasksAsArray(), !0), typeof this.onceEvents[c] == "function" ? [this.onceEvents[c]] : this.onceEvents[c], !0) : this.events[c] ? this.events[c].tasksAsArray() : this.onceEvents[c] ? typeof this.onceEvents[c] == "function" ? [this.onceEvents[c]] : this.onceEvents[c] : [];
+  }
+  function _() {
+    var c = this;
+    if (this.emit === n) {
+      var R = Object.keys(this.events);
+      return e(e([], R, !0), Array.from(this._symbolKeys), !0).filter(function(N) {
+        return N in c.events && c.events[N] && c.events[N].length;
+      });
+    } else {
+      var R = Object.keys(this.events).filter(function(T) {
+        return c.events[T] && c.events[T].length;
+      }), D = Object.keys(this.onceEvents).filter(function(T) {
+        return c.onceEvents[T] && c.onceEvents[T].length;
+      });
+      return e(e(e([], R, !0), D, !0), Array.from(this._symbolKeys).filter(function(T) {
+        return T in c.events && c.events[T] && c.events[T].length || T in c.onceEvents && c.onceEvents[T] && c.onceEvents[T].length;
+      }), !0);
+    }
+  }
+  function y(c) {
+    return this.emit === n ? this.events[c] && this.events[c].length || 0 : (this.events[c] && this.events[c].length || 0) + (this.onceEvents[c] && this.onceEvents[c].length || 0);
+  }
+  return a.prototype.emit = n, a.prototype.on = d, a.prototype.once = o, a.prototype.addListener = d, a.prototype.removeListener = u, a.prototype.addListenerBound = b, a.prototype.removeListenerBound = l, a.prototype.hasListeners = g, a.prototype.prependListener = p, a.prototype.prependOnceListener = w, a.prototype.off = u, a.prototype.removeAllListeners = I, a.prototype.setMaxListeners = m, a.prototype.getMaxListeners = v, a.prototype.listeners = h, a.prototype.eventNames = _, a.prototype.listenerCount = y, ee;
+}
+var hasRequiredLib;
+function requireLib() {
+  return hasRequiredLib || (hasRequiredLib = 1, (function(e) {
+    var r = lib && lib.__createBinding || (Object.create ? (function(i, n, s, a) {
+      a === void 0 && (a = s);
+      var o = Object.getOwnPropertyDescriptor(n, s);
+      (!o || ("get" in o ? !n.__esModule : o.writable || o.configurable)) && (o = { enumerable: !0, get: function() {
+        return n[s];
+      } }), Object.defineProperty(i, a, o);
+    }) : (function(i, n, s, a) {
+      a === void 0 && (a = s), i[a] = n[s];
+    })), t = lib && lib.__exportStar || function(i, n) {
+      for (var s in i) s !== "default" && !Object.prototype.hasOwnProperty.call(n, s) && r(n, i, s);
+    };
+    Object.defineProperty(e, "__esModule", { value: !0 }), t(requireTypes(), e), t(requireEe(), e);
+  })(lib)), lib;
+}
+var libExports = requireLib();
+class BalanceStore {
+  _store;
+  _client;
+  _address;
+  constructor(r, t) {
+    this._store = createStore("0"), this._client = r, this._address = t, this.onBalanceChange = this.onBalanceChange.bind(this);
+  }
+  getStore() {
+    return this._store;
+  }
+  async setInitialBalance() {
+    const [r] = await getBalances(this._client, this._address);
+    return this._store.setState(r), r;
+  }
+  onBalanceChange(r, t) {
+    console.log("balance change: ", r, t), console.log("this: ", this), console.log("balance store: ", this._store), console.log("balance store: ", this._store), this._store.setState(`${t}`);
+  }
+}
+class BuyOfferStore {
+  _store;
+  _client;
+  _address;
+  constructor(r, t) {
+    this._store = createStore({}), this._client = r, this._address = t;
+  }
+  getStore() {
+    return this._store;
+  }
+  async setInitialBuyOffers(r) {
+    const t = await getBuyOffers(this._client, r).catch(
+      (i) => (console.log("error in getBuyOffers: ", i), [])
+    );
+    return console.log("initial buy offers store: ", r, [...t]), this._store.setState((i) => ({
+      ...i,
+      [r]: t
+    })), { [r]: t };
+  }
+  onCreateBuyOffer(r, t, i) {
+    getBuyOffers(this._client, t).then((n) => {
+      this._store.setState((s) => ({
+        ...s,
+        [t]: n
+      }));
+    }).catch((n) => {
+    });
+  }
+  onAcceptBuyOffer(r, t) {
+    this.onCreateBuyOffer(r, t, "0");
+  }
+}
+class SellOfferStore {
+  _store;
+  _client;
+  _address;
+  constructor(r, t) {
+    this._store = createStore({}), this._client = r, this._address = t;
+  }
+  getStore() {
+    return this._store;
+  }
+  async setInitialSellOffers(r) {
+    const t = await getSellOffers(this._client, r).catch(
+      (i) => (console.log("error in getSellOffers: ", i), [])
+    );
+    return console.log("initial sell offers store: ", r, [...t]), this._store.setState((i) => ({
+      ...i,
+      [r]: t
+    })), { [r]: t };
+  }
+  onCreateSellOffer(r, t, i) {
+    getSellOffers(this._client, t).then((n) => {
+      this._store.setState((s) => ({
+        ...s,
+        [t]: n
+      }));
+    }).catch((n) => {
+    });
+  }
+  onAcceptSellOffer(r, t) {
+    this.onCreateSellOffer(r, t, "0");
+  }
+}
+class TokenStore {
+  _store;
+  _client;
+  _address;
+  constructor(r, t) {
+    this._store = createStore([]), this._client = r, this._address = t;
+  }
+  getStore() {
+    return this._store;
+  }
+  async setInitialTokens() {
+    const r = await getTokens(this._client, this._address);
+    return this._store.setState(r), r;
+  }
+  onTokenMint(r, t) {
+    getTokens(this._client, this._address).then((i) => {
+      this._store.setState(i);
+    });
+  }
+  onTokenBurn(r, t) {
+    getTokens(this._client, this._address).then((i) => {
+      this._store.setState(i);
+    });
+  }
+  onAcceptBuyOffer(r, t) {
+    getTokens(this._client, this._address).then((i) => {
+      this._store.setState(i);
+    });
+  }
+  onAcceptSellOffer(r, t) {
+    getTokens(this._client, this._address).then((i) => {
+      this._store.setState(i);
+    });
+  }
+}
+class CurrencyStore {
+  _store;
+  _client;
+  _address;
+  constructor(r, t) {
+    this._store = createStore([]), this._client = r, this._address = t;
+  }
+  getStore() {
+    return this._store;
+  }
+  async setInitialBalance() {
+    const [, r] = await getBalances(this._client, this._address);
+    return this._store.setState(r), r;
+  }
+  onCurrencyChange() {
+    getBalances(this._client, this._address).then(([, r]) => {
+      this._store.setState(r);
+    });
+  }
+}
+function handleTransactionNFTokenMint(e, r, t) {
+  const i = e.get(t.Account);
+  i && (console.log(t.Account, " minted a token: ", r), r.meta && i.emitter.emit(
+    WalletEvents.TokenMint,
+    npmExports.getNFTokenID(r.meta) ?? "",
+    t.date ?? 0,
+    t.hash ?? ""
+  ));
+}
+function handleTransactionNFTokenBurn(e, r, t) {
+  const i = e.get(t.Account);
+  i && (console.log(t.Account, " burned a token: ", r), r.meta && i.emitter.emit(
+    WalletEvents.TokenBurn,
+    t.NFTokenID ?? "",
+    t.date ?? 0,
+    t.hash ?? ""
+  ));
+}
+function handleTransactionPayment(e, r, t) {
+  const i = e.get(t.Destination), n = e.get(t.Account);
+  i && (console.log(t.Destination, " received payment: ", r), commonExports.isIssuedCurrency(t.Amount) ? (i.emitter.emit(WalletEvents.CurrencyChange), i.emitter.emit(
+    WalletEvents.CurrencyRecieved,
+    t.Account,
+    t.Amount,
+    t.date ?? 0,
+    t.hash ?? ""
+  )) : commonExports.isMPTAmount(t.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount)) : i.emitter.emit(
+    WalletEvents.PaymentRecieved,
+    t.Account,
+    t.Amount,
+    t.date ?? 0,
+    t.hash ?? ""
+  )), n && (console.log(t.Account, " sent payment: ", r), commonExports.isIssuedCurrency(t.Amount) ? (n.emitter.emit(WalletEvents.CurrencyChange), n.emitter.emit(
+    WalletEvents.CurrencySent,
+    t.Destination,
+    t.Amount,
+    t.date ?? 0,
+    t.hash ?? ""
+  )) : commonExports.isMPTAmount(t.Amount) ? (console.warn("MPT amount is not supported yet"), console.warn("MPT amount: ", t.Amount)) : n.emitter.emit(
+    WalletEvents.PaymentSent,
+    t.Destination,
+    t.Amount,
+    t.date ?? 0,
+    t.hash ?? ""
+  ));
+}
+function hexToUInt8Array(e) {
+  if (e.length % 2 !== 0)
+    throw new Error("Hex string must have an even number of characters");
+  for (var r = new Uint8Array(e.length / 2), t = 0; t < r.length; t++) {
+    var i = e.charAt(t * 2) + e.charAt(t * 2 + 1);
+    r[t] = parseInt(i, 16);
+  }
+  return r;
+}
+function extractAccountsFromNFTokenPage(e) {
+  let r = [];
+  for (const t of e) {
+    if (npmExports.isModifiedNode(t) && t.ModifiedNode.LedgerEntryType === "NFTokenPage") {
+      const i = t.ModifiedNode.LedgerIndex, n = npmExports.encodeAccountID(
+        hexToUInt8Array(i.substring(0, 40))
+      );
+      r.push(n);
+    }
+    if (npmExports.isCreatedNode(t) && t.CreatedNode.LedgerEntryType === "NFTokenPage") {
+      const i = t.CreatedNode.LedgerIndex, n = npmExports.encodeAccountID(
+        hexToUInt8Array(i.substring(0, 40))
+      );
+      r.push(n);
+    }
+    if (npmExports.isDeletedNode(t) && t.DeletedNode.LedgerEntryType === "NFTokenPage") {
+      const i = t.DeletedNode.LedgerIndex, n = npmExports.encodeAccountID(
+        hexToUInt8Array(i.substring(0, 40))
+      );
+      r.push(n);
+    }
+  }
+  return r;
+}
+function findLedgerIndexForCreatedOffer(e) {
+  for (const r of e)
+    if (npmExports.isCreatedNode(r) && r.CreatedNode.LedgerEntryType === "NFTokenOffer")
+      return r.CreatedNode.LedgerIndex;
+  return "";
+}
+function findLedgerIndexForAcceptedOffer(e) {
+  for (const r of e)
+    if (npmExports.isDeletedNode(r) && r.DeletedNode.LedgerEntryType === "NFTokenOffer")
+      return r.DeletedNode.LedgerIndex;
+  return "";
+}
+function findNFTokenIDForOffer(e, r) {
+  for (const t of r)
+    if (npmExports.isDeletedNode(t) && t.DeletedNode.LedgerEntryType === "NFTokenOffer" && t.DeletedNode.LedgerIndex === e)
+      return t.DeletedNode.FinalFields.NFTokenID;
+  return "";
+}
+function handleTransactionNFTokenAcceptOffer(e, r, t) {
+  const i = extractAccountsFromNFTokenPage(
+    r.meta?.AffectedNodes || []
+  );
+  i.indexOf(t.Account) === -1 && i.push(t.Account), console.log(i);
+  for (const n of i) {
+    const s = e.get(n);
+    if (s) {
+      if (t.NFTokenSellOffer) {
+        console.log(n, " accepted a sell offer: ", r), findLedgerIndexForAcceptedOffer(
+          r.meta?.AffectedNodes || []
+        );
+        const a = findNFTokenIDForOffer(
+          t.NFTokenSellOffer,
+          r.meta?.AffectedNodes ?? []
+        );
+        s.emitter.emit(
+          WalletEvents.AcceptSellOffer,
+          t.NFTokenSellOffer,
+          a,
+          t.date ?? 0,
+          t.hash ?? ""
+        );
+      }
+      if (t.NFTokenBuyOffer) {
+        console.log(n, " accepted a buy offer: ", r), findLedgerIndexForAcceptedOffer(
+          r.meta?.AffectedNodes || []
+        );
+        const a = findNFTokenIDForOffer(
+          t.NFTokenBuyOffer,
+          r.meta?.AffectedNodes ?? []
+        );
+        s.emitter.emit(
+          WalletEvents.AcceptBuyOffer,
+          t.NFTokenBuyOffer,
+          a,
+          t.date ?? 0,
+          t.hash ?? ""
+        );
+      }
+    }
+  }
+}
+function handleTransactionNFTokenCreateOffer(e, r, t) {
+  const i = e.get(t.Account), n = t.Owner ? e.get(t.Owner) : void 0;
+  if (i && t.Flags === 1) {
+    const s = findLedgerIndexForCreatedOffer(
+      r.meta?.AffectedNodes || []
+    );
+    i.emitter.emit(
+      WalletEvents.CreateSellOffer,
+      s,
+      t.NFTokenID,
+      t.Amount,
+      t.date ?? 0,
+      t.hash ?? ""
+    );
+  }
+  if (n && t.Flags !== 1) {
+    const s = findLedgerIndexForCreatedOffer(
+      r.meta?.AffectedNodes || []
+    );
+    n.emitter.emit(
+      WalletEvents.CreateBuyOffer,
+      s,
+      t.NFTokenID,
+      t.Amount,
+      t.date ?? 0,
+      t.hash ?? ""
+    );
+  }
+}
+function processNodes(e, r, t) {
+  for (const i of e) {
+    if (npmExports.isModifiedNode(i)) {
+      switch (i.ModifiedNode.LedgerEntryType) {
+        case "AccountRoot": {
+          const n = i.ModifiedNode.FinalFields?.Account, s = n ? r.get(n) : void 0;
+          if (i.ModifiedNode.FinalFields?.Balance && s) {
+            const a = i.ModifiedNode.FinalFields.Balance;
+            s.emitter.emit(
+              WalletEvents.BalanceChange,
+              a,
+              npmExports.dropsToXrp(a),
+              t
+            );
+          }
+          break;
+        }
+      }
+      continue;
+    }
+    if (npmExports.isCreatedNode(i)) {
+      switch (i.CreatedNode.LedgerEntryType) {
+        case "AccountRoot": {
+          const n = i.CreatedNode.NewFields?.Account, s = n ? r.get(n) : void 0;
+          if (i.CreatedNode.NewFields?.Balance && s) {
+            const a = i.CreatedNode.NewFields.Balance;
+            s.emitter.emit(
+              WalletEvents.BalanceChange,
+              a,
+              npmExports.dropsToXrp(a),
+              t
+            );
+          }
+          break;
+        }
+      }
+      continue;
+    }
+    npmExports.isDeletedNode(i) && i.DeletedNode.LedgerEntryType;
+  }
+}
+let NetworkEmitter$1 = class {
+  _client;
+  _eventsEnabled = !1;
+  _addressEvents;
+  constructor(r) {
+    this._client = r, this._addressEvents = /* @__PURE__ */ new Map();
+  }
+  start() {
+    this._eventsEnabled || (this._client.on("transaction", this.onTransaction), this._eventsEnabled = !0);
+  }
+  stop() {
+    this._eventsEnabled && (this._client.off("transaction", this.onTransaction), this._eventsEnabled = !1);
+  }
+  getEvents(r) {
+    let t = this._addressEvents.get(r);
+    return t || (t = {
+      emitter: new libExports.EventEmitter(),
+      refCount: 0,
+      address: r,
+      promiseChain: Promise.resolve(),
+      balance: new BalanceStore(this._client, r),
+      currencies: new CurrencyStore(this._client, r),
+      tokens: new TokenStore(this._client, r),
+      buyOffers: new BuyOfferStore(this._client, r),
+      sellOffers: new SellOfferStore(this._client, r),
+      subbed: !1
+    }, this._addressEvents.set(r, t)), t;
+  }
+  async enableEventsForAddress(r) {
+    const t = this.getEvents(r);
+    return t.refCount++, t.promiseChain = t.promiseChain.then(async () => {
+      if (t.refCount > 0 && !t.subbed)
+        try {
+          await this._client.connect(), await this._client.request({
+            command: "subscribe",
+            // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
+            accounts: [r]
+          }), t.balance.setInitialBalance(), t.currencies.setInitialBalance(), t.tokens.setInitialTokens(), t.emitter.on(
+            WalletEvents.BalanceChange,
+            t.balance.onBalanceChange
+          ), t.emitter.on(
+            WalletEvents.CurrencyChange,
+            t.currencies.onCurrencyChange
+          ), t.emitter.on(
+            WalletEvents.TokenMint,
+            t.tokens.onTokenMint
+          ), t.emitter.on(
+            WalletEvents.TokenBurn,
+            t.tokens.onTokenBurn
+          ), t.emitter.on(
+            WalletEvents.CreateBuyOffer,
+            t.buyOffers.onCreateBuyOffer
+          ), t.emitter.on(
+            WalletEvents.CreateSellOffer,
+            t.sellOffers.onCreateSellOffer
+          ), t.emitter.on(
+            WalletEvents.AcceptBuyOffer,
+            t.buyOffers.onAcceptBuyOffer
+          ), t.emitter.on(
+            WalletEvents.AcceptSellOffer,
+            t.sellOffers.onAcceptSellOffer
+          ), t.subbed = !0;
+        } catch (i) {
+          console.error("error subscribing to address: ", i);
+        }
+    }), t.promiseChain;
+  }
+  async disableEventsForAddress(r) {
+    const t = this.getEvents(r);
+    return t.refCount--, t.promiseChain = t.promiseChain.then(async () => {
+      if (t.refCount <= 0 && t.subbed)
+        try {
+          await this._client.request({
+            command: "unsubscribe",
+            accounts: [r]
+          }), t.subbed = !1;
+        } catch (i) {
+          console.error("error unsubscribing from address: ", i);
+        }
+      t.refCount <= 0 && !t.subbed && (t.emitter.removeAllListeners(), this._addressEvents.delete(r));
+    }), t.promiseChain;
+  }
+  hasEventsForAddress(r) {
+    return this.getEvents(r).subbed;
+  }
+  getBalanceStore(r) {
+    return this.getEvents(r).balance;
+  }
+  getCurrencyStore(r) {
+    return this.getEvents(r).currencies;
+  }
+  getTokenStore(r) {
+    return this.getEvents(r).tokens;
+  }
+  getBuyOfferStore(r) {
+    return this.getEvents(r).buyOffers;
+  }
+  getSellOfferStore(r) {
+    return this.getEvents(r).sellOffers;
+  }
+  on(r, t, i) {
+    const n = this.getEvents(r);
+    return n.emitter.on(t, i), () => {
+      n.emitter.off(t, i);
+    };
+  }
+  off(r, t, i) {
+    this.getEvents(r).emitter.off(t, i);
+  }
+  onTransaction = (r) => {
+    if (console.group("transaction started: ", r), r.engine_result !== "tesSUCCESS") {
+      console.log("transaction failed"), console.groupEnd();
+      return;
+    }
+    const t = r.tx_json ?? r.transaction;
+    if (!t) {
+      console.log("transaction has no transaction object: ", r), console.groupEnd();
+      return;
+    }
+    t.TransactionType === "NFTokenMint" && handleTransactionNFTokenMint(this._addressEvents, r, t), t.TransactionType === "NFTokenBurn" && handleTransactionNFTokenBurn(this._addressEvents, r, t), t.TransactionType === "Payment" && handleTransactionPayment(this._addressEvents, r, t), t.TransactionType === "NFTokenAcceptOffer" && handleTransactionNFTokenAcceptOffer(
+      this._addressEvents,
+      r,
+      t
+    ), t.TransactionType === "NFTokenCreateOffer" && handleTransactionNFTokenCreateOffer(
+      this._addressEvents,
+      r,
+      t
+    ), r.meta?.AffectedNodes && processNodes(
+      r.meta.AffectedNodes,
+      this._addressEvents,
+      t.hash ?? ""
+    ), console.groupEnd();
+  };
+};
+function NetworkEmitter({ children: e }) {
+  const r = useXRPLClient(), t = useIsConnected(), i = useMemo(() => (console.log("creating network emitter..."), new NetworkEmitter$1(r)), [r]);
+  return useEffect(() => {
+    console.log("network emitter changed: ", i);
+  }, [i]), useEffect(() => (t && i.start(), () => {
+    t && i.stop();
+  }), [i, t]), /* @__PURE__ */ jsx(NetworkEmitterContext.Provider, { value: i, children: e });
+}
+function XRPLClient({
+  children: e,
+  network: r = Networks.Testnet
+}) {
+  console.log("rendering client");
+  const t = useMemo(() => (console.log("creating client in memo: ", r), new npmExports.Client(r)), [r]), [i] = useState(() => ({
+    connected: createStore(!1)
+  }));
+  return useEffect(() => {
+    console.log("connecting..."), t.connect();
+    const n = () => {
+      console.log("connected"), i.connected.setState(!0);
+    }, s = () => {
+      console.log("disconnected"), i.connected.setState(!1);
+    };
+    return t.on("connected", n), t.on("disconnected", s), () => {
+      console.log("disconnecting..."), i.connected.setState(!1), t.off("connected", n), t.off("disconnected", s), t.disconnect();
+    };
+  }, [t]), /* @__PURE__ */ jsx(XRPLClientContext.Provider, { value: t, children: /* @__PURE__ */ jsx(ClientStoreContext.Provider, { value: i, children: /* @__PURE__ */ jsx(NetworkEmitter, { children: e }) }) });
+}
+function Wallet({ seed: e, fallback: r = /* @__PURE__ */ jsx(Fragment, {}), children: t }) {
+  const i = useMemo(() => e ? npmExports.Wallet.fromSeed(e) : npmExports.Wallet.generate(), [e]);
+  return i ? /* @__PURE__ */ jsx(WalletContext.Provider, { value: i, children: /* @__PURE__ */ jsx(WalletAddressContext.Provider, { value: i.address, children: t }) }) : r;
+}
+function Account({ address: e, fallback: r = /* @__PURE__ */ jsx(Fragment, {}), children: t }) {
+  const i = useContext(WalletAddressContext), n = useMemo(() => {
+    if (e)
+      return e;
+    if (i)
+      return i;
+    throw new Error(
+      "Account must either be inside a Wallet or specify an address"
+    );
+  }, [e]);
+  return e ? /* @__PURE__ */ jsx(WalletAddressContext.Provider, { value: n, children: t }) : /* @__PURE__ */ jsx(Fragment, { children: t });
+}
+function useAddress(e) {
+  const r = useWalletAddress();
+  return useMemo(() => {
+    if (e)
+      return e;
+    if (r)
+      return r;
+    throw new Error(
+      "useAddress must be inside a Wallet or specify an address"
+    );
+  }, [e, r]);
+}
+function useBalance(e) {
+  const r = useNetworkEmitter(), t = useAddress(e);
+  useEffect(() => (r.enableEventsForAddress(t), () => {
+    r.disableEventsForAddress(t);
+  }), [t]);
+  const i = r.getBalanceStore(t).getStore();
+  return useStore(i);
+}
+function useBuyOffers(e, r) {
+  const t = useNetworkEmitter(), i = useAddress(r);
+  useEffect(() => (t.enableEventsForAddress(i).then(() => {
+    t.hasEventsForAddress(i) && t.getBuyOfferStore(i).setInitialBuyOffers(e);
+  }), () => {
+    t.disableEventsForAddress(i);
+  }), [i]);
+  const n = t.getBuyOfferStore(i).getStore();
+  return useStore(n)[e];
+}
+function useCurrencyBalance(e) {
+  const r = useNetworkEmitter(), t = useAddress(e);
+  useEffect(() => (r.enableEventsForAddress(t), () => {
+    r.disableEventsForAddress(t);
+  }), [t]);
+  const i = r.getCurrencyStore(t).getStore();
+  return useStore(i);
+}
+function useGetBuyOffers() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useAddress(), i = useNetworkEmitter();
+  return useCallback(async (s) => {
+    const a = await getBuyOffers(r.current, s);
+    return i.getBuyOfferStore(t).getStore().setState((d) => ({
+      ...d,
+      [s]: a
+    })), a;
+  }, []);
+}
+function useGetSellOffers() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useAddress(), i = useNetworkEmitter();
+  return useCallback(async (s) => {
+    const a = await getSellOffers(r.current, s);
+    return i.getSellOfferStore(t).getStore().setState((d) => ({
+      ...d,
+      [s]: a
+    })), a;
+  }, []);
+}
+function useGetTokens() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useAddress();
+  return useCallback(async () => await getTokens(r.current, t), [t]);
+}
+function useGetXRPBalance() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useAddress();
+  return useCallback(async () => await getXRPBalance(r.current, t), [t]);
+}
+function useSellOffers(e, r) {
+  const t = useNetworkEmitter(), i = useAddress(r);
+  useEffect(() => {
+    t.enableEventsForAddress(i).then(() => {
+      t.hasEventsForAddress(i) && t.getSellOfferStore(i).setInitialSellOffers(e);
+    });
+  }, [i]);
+  const n = t.getSellOfferStore(i).getStore();
+  return useStore(n)[e];
+}
+function useTokens(e) {
+  const r = useNetworkEmitter(), t = useAddress(e);
+  useEffect(() => (r.enableEventsForAddress(t), () => {
+    r.disableEventsForAddress(t);
+  }), [t]);
+  const i = r.getTokenStore(t).getStore();
+  return useStore(i);
+}
+async function acceptSellOffer(e, r, t) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenAcceptOffer",
+      Account: r.address,
+      NFTokenSellOffer: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function acceptBuyOffer(e, r, t) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenAcceptOffer",
+      Account: r.address,
+      NFTokenBuyOffer: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function acceptBrokeredOffer(e, r, t, i, n) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenAcceptOffer",
+      Account: r.address,
+      NFTokenBuyOffer: t,
+      NFTokenSellOffer: i,
+      NFTokenBrokerFee: n
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function allowRippling(e, r, t) {
+  await e.connect();
+  let i = {
+    TransactionType: "AccountSet",
+    Account: r.address
+  };
+  return t ? i.SetFlag = npmExports.AccountSetAsfFlags.asfDefaultRipple : i.ClearFlag = npmExports.AccountSetAsfFlags.asfDefaultRipple, await e.submitAndWait(i, {
+    autofill: !0,
+    wallet: r
+  });
+}
+async function burnToken(e, r, t = "") {
+  return await e.connect(), t.length !== 64 ? Promise.reject("Invalid tokenID") : await e.submitAndWait(
+    {
+      TransactionType: "NFTokenBurn",
+      Account: r.address,
+      NFTokenID: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function cancelOffer(e, r, t) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenCancelOffer",
+      Account: r.address,
+      NFTokenOffers: [t]
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function createBuyOffer(e, r, t, i, n, {
+  expiration: s,
+  flags: a,
+  destination: o
+}) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenCreateOffer",
+      Account: r.address,
+      NFTokenID: i,
+      Flags: a,
+      Amount: n,
+      Expiration: s ? npmExports.isoTimeToRippleTime(s) : void 0,
+      Destination: o || void 0,
+      Owner: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function createSellOffer(e, r, t, i, {
+  expiration: n,
+  flags: s = 1,
+  destination: a
+}) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenCreateOffer",
+      Account: r.address,
+      NFTokenID: t,
+      Flags: s,
+      Amount: i,
+      Expiration: n ? npmExports.isoTimeToRippleTime(n) : void 0,
+      Destination: a || void 0
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function createTrustline(e, r, t, i, n) {
+  return await e.connect(), npmExports.isValidAddress(t) ? r.address === t ? Promise.reject("Source and target addresses are the same") : await e.submitAndWait(
+    {
+      TransactionType: "TrustSet",
+      Account: r.address,
+      LimitAmount: {
+        currency: i,
+        issuer: t,
+        value: n
+      }
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  ) : Promise.reject("Invalid target address");
+}
+async function mintToken(e, r, t = "", i = 0, n = 8, s = 0) {
+  return await e.connect(), await e.submitAndWait(
+    {
+      TransactionType: "NFTokenMint",
+      Account: r.address,
+      URI: npmExports.convertStringToHex(t),
+      Flags: n,
+      TransferFee: i,
+      NFTokenTaxon: s
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  );
+}
+async function sendCurrency(e, r, t, i, n) {
+  throw new Error("Deprecated! Use sendCurrencyAmount instead!");
+}
+async function sendCurrencyAmount(e, r, t, i) {
+  return await e.connect(), npmExports.isValidAddress(t) ? r.address === t ? Promise.reject("Source and destination addresses are the same") : await e.submitAndWait(
+    {
+      TransactionType: "Payment",
+      Account: r.address,
+      Amount: i,
+      Destination: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  ) : Promise.reject("Invalid destination address");
+}
+async function sendXRP(e, r, t, i) {
+  return await e.connect(), npmExports.isValidAddress(t) ? r.address === t ? Promise.reject("Source and destination addresses are the same") : await e.submitAndWait(
+    {
+      TransactionType: "Payment",
+      Account: r.address,
+      Amount: npmExports.xrpToDrops(i),
+      Destination: t
+    },
+    {
+      autofill: !0,
+      wallet: r
+    }
+  ) : Promise.reject("Invalid destination address");
+}
+function useAcceptBuyOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s) => await acceptBuyOffer(
+      r.current,
+      i.current,
+      s
+    ),
+    []
+  );
+}
+function useAcceptSellOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s) => await acceptSellOffer(
+      r.current,
+      i.current,
+      s
+    ),
+    []
+  );
+}
+async function useAllowRippling() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(async (s) => await allowRippling(r.current, i.current, s), []);
+}
+function useAcceptBrokeredOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a, o) => await acceptBrokeredOffer(
+      r.current,
+      i.current,
+      s,
+      a,
+      o
+    ),
+    []
+  );
+}
+function useBurnToken() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(async (s) => await burnToken(
+    r.current,
+    i.current,
+    s
+  ), []);
+}
+function useCancelOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s) => await cancelOffer(
+      r.current,
+      i.current,
+      s
+    ),
+    []
+  );
+}
+function useCreateBuyOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a, o, {
+      expiration: d,
+      destination: u
+    } = {}) => await createBuyOffer(
+      r.current,
+      i.current,
+      s,
+      a,
+      o,
+      {
+        expiration: d,
+        destination: u
+      }
+    ),
+    []
+  );
+}
+function useCreateSellOffer() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a, {
+      expiration: o,
+      destination: d,
+      flags: u
+    }) => await createSellOffer(
+      r.current,
+      i.current,
+      s,
+      a,
+      {
+        expiration: o,
+        destination: d,
+        flags: u
+      }
+    ),
+    []
+  );
+}
+function useCreateTrustline() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a, o) => await createTrustline(
+      r.current,
+      i.current,
+      s,
+      a,
+      o
+    ),
+    []
+  );
+}
+function useFundWallet() {
+  const e = useXRPLClient(), r = useWallet(), t = useRef(e);
+  return t.current = e, useCallback(
+    async (n) => await t.current.fundWallet(r, {
+      amount: n
+    }),
+    []
+  );
+}
+function useMintToken() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a = 0, {
+      flags: o,
+      taxon: d
+    } = {}) => await mintToken(
+      r.current,
+      i.current,
+      s,
+      a,
+      o,
+      d
+    ),
+    []
+  );
+}
+function useSendCurrency() {
+  throw new Error("Deprecated! Use useSendCurrencyAmount instead!");
+}
+function useSendCurrencyAmount() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a) => await sendCurrencyAmount(
+      r.current,
+      i.current,
+      s,
+      a
+    ),
+    []
+  );
+}
+function useSendXRP() {
+  const e = useXRPLClient(), r = useRef(e);
+  r.current = e;
+  const t = useWallet(), i = useRef(t);
+  return i.current = t, useCallback(
+    async (s, a) => await sendXRP(
+      r.current,
+      i.current,
+      s,
+      a
+    ),
+    []
+  );
+}
+function convertRippleEpochToUTCDate(e) {
+  return new Date((e + 946684800) * 1e3);
+}
+const Client = npmExports.Client, Wallet$2 = npmExports.Wallet;
+export {
+  Account,
+  Networks,
+  ReserveRequirement,
+  Wallet,
+  XRPLClient,
+  acceptBrokeredOffer,
+  acceptBuyOffer,
+  acceptSellOffer,
+  allowRippling,
+  burnToken,
+  cancelOffer,
+  convertRippleEpochToUTCDate,
+  createAndFundWallet,
+  createBuyOffer,
+  createSellOffer,
+  createTrustline,
+  createWallet,
+  getBalances,
+  getBuyOffers,
+  getInitialWalletState,
+  getSellOffers,
+  getTokens,
+  getXRPBalance,
+  mintToken,
+  sendCurrency,
+  sendCurrencyAmount,
+  sendXRP,
+  useAcceptBrokeredOffer,
+  useAcceptBuyOffer,
+  useAcceptSellOffer,
+  useAllowRippling,
+  useBalance,
+  useBurnToken,
+  useBuyOffers,
+  useCancelOffer,
+  useClientStores,
+  useCreateAndFundWallet,
+  useCreateBuyOffer,
+  useCreateSellOffer,
+  useCreateTrustline,
+  useCreateWallet,
+  useCurrencyBalance,
+  useFundWallet,
+  useGetBuyOffers,
+  useGetSellOffers,
+  useGetTokens,
+  useGetXRPBalance,
+  useIsConnected,
+  useMintToken,
+  useNetworkEmitter,
+  useSellOffers,
+  useSendCurrency,
+  useSendCurrencyAmount,
+  useSendXRP,
+  useTokens,
+  useTransactionLog,
+  useWallet,
+  useWalletAddress,
+  useXRPLClient,
+  Client as xrplClient,
+  Wallet$2 as xrplWallet
+};
