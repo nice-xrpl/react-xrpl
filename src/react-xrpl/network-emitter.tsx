@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useIsConnected, useXRPLClient } from './hooks';
+import { useClientStores, useIsConnected, useXRPLClient } from './hooks';
 import { NetworkEmitter as NetworkEmitterClass } from './network-emitter/network-emitter';
 import { NetworkEmitterContext } from './network-emitter-context';
 

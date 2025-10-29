@@ -1,12 +1,17 @@
 import { TransactionStream, Client as xrplClient } from 'xrpl';
-import { AddressEvents, EventMap, WalletEvents } from './types';
+import { AddressEvents, EventMap, WalletEvents, WalletEvent } from './types';
 import { EventEmitter } from 'tseep';
 import { BalanceStore } from './balance-store';
 import { BuyOfferStore } from './buy-offer-store';
 import { SellOfferStore } from './sell-offer-store';
 import { TokenStore } from './token-store';
 import { CurrencyStore } from './currency-store';
-import { WalletEvent } from '../api/network-emitter';
+import { handleTransactionNFTokenMint } from './transaction-nftoken-mint';
+import { handleTransactionNFTokenBurn } from './transaction-nftoken-burn';
+import { handleTransactionPayment } from './transaction-payment';
+import { handleTransactionNFTokenAcceptOffer } from './transaction-nftoken-accept-offer';
+import { handleTransactionNFTokenCreateOffer } from './transaction-nftoken-create-offer';
+import { processNodes } from './process-nodes';
 
 export class NetworkEmitter {
     private _client: xrplClient;
@@ -63,6 +68,8 @@ export class NetworkEmitter {
         events.promiseChain = events.promiseChain.then(async () => {
             if (events.refCount > 0 && !events.subbed) {
                 try {
+                    await this._client.connect();
+
                     await this._client.request({
                         command: 'subscribe',
                         // TODO: either accounts OR streams has to be specified.  each one gives independent events (ex. if accounts is a wallet and streams is transactions, then you will get two independent streams of events, one for accounts and one for streams)
@@ -199,5 +206,60 @@ export class NetworkEmitter {
         events.emitter.off(event, callback);
     }
 
-    private onTransaction = (tx: TransactionStream) => {};
+    private onTransaction = (tx: TransactionStream) => {
+        console.group('transaction started: ', tx);
+        // TODO: use meta and AffectedNodes to check final balances on payments/tokens/currencies?
+
+        if (tx.engine_result !== 'tesSUCCESS') {
+            console.log('transaction failed');
+            console.groupEnd();
+            return;
+        }
+
+        const transaction = tx.tx_json ?? tx.transaction;
+
+        if (!transaction) {
+            console.log('transaction has no transaction object: ', tx);
+            console.groupEnd();
+            return;
+        }
+
+        if (transaction.TransactionType === 'NFTokenMint') {
+            handleTransactionNFTokenMint(this._addressEvents, tx, transaction);
+        }
+
+        if (transaction.TransactionType === 'NFTokenBurn') {
+            handleTransactionNFTokenBurn(this._addressEvents, tx, transaction);
+        }
+
+        if (transaction.TransactionType === 'Payment') {
+            handleTransactionPayment(this._addressEvents, tx, transaction);
+        }
+
+        if (transaction.TransactionType === 'NFTokenAcceptOffer') {
+            handleTransactionNFTokenAcceptOffer(
+                this._addressEvents,
+                tx,
+                transaction
+            );
+        }
+
+        if (transaction.TransactionType === 'NFTokenCreateOffer') {
+            handleTransactionNFTokenCreateOffer(
+                this._addressEvents,
+                tx,
+                transaction
+            );
+        }
+
+        if (tx.meta?.AffectedNodes) {
+            processNodes(
+                tx.meta.AffectedNodes,
+                this._addressEvents,
+                transaction.hash ?? ''
+            );
+        }
+
+        console.groupEnd();
+    };
 }

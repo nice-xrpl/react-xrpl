@@ -11,6 +11,8 @@ export class BalanceStore {
         this._store = createStore<string>('0');
         this._client = client;
         this._address = address;
+
+        this.onBalanceChange = this.onBalanceChange.bind(this);
     }
 
     public getStore() {
@@ -25,6 +27,10 @@ export class BalanceStore {
     }
 
     public onBalanceChange(drops: string, xrp: number) {
+        console.log('balance change: ', drops, xrp);
+        console.log('this: ', this);
+        console.log('balance store: ', this._store);
+        console.log('balance store: ', this._store);
         this._store.setState(`${xrp}`);
     }
 }

@@ -100,6 +100,8 @@ export type EventMap = {
     [WalletEvents.RefreshTokens]: (hash: string) => void;
 };
 
+export type WalletEvent = keyof EventMap;
+
 export type AddressEvents = {
     emitter: EventEmitter<EventMap>;
     refCount: number;

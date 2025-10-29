@@ -2,14 +2,39 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { WalletAddressContext } from '../wallet-address-context';
 import { useNetworkEmitter } from './use-network-emitter';
 import { TransactionLogEntry } from '../api/wallet-types';
-import { AccountTxResponse, Amount, IssuedCurrencyAmount } from 'xrpl';
+import { AccountTxResponse, Amount, Client, IssuedCurrencyAmount } from 'xrpl';
 import { useXRPLClient } from './use-xrpl-client';
-import { WalletEvents } from '../api/network-emitter';
+import { WalletEvents } from '../network-emitter/types';
 import {
     getTransactions,
     processTransactions,
 } from '../api/requests/get-transactions';
 import { useIsConnected } from './use-is-connected';
+
+async function getTransactionsForAccounts(
+    client: Client,
+    accounts: string[],
+    limit: number = 10
+) {
+    return client
+        .connect()
+        .then(() => {
+            return Promise.all(
+                accounts.map((a) =>
+                    getTransactions(client, a, limit).catch((error) => {
+                        console.log('error: ', error);
+                        return {} as AccountTxResponse;
+                    })
+                )
+            ).catch((error) => {
+                console.log('error: ', error);
+                return [] as AccountTxResponse[];
+            });
+        })
+        .then((responses) => {
+            return Promise.resolve(processTransactions(responses));
+        });
+}
 
 /**
  * Retrieves the transaction log for the specified accounts and updates the state with the new log entries.
@@ -18,49 +43,35 @@ import { useIsConnected } from './use-is-connected';
  * @param {number} [limit=10] - The maximum number of log entries to retrieve.
  * @return {TransactionLogEntry[]} The transaction log for the specified accounts.
  */
-function useTransactionLogInternal(accounts: string[], limit: number = 10) {
+function useTransactionLogInternal(
+    accounts: string[] = [],
+    limit: number = 10
+) {
     const client = useXRPLClient();
     const isConnected = useIsConnected();
 
     const networkEmitter = useNetworkEmitter();
 
+    // const entries = use(getTransactionsForAccounts(client, accounts, limit));
+    useEffect(() => {
+        let cancelled = false;
+
+        getTransactionsForAccounts(client, accounts, limit).then((entries) => {
+            if (cancelled) {
+                return;
+            }
+
+            setLog(entries);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const [log, setLog] = useState<TransactionLogEntry[]>(() => {
         return [];
     });
-
-    useEffect(() => {
-        // TODO: Fix this for HMR
-        if (isConnected && client.isConnected()) {
-            if (accounts.length > 0) {
-                const allResponses = Promise.all(
-                    accounts.map((a) =>
-                        getTransactions(client, a, limit).catch((error) => {
-                            console.log('error: ', error);
-                            return {} as AccountTxResponse;
-                        })
-                    )
-                ).catch((error) => {
-                    console.log('error: ', error);
-                    return [] as AccountTxResponse[];
-                });
-
-                console.log(
-                    'transactions for accounts: ',
-                    accounts,
-                    allResponses
-                );
-
-                allResponses
-                    .then((responses) => {
-                        const entries = processTransactions(responses);
-                        setLog(entries);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            }
-        }
-    }, [accounts, client, isConnected]);
 
     useEffect(() => {
         // TODO: Clean this up

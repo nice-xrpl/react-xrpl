@@ -1,5 +1,8 @@
 import { AccountTxResponse, Client } from 'xrpl';
-import { isIssuedCurrency } from 'xrpl/dist/npm/models/transactions/common';
+import {
+    isIssuedCurrency,
+    isMPTAmount,
+} from 'xrpl/dist/npm/models/transactions/common';
 import { TransactionLogEntry } from '../wallet-types';
 
 /**
@@ -49,14 +52,17 @@ export function processTransactions(
 
     // Sort the transactions by the 'date' property
     allEntries.sort((a, b) => {
-        let dateA = a.transaction.tx?.date ?? 0;
-        let dateB = b.transaction.tx?.date ?? 0;
+        const txA = a.transaction.tx_json ?? a.transaction.tx;
+        const txB = b.transaction.tx_json ?? b.transaction.tx;
+
+        let dateA = txA?.date ?? 0;
+        let dateB = txB?.date ?? 0;
 
         return dateA - dateB;
     });
 
     for (const entry of allEntries) {
-        let tx = entry.transaction.tx;
+        let tx = entry.transaction.tx_json ?? entry.transaction.tx;
 
         // console.log(entry.account, 'parsing tx: ', entry);
 
@@ -157,6 +163,9 @@ export function processTransactions(
                         hash: tx.hash ?? tx.hash ?? '',
                     });
                 }
+            } else if (isMPTAmount(tx.Amount)) {
+                console.warn('MPT amount is not supported yet');
+                console.warn('MPT amount: ', tx.Amount);
             } else {
                 if (tx.Destination === entry.account) {
                     initialTransactions.push({

@@ -13,7 +13,7 @@ import { hexToUInt8Array } from './hex-to-uint8-array';
  * @param {Node[]} nodes - An array of nodes to extract accounts from.
  * @return {any[]} An array of extracted accounts.
  */
-function extractAccountsFromNFTokenPage(nodes: Node[]) {
+export function extractAccountsFromNFTokenPage(nodes: Node[]) {
     let accounts = [];
 
     for (const node of nodes) {
