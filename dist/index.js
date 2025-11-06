@@ -14748,7 +14748,7 @@ function processTransactions(e) {
       timestamp: s.date ?? 0,
       hash: s.hash ?? s.hash ?? ""
     }), s?.TransactionType === "Payment")
-      if (commonExports.isIssuedCurrency(s.Amount))
+      if (commonExports.isIssuedCurrencyAmount(s.Amount))
         s.Destination === n.account && r.push({
           type: "CurrencyReceived",
           from: s.Account,
@@ -15646,7 +15646,7 @@ function handleTransactionNFTokenBurn(e, r, t) {
 function handleTransactionPayment(e, r, t) {
   const i = e.get(t.Destination), n = e.get(t.Account);
   if (i)
-    if (console.log(t.Destination, " received payment: ", r), commonExports.isIssuedCurrency(t.Amount))
+    if (console.log(t.Destination, " received payment: ", r), commonExports.isIssuedCurrencyAmount(t.Amount))
       i.emitter.emit(WalletEvents.CurrencyChange), i.emitter.emit(
         WalletEvents.CurrencyRecieved,
         t.Account,
@@ -15667,7 +15667,7 @@ function handleTransactionPayment(e, r, t) {
       );
     }
   if (n)
-    if (console.log(t.Account, " sent payment: ", r), commonExports.isIssuedCurrency(t.Amount))
+    if (console.log(t.Account, " sent payment: ", r), commonExports.isIssuedCurrencyAmount(t.Amount))
       n.emitter.emit(WalletEvents.CurrencyChange), n.emitter.emit(
         WalletEvents.CurrencySent,
         t.Destination,
