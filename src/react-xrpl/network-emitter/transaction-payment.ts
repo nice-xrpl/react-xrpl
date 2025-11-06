@@ -7,7 +7,7 @@ import {
 } from 'xrpl';
 import { AddressEvents, WalletEvents } from './types';
 import {
-    isIssuedCurrency,
+    isIssuedCurrencyAmount,
     isMPTAmount,
 } from 'xrpl/dist/npm/models/transactions/common';
 
@@ -22,7 +22,7 @@ export function handleTransactionPayment(
     if (destinationEvents) {
         console.log(transaction.Destination, ' received payment: ', tx);
 
-        if (isIssuedCurrency(transaction.Amount)) {
+        if (isIssuedCurrencyAmount(transaction.Amount)) {
             destinationEvents.emitter.emit(WalletEvents.CurrencyChange);
             destinationEvents.emitter.emit(
                 WalletEvents.CurrencyRecieved,
@@ -50,7 +50,7 @@ export function handleTransactionPayment(
     if (sourceEvents) {
         console.log(transaction.Account, ' sent payment: ', tx);
 
-        if (isIssuedCurrency(transaction.Amount)) {
+        if (isIssuedCurrencyAmount(transaction.Amount)) {
             sourceEvents.emitter.emit(WalletEvents.CurrencyChange);
             sourceEvents.emitter.emit(
                 WalletEvents.CurrencySent,

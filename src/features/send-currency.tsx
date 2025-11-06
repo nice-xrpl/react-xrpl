@@ -35,7 +35,7 @@ export function SendCurrency() {
                             {
                                 currency: 'USD',
                                 value: amount.toString(),
-                                issuer: 'rBLFSFoUGx4BWbsvXvpoa5GvnHQGZ8dxCL',
+                                issuer: 'rwkdEdhB42A3L3SvmLRizVcVReUwQ6Wvnw',
                             }
                         );
                         setSending(false);

@@ -1,6 +1,6 @@
 import { AccountTxResponse, Client, dropsToXrp, RIPPLED_API_V1 } from 'xrpl';
 import {
-    isIssuedCurrency,
+    isIssuedCurrencyAmount,
     isMPTAmount,
 } from 'xrpl/dist/npm/models/transactions/common';
 import { TransactionLogEntry } from '../wallet-types';
@@ -137,7 +137,7 @@ export function processTransactions(
         if (tx?.TransactionType === 'Payment') {
             // console.log('parsing tx: ', tx);
 
-            if (isIssuedCurrency(tx.Amount)) {
+            if (isIssuedCurrencyAmount(tx.Amount)) {
                 // amount is currency, not xrp
                 if (tx.Destination === entry.account) {
                     initialTransactions.push({
